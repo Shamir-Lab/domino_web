@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <meta charset="utf-8">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+  <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+  <title>React App</title>
+
+
+  <!-- JQuery -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+
+  <!-- cytoscape.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.17/cytoscape.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-euler@1.2.1/cytoscape-euler.min.js"></script>
+
+<script>
+let generateTable = () => {
+	let ctable = [];
+  if (ctable.length==0) return;
+  let properties= ["GO id", "GO name", "pval", "qval"]//Object.getOwnPropertyNames(ctable[0])
+  let table = "<table class='table'> <thead>"
+  table += "<tr>"
+  for (let j = 0; j < properties.length; j++) {
+  table += "<th scope='col'>" + properties[j] + "</th>"
+}
+  table += "</tr> </thead> <tbody>"
+  for (let i = 1; i < ctable.length; i++) {
+  table += "<tr>"
+  for (let j = 0; j < properties.length; j++) {
+    table += "<td>" + ctable[i][properties[j]] + "</td>"
+  }
+  table += "</tr>"
+}
+  table += "</tbody></table>"
+  document.getElementById("hg_report").innerHTML = table;
+  document.getElementById("hg_total_number").innerHTML = "<h3>Total number of enriched groups: " + (ctable.slice(1).filter(cur => cur[5] <= 0.05).length) + "</h3>";
+}
+  </script>
+
+ <script>
+ let generateEnrichedModulesReport = () => {
+ let content = [];
+ if (content.length==0) return;
+ let table = "<table class='table'> <thead>"
+ table += "<tr>"
+      for (let j = 0; j < content[0].length; j++) {
+        table += "<th scope='col'>" + content[0][j].split("_").join(" ").replace(/\b\w/g, l => l.toUpperCase()) + "</th>"
+      }
+      table += "</tr> </thead> <tbody>"
+      for (let i = 1; i < content.length; i++) {
+        table += "<tr>"
+        for (let j = 0; j < content[0].length; j++) {
+	  let cellContent = content[i][j];
+          if (j==content[0].indexOf("more_details")){
+	  	cellContent = "<a href='"+content[i][j]+"'>More...</a>"
+          }
+          table += "<td><h4>" + cellContent + "</h4></td>"
+        }
+        table += "</tr>"
+      }
+      table += "</tbody></table>"
+      if (content.length > 0) {
+        document.getElementById("num_of_enriched_terms_title").innerHTML = "<h3>Total number of enriched terms per module: </h3>";
+        document.getElementById("num_of_enriched_terms").innerHTML = table;
+      }
+
+    }
+  </script>
+
+ <script>
+ let generateDiseaseReport = () => {
+ let content = [];
+ if (content.length==0) return;
+ let table = "<table class='table'> <thead>"
+ table += "<tr>"
+      for (let j = 0; j < content[0].length; j++) {
+        table += "<th scope='col'>" + content[0][j] + "</th>"
+      }
+      table += "</tr> </thead> <tbody>"
+      for (let i = 1; i < content.length; i++) {
+        table += "<tr>"
+        for (let j = 0; j < content[0].length; j++) {
+	  let cellContent = content[i][j];
+          if (j==content[0].indexOf("More Details")){
+	  	cellContent = "<a href='"+content[i][j]+"'>More...</a>"
+          }
+          table += "<td><h4>" + cellContent + "</h4></td>"
+        }
+        table += "</tr>"
+      }
+      table += "</tbody></table>"
+      if (content.length > 0) {
+        document.getElementById("disease_title").innerHTML = "<h3>Disease Statistics: </h3>";
+        document.getElementById("disease_content").innerHTML = table;
+      }
+
+    }
+  let showActiveGenes = () => {
+  window.cy.nodes().map(cur => cur.data("label", cur.data("gene_symbol")))
+}
+  </script>
+
+      <script>
+
+      function rainbow(max, h, s, l) {
+    if (Array.isArray(h)) {
+      if (h.length > 1) {
+        return [10, 10, 10];
+      }
+      h = h[0];
+    }
+
+    h = h / max;
+
+    var r, g, b;
+
+    if (s == 0) {
+      r = g = b = l; // achromatic
+    } else {
+      var hue2rgb = function hue2rgb(p, q, t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+         function bwr(max, h, s, l) {
+        if (Array.isArray(h)) {
+          if (h.length > 1) {
+            return [10, 10, 10];
+          }
+          h = h[0];
+        }
+        if (h == undefined) {
+          return [10, 10, 10];
+        }
+
+        h = h / max;
+        console.log(h + " " + max);
+
+        var r, g, b;
+
+        if (s == 0) {
+          r = g = b = l; // achromatic
+        } else {
+          if (h > 0.5) {
+            r = 1;
+            g = 1 - Math.abs(h - 0.5) / 0.5;
+            b = 1 - Math.abs(h - 0.5) / 0.5;
+          } else {
+            r = h / 0.5;
+            g = h / 0.5;
+            b = 1;
+          }
+        }
+
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+      }
+
+      function load_network(elements) {
+        let div_id = "cytoscapeweb";
+        let cy = cytoscape({
+          container: document.getElementById(div_id),
+          elements: elements,
+          style: [
+            // the stylesheet for the graph
+            {
+              selector: "node",
+              style: {
+                label: "data(label)",
+                "background-color": function(x) {
+                  return x.data().node_color != undefined
+                    ? x.data().node_color
+                    : "#666";
+                },
+                "border-color": function(x) {
+                  return x.data().line_color != undefined
+                    ? x.data().line_color
+                    : "#666";
+                },
+                "border-width": "7px"
+              }
+            },
+            {
+              selector: "edge",
+              style: {
+                // 'z-compound-depth': function (ele) { return ele.data()['label'] == undefined ? 'bottom' : 'top'; },
+
+                "z-index": function(ele) {
+                  console.log(
+                    ele.data()["label"] == undefined ? "bottom" : "top"
+                  );
+                  return ele.data()["label"] == undefined ? 0 : 1;
+                }
+              }
+            }
+          ],
+          layout: {
+            name: "euler",
+            randomize: true,
+            animate: false,
+            springCoeff: edge => 0.00008,
+            fit: true
+          }
+        });
+        cy.on("select", function(event) {
+          if (event.target.isEdge()) return;
+          print(
+            event.target.data().eid,
+            !!event.target.data().gene_symbol
+              ? event.target.data().gene_symbol
+              : "",
+            !!event.target.data().modules ? event.target.data().modules : ""
+          );
+          event.target.data(
+            "label",
+            !!event.target.data().gene_symbol
+              ? event.target.data().gene_symbol
+              : event.target.data().eid
+          );
+          console.log(event);
+        });
+
+        cy.on("unselect", function(event) {
+          if (event.target.isEdge()) return;
+          clear();
+          event.target.data("label", "");
+          selectedIds = event.cy
+            .$(":selected")
+            .jsons()
+            .map(cur => cur.data);
+          for (var i = 0; i < selectedIds.length; i++) {
+            print(
+              selectedIds[i].eid,
+              selectedIds[i].gene_symbol,
+              selectedIds[i].modules
+            );
+          }
+
+          console.log(event);
+        });
+
+        clear();
+        selectedIds = cy
+          .$(":selected")
+          .jsons()
+          .filter(cur => !!!cur.data["source"]);
+        for (var i = 0; i < selectedIds.length; i++) {
+          print(
+            selectedIds[i].data.eid,
+            !!selectedIds[i].data.gene_symbol
+              ? selectedIds[i].data.gene_symbol
+              : "",
+            !!selectedIds[i].data.modules ? selectedIds[i].data.modules : ""
+          );
+        }
+
+        return cy;
+      }
+      function clear() {
+        document.getElementById("note").innerHTML = "";
+      }
+
+      function print(id, name, modules) {
+        document.getElementById("note").innerHTML +=
+          "<tr><td>" +
+          id +
+          "</td><td>" +
+          name +
+          "</td><td>" +
+          modules.join(", ") +
+          "</td></tr>";
+      }
+
+      window.onload = () => {
+      let data = [{"data": {"id": "ENSG00000141736", "eid": "ENSG00000141736", "modules": [0], "gene_symbol": "ERBB2", "score": 0.0}, "label": "ENSG00000141736", "selected": true}, {"data": {"id": "ENSG00000170312", "eid": "ENSG00000170312", "modules": [0], "gene_symbol": "CDK1", "score": 0.0}, "label": "ENSG00000170312", "selected": true}, {"data": {"id": "ENSG00000077514", "eid": "ENSG00000077514", "modules": [0], "gene_symbol": "POLD3", "score": 0.0}, "label": "ENSG00000077514", "selected": true}, {"data": {"id": "ENSG00000113448", "eid": "ENSG00000113448", "modules": [0], "gene_symbol": "PDE4D", "score": 0.0}, "label": "ENSG00000113448", "selected": true}, {"data": {"id": "ENSG00000112578", "eid": "ENSG00000112578", "modules": [0], "gene_symbol": "BYSL", "score": 0.0}, "label": "ENSG00000112578", "selected": true}, {"data": {"id": "ENSG00000099860", "eid": "ENSG00000099860", "modules": [0], "gene_symbol": "GADD45B", "score": 0.0}, "label": "ENSG00000099860", "selected": true}, {"data": {"id": "ENSG00000106459", "eid": "ENSG00000106459", "modules": [0], "gene_symbol": "NRF1", "score": 0.0}, "label": "ENSG00000106459", "selected": true}, {"data": {"id": "ENSG00000104881", "eid": "ENSG00000104881", "modules": [0], "gene_symbol": "PPP1R13L", "score": 0.0}, "label": "ENSG00000104881", "selected": true}, {"data": {"id": "ENSG00000170214", "eid": "ENSG00000170214", "modules": [0], "gene_symbol": "ADRA1B", "score": 0.0}, "label": "ENSG00000170214", "selected": true}, {"data": {"id": "ENSG00000138735", "eid": "ENSG00000138735", "modules": [0], "gene_symbol": "PDE5A", "score": 0.0}, "label": "ENSG00000138735", "selected": true}, {"data": {"id": "ENSG00000108443", "eid": "ENSG00000108443", "modules": [0], "gene_symbol": "RPS6KB1", "score": 0.0}, "label": "ENSG00000108443", "selected": true}, {"data": {"id": "ENSG00000080824", "eid": "ENSG00000080824", "modules": [0], "gene_symbol": "HSP90AA1", "score": 0.0}, "label": "ENSG00000080824", "selected": true}, {"data": {"id": "ENSG00000002330", "eid": "ENSG00000002330", "modules": [0], "gene_symbol": "BAD", "score": 0.0}, "label": "ENSG00000002330", "selected": true}, {"data": {"id": "ENSG00000168564", "eid": "ENSG00000168564", "modules": [0], "gene_symbol": "CDKN2AIP", "score": 0.0}, "label": "ENSG00000168564", "selected": true}, {"data": {"id": "ENSG00000112164", "eid": "ENSG00000112164", "modules": [0], "gene_symbol": "GLP1R", "score": 0.0}, "label": "ENSG00000112164", "selected": true}, {"data": {"id": "ENSG00000258643", "eid": "ENSG00000258643", "modules": [0], "gene_symbol": "BCL2L2-PABPN1", "score": 0.0}, "label": "ENSG00000258643", "selected": true}, {"data": {"id": "ENSG00000166033", "eid": "ENSG00000166033", "modules": [0], "gene_symbol": "HTRA1", "score": 0.0}, "label": "ENSG00000166033", "selected": true}, {"data": {"id": "ENSG00000181019", "eid": "ENSG00000181019", "modules": [0], "gene_symbol": "NQO1", "score": 0.0}, "label": "ENSG00000181019", "selected": true}, {"data": {"id": "ENSG00000152942", "eid": "ENSG00000152942", "modules": [0], "gene_symbol": "RAD17", "score": 0.0}, "label": "ENSG00000152942", "selected": true}, {"data": {"id": "ENSG00000112658", "eid": "ENSG00000112658", "modules": [0], "gene_symbol": "SRF", "score": 0.0}, "label": "ENSG00000112658", "selected": true}, {"data": {"id": "ENSG00000105193", "eid": "ENSG00000105193", "modules": [0], "gene_symbol": "RPS16", "score": 0.0}, "label": "ENSG00000105193", "selected": true}, {"data": {"id": "ENSG00000069696", "eid": "ENSG00000069696", "modules": [0], "gene_symbol": "DRD4", "score": 0.0}, "label": "ENSG00000069696", "selected": true}, {"data": {"id": "ENSG00000105486", "eid": "ENSG00000105486", "modules": [0], "gene_symbol": "LIG1", "score": 0.0}, "label": "ENSG00000105486", "selected": true}, {"data": {"id": "ENSG00000112576", "eid": "ENSG00000112576", "modules": [0], "gene_symbol": "CCND3", "score": 0.0}, "label": "ENSG00000112576", "selected": true}, {"data": {"id": "ENSG00000117020", "eid": "ENSG00000117020", "modules": [0], "gene_symbol": "AKT3", "score": 0.0}, "label": "ENSG00000117020", "selected": true}, {"data": {"id": "ENSG00000105221", "eid": "ENSG00000105221", "modules": [0], "gene_symbol": "AKT2", "score": 0.0}, "label": "ENSG00000105221", "selected": true}, {"data": {"id": "ENSG00000078747", "eid": "ENSG00000078747", "modules": [0], "gene_symbol": "ITCH", "score": 0.0}, "label": "ENSG00000078747", "selected": true}, {"data": {"id": "ENSG00000015676", "eid": "ENSG00000015676", "modules": [0], "gene_symbol": "NUDCD3", "score": 0.0}, "label": "ENSG00000015676", "selected": true}, {"data": {"id": "ENSG00000150907", "eid": "ENSG00000150907", "modules": [0], "gene_symbol": "FOXO1", "score": 0.0}, "label": "ENSG00000150907", "selected": true}, {"data": {"id": "ENSG00000166501", "eid": "ENSG00000166501", "modules": [0], "gene_symbol": "PRKCB", "score": 0.0}, "label": "ENSG00000166501", "selected": true}, {"data": {"id": "ENSG00000140939", "eid": "ENSG00000140939", "modules": [0], "gene_symbol": "NOL3", "score": 0.0}, "label": "ENSG00000140939", "selected": true}, {"data": {"id": "ENSG00000143514", "eid": "ENSG00000143514", "modules": [0], "gene_symbol": "TP53BP2", "score": 0.0}, "label": "ENSG00000143514", "selected": true}, {"data": {"id": "ENSG00000173482", "eid": "ENSG00000173482", "modules": [0], "gene_symbol": "PTPRM", "score": 0.0}, "label": "ENSG00000173482", "selected": true}, {"data": {"id": "ENSG00000073282", "eid": "ENSG00000073282", "modules": [0], "gene_symbol": "TP63", "score": 0.0}, "label": "ENSG00000073282", "selected": true}, {"data": {"id": "ENSG00000141510", "eid": "ENSG00000141510", "modules": [0], "gene_symbol": "TP53", "score": 0.0}, "label": "ENSG00000141510", "selected": true}, {"data": {"id": "ENSG00000197548", "eid": "ENSG00000197548", "modules": [0], "gene_symbol": "ATG7", "score": 0.0}, "label": "ENSG00000197548", "selected": true}, {"data": {"id": "ENSG00000007168", "eid": "ENSG00000007168", "modules": [0], "gene_symbol": "PAFAH1B1", "score": 0.0}, "label": "ENSG00000007168", "selected": true}, {"data": {"id": "ENSG00000151617", "eid": "ENSG00000151617", "modules": [0], "gene_symbol": "EDNRA", "score": 0.0}, "label": "ENSG00000151617", "selected": true}, {"data": {"id": "ENSG00000163918", "eid": "ENSG00000163918", "modules": [0], "gene_symbol": "RFC4", "score": 0.0}, "label": "ENSG00000163918", "selected": true}, {"data": {"id": "ENSG00000147889", "eid": "ENSG00000147889", "modules": [0], "gene_symbol": "CDKN2A", "score": 0.0}, "label": "ENSG00000147889", "selected": true}, {"data": {"id": "ENSG00000171522", "eid": "ENSG00000171522", "modules": [0], "gene_symbol": "PTGER4", "score": 0.0}, "label": "ENSG00000171522", "selected": true}, {"data": {"id": "ENSG00000103266", "eid": "ENSG00000103266", "modules": [0], "gene_symbol": "STUB1", "score": 0.0}, "label": "ENSG00000103266", "selected": true}, {"data": {"id": "ENSG00000123143", "eid": "ENSG00000123143", "modules": [0], "gene_symbol": "PKN1", "score": 0.0}, "label": "ENSG00000123143", "selected": true}, {"data": {"id": "ENSG00000168411", "eid": "ENSG00000168411", "modules": [0], "gene_symbol": "RFWD3", "score": 0.0}, "label": "ENSG00000168411", "selected": true}, {"data": {"id": "ENSG00000133119", "eid": "ENSG00000133119", "modules": [0], "gene_symbol": "RFC3", "score": 0.0}, "label": "ENSG00000133119", "selected": true}, {"data": {"id": "ENSG00000152669", "eid": "ENSG00000152669", "modules": [0], "gene_symbol": "CCNO", "score": 0.0}, "label": "ENSG00000152669", "selected": true}, {"data": {"id": "ENSG00000169252", "eid": "ENSG00000169252", "modules": [0], "gene_symbol": "ADRB2", "score": 0.0}, "label": "ENSG00000169252", "selected": true}, {"data": {"id": "ENSG00000175305", "eid": "ENSG00000175305", "modules": [0], "gene_symbol": "CCNE2", "score": 0.0}, "label": "ENSG00000175305", "selected": true}, {"data": {"id": "ENSG00000105173", "eid": "ENSG00000105173", "modules": [0], "gene_symbol": "CCNE1", "score": 0.0}, "label": "ENSG00000105173", "selected": true}, {"data": {"id": "ENSG00000068745", "eid": "ENSG00000068745", "modules": [0], "gene_symbol": "IP6K2", "score": 0.0}, "label": "ENSG00000068745", "selected": true}, {"data": {"id": "ENSG00000173207", "eid": "ENSG00000173207", "modules": [0], "gene_symbol": "CKS1B", "score": 0.0}, "label": "ENSG00000173207", "selected": true}, {"data": {"id": "ENSG00000150995", "eid": "ENSG00000150995", "modules": [0], "gene_symbol": "ITPR1", "score": 0.0}, "label": "ENSG00000150995", "selected": true}, {"data": {"id": "ENSG00000040199", "eid": "ENSG00000040199", "modules": [0], "gene_symbol": "PHLPP2", "score": 0.0}, "label": "ENSG00000040199", "selected": true}, {"data": {"id": "ENSG00000161270", "eid": "ENSG00000161270", "modules": [0], "gene_symbol": "NPHS1", "score": 0.0}, "label": "ENSG00000161270", "selected": true}, {"data": {"id": "ENSG00000276155", "eid": "ENSG00000276155", "modules": [0], "gene_symbol": "ENSG00000276155", "score": 0.0}, "label": "ENSG00000276155", "selected": true}, {"data": {"id": "ENSG00000140326", "eid": "ENSG00000140326", "modules": [0], "gene_symbol": "CDAN1", "score": 0.0}, "label": "ENSG00000140326", "selected": true}, {"data": {"id": "ENSG00000158711", "eid": "ENSG00000158711", "modules": [0], "gene_symbol": "ELK4", "score": 0.0}, "label": "ENSG00000158711", "selected": true}, {"data": {"id": "ENSG00000039068", "eid": "ENSG00000039068", "modules": [0], "gene_symbol": "CDH1", "score": 0.0}, "label": "ENSG00000039068", "selected": true}, {"data": {"id": "ENSG00000159445", "eid": "ENSG00000159445", "modules": [0], "gene_symbol": "THEM4", "score": 0.0}, "label": "ENSG00000159445", "selected": true}, {"data": {"id": "ENSG00000132646", "eid": "ENSG00000132646", "modules": [0], "gene_symbol": "PCNA", "score": 0.0}, "label": "ENSG00000132646", "selected": true}, {"data": {"id": "ENSG00000119487", "eid": "ENSG00000119487", "modules": [0], "gene_symbol": "MAPKAP1", "score": 0.0}, "label": "ENSG00000119487", "selected": true}, {"data": {"id": "ENSG00000102098", "eid": "ENSG00000102098", "modules": [0], "gene_symbol": "SCML2", "score": 0.0}, "label": "ENSG00000102098", "selected": true}, {"data": {"id": "ENSG00000049541", "eid": "ENSG00000049541", "modules": [0], "gene_symbol": "RFC2", "score": 0.0}, "label": "ENSG00000049541", "selected": true}, {"data": {"id": "ENSG00000124762", "eid": "ENSG00000124762", "modules": [0], "gene_symbol": "CDKN1A", "score": 0.0}, "label": "ENSG00000124762", "selected": true}, {"data": {"id": "ENSG00000163565", "eid": "ENSG00000163565", "modules": [0], "gene_symbol": "IFI16", "score": 0.0}, "label": "ENSG00000163565", "selected": true}, {"data": {"id": "ENSG00000178568", "eid": "ENSG00000178568", "modules": [0], "gene_symbol": "ERBB4", "score": 0.0}, "label": "ENSG00000178568", "selected": true}, {"data": {"id": "ENSG00000160193", "eid": "ENSG00000160193", "modules": [0], "gene_symbol": "WDR4", "score": 0.0}, "label": "ENSG00000160193", "selected": true}, {"data": {"id": "ENSG00000158941", "eid": "ENSG00000158941", "modules": [0], "gene_symbol": "CCAR2", "score": 0.0}, "label": "ENSG00000158941", "selected": true}, {"data": {"id": "ENSG00000102921", "eid": "ENSG00000102921", "modules": [0], "gene_symbol": "N4BP1", "score": 0.0}, "label": "ENSG00000102921", "selected": true}, {"data": {"id": "ENSG00000100526", "eid": "ENSG00000100526", "modules": [0], "gene_symbol": "CDKN3", "score": 0.0}, "label": "ENSG00000100526", "selected": true}, {"data": {"id": "ENSG00000130222", "eid": "ENSG00000130222", "modules": [0], "gene_symbol": "GADD45G", "score": 0.0}, "label": "ENSG00000130222", "selected": true}, {"data": {"id": "ENSG00000137486", "eid": "ENSG00000137486", "modules": [0], "gene_symbol": "ARRB1", "score": 0.0}, "label": "ENSG00000137486", "selected": true}, {"data": {"id": "ENSG00000250506", "eid": "ENSG00000250506", "modules": [0], "gene_symbol": "CDK3", "score": 0.0}, "label": "ENSG00000250506", "selected": true}, {"data": {"id": "ENSG00000143499", "eid": "ENSG00000143499", "modules": [0], "gene_symbol": "SMYD2", "score": 0.0}, "label": "ENSG00000143499", "selected": true}, {"data": {"id": "ENSG00000131023", "eid": "ENSG00000131023", "modules": [0], "gene_symbol": "LATS1", "score": 0.0}, "label": "ENSG00000131023", "selected": true}, {"data": {"id": "ENSG00000105810", "eid": "ENSG00000105810", "modules": [0], "gene_symbol": "CDK6", "score": 0.0}, "label": "ENSG00000105810", "selected": true}, {"data": {"id": "ENSG00000109971", "eid": "ENSG00000109971", "modules": [0], "gene_symbol": "HSPA8", "score": 0.0}, "label": "ENSG00000109971", "selected": true}, {"data": {"id": "ENSG00000145386", "eid": "ENSG00000145386", "modules": [0], "gene_symbol": "CCNA2", "score": 0.0}, "label": "ENSG00000145386", "selected": true}, {"data": {"id": "ENSG00000058091", "eid": "ENSG00000058091", "modules": [0], "gene_symbol": "CDK14", "score": 0.0}, "label": "ENSG00000058091", "selected": true}, {"data": {"id": "ENSG00000168496", "eid": "ENSG00000168496", "modules": [0], "gene_symbol": "FEN1", "score": 0.0}, "label": "ENSG00000168496", "selected": true}, {"data": {"id": "ENSG00000043591", "eid": "ENSG00000043591", "modules": [0], "gene_symbol": "ADRB1", "score": 0.0}, "label": "ENSG00000043591", "selected": true}, {"data": {"id": "ENSG00000059728", "eid": "ENSG00000059728", "modules": [0], "gene_symbol": "MXD1", "score": 0.0}, "label": "ENSG00000059728", "selected": true}, {"data": {"id": "ENSG00000141480", "eid": "ENSG00000141480", "modules": [0], "gene_symbol": "ARRB2", "score": 0.0}, "label": "ENSG00000141480", "selected": true}, {"data": {"id": "ENSG00000116717", "eid": "ENSG00000116717", "modules": [0], "gene_symbol": "GADD45A", "score": 0.0}, "label": "ENSG00000116717", "selected": true}, {"data": {"id": "ENSG00000114062", "eid": "ENSG00000114062", "modules": [0], "gene_symbol": "UBE3A", "score": 0.0}, "label": "ENSG00000114062", "selected": true}, {"data": {"id": "ENSG00000111276", "eid": "ENSG00000111276", "modules": [0], "gene_symbol": "CDKN1B", "score": 0.0}, "label": "ENSG00000111276", "selected": true}, {"data": {"id": "ENSG00000189060", "eid": "ENSG00000189060", "modules": [0], "gene_symbol": "H1F0", "score": 0.0}, "label": "ENSG00000189060", "selected": true}, {"data": {"id": "ENSG00000123374", "eid": "ENSG00000123374", "modules": [0], "gene_symbol": "CDK2", "score": 0.0}, "label": "ENSG00000123374", "selected": true}, {"data": {"id": "ENSG00000110092", "eid": "ENSG00000110092", "modules": [0], "gene_symbol": "CCND1", "score": 0.0}, "label": "ENSG00000110092", "selected": true}, {"data": {"id": "ENSG00000142208", "eid": "ENSG00000142208", "modules": [0], "gene_symbol": "AKT1", "score": 0.0}, "label": "ENSG00000142208", "selected": true}, {"data": {"id": "ENSG00000117676", "eid": "ENSG00000117676", "modules": [0], "gene_symbol": "RPS6KA1", "score": 0.0}, "label": "ENSG00000117676", "selected": true}, {"data": {"id": "ENSG00000187531", "eid": "ENSG00000187531", "modules": [0], "gene_symbol": "SIRT7", "score": 0.0}, "label": "ENSG00000187531", "selected": true}, {"data": {"id": "ENSG00000141736_ENSG00000178568", "source": "ENSG00000141736", "target": "ENSG00000178568"}, "label": "-"}, {"data": {"id": "ENSG00000141736_ENSG00000080824", "source": "ENSG00000141736", "target": "ENSG00000080824"}, "label": "-"}, {"data": {"id": "ENSG00000170312_ENSG00000111276", "source": "ENSG00000170312", "target": "ENSG00000111276"}, "label": "-"}, {"data": {"id": "ENSG00000170312_ENSG00000099860", "source": "ENSG00000170312", "target": "ENSG00000099860"}, "label": "-"}, {"data": {"id": "ENSG00000170312_ENSG00000131023", "source": "ENSG00000170312", "target": "ENSG00000131023"}, "label": "-"}, {"data": {"id": "ENSG00000077514_ENSG00000132646", "source": "ENSG00000077514", "target": "ENSG00000132646"}, "label": "-"}, {"data": {"id": "ENSG00000113448_ENSG00000141480", "source": "ENSG00000113448", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000112578_ENSG00000178568", "source": "ENSG00000112578", "target": "ENSG00000178568"}, "label": "-"}, {"data": {"id": "ENSG00000106459_ENSG00000187531", "source": "ENSG00000106459", "target": "ENSG00000187531"}, "label": "-"}, {"data": {"id": "ENSG00000106459_ENSG00000110092", "source": "ENSG00000106459", "target": "ENSG00000110092"}, "label": "-"}, {"data": {"id": "ENSG00000104881_ENSG00000141510", "source": "ENSG00000104881", "target": "ENSG00000141510"}, "label": "-"}, {"data": {"id": "ENSG00000170214_ENSG00000069696", "source": "ENSG00000170214", "target": "ENSG00000069696"}, "label": "-"}, {"data": {"id": "ENSG00000138735_ENSG00000150995", "source": "ENSG00000138735", "target": "ENSG00000150995"}, "label": "-"}, {"data": {"id": "ENSG00000108443_ENSG00000059728", "source": "ENSG00000108443", "target": "ENSG00000059728"}, "label": "-"}, {"data": {"id": "ENSG00000080824_ENSG00000007168", "source": "ENSG00000080824", "target": "ENSG00000007168"}, "label": "-"}, {"data": {"id": "ENSG00000080824_ENSG00000141510", "source": "ENSG00000080824", "target": "ENSG00000141510"}, "label": "-"}, {"data": {"id": "ENSG00000002330_ENSG00000258643", "source": "ENSG00000002330", "target": "ENSG00000258643"}, "label": "-"}, {"data": {"id": "ENSG00000168564_ENSG00000147889", "source": "ENSG00000168564", "target": "ENSG00000147889"}, "label": "-"}, {"data": {"id": "ENSG00000112164_ENSG00000137486", "source": "ENSG00000112164", "target": "ENSG00000137486"}, "label": "-"}, {"data": {"id": "ENSG00000258643_ENSG00000143514", "source": "ENSG00000258643", "target": "ENSG00000143514"}, "label": "-"}, {"data": {"id": "ENSG00000166033_ENSG00000276155", "source": "ENSG00000166033", "target": "ENSG00000276155"}, "label": "-"}, {"data": {"id": "ENSG00000181019_ENSG00000141510", "source": "ENSG00000181019", "target": "ENSG00000141510"}, "label": "-"}, {"data": {"id": "ENSG00000152942_ENSG00000049541", "source": "ENSG00000152942", "target": "ENSG00000049541"}, "label": "-"}, {"data": {"id": "ENSG00000152942_ENSG00000163918", "source": "ENSG00000152942", "target": "ENSG00000163918"}, "label": "-"}, {"data": {"id": "ENSG00000152942_ENSG00000133119", "source": "ENSG00000152942", "target": "ENSG00000133119"}, "label": "-"}, {"data": {"id": "ENSG00000112658_ENSG00000158711", "source": "ENSG00000112658", "target": "ENSG00000158711"}, "label": "-"}, {"data": {"id": "ENSG00000105193_ENSG00000160193", "source": "ENSG00000105193", "target": "ENSG00000160193"}, "label": "-"}, {"data": {"id": "ENSG00000069696_ENSG00000043591", "source": "ENSG00000069696", "target": "ENSG00000043591"}, "label": "-"}, {"data": {"id": "ENSG00000105486_ENSG00000123374", "source": "ENSG00000105486", "target": "ENSG00000123374"}, "label": "-"}, {"data": {"id": "ENSG00000112576_ENSG00000058091", "source": "ENSG00000112576", "target": "ENSG00000058091"}, "label": "-"}, {"data": {"id": "ENSG00000117020_ENSG00000145386", "source": "ENSG00000117020", "target": "ENSG00000145386"}, "label": "-"}, {"data": {"id": "ENSG00000105221_ENSG00000141480", "source": "ENSG00000105221", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000105221_ENSG00000145386", "source": "ENSG00000105221", "target": "ENSG00000145386"}, "label": "-"}, {"data": {"id": "ENSG00000078747_ENSG00000141510", "source": "ENSG00000078747", "target": "ENSG00000141510"}, "label": "-"}, {"data": {"id": "ENSG00000078747_ENSG00000073282", "source": "ENSG00000078747", "target": "ENSG00000073282"}, "label": "-"}, {"data": {"id": "ENSG00000078747_ENSG00000102921", "source": "ENSG00000078747", "target": "ENSG00000102921"}, "label": "-"}, {"data": {"id": "ENSG00000015676_ENSG00000007168", "source": "ENSG00000015676", "target": "ENSG00000007168"}, "label": "-"}, {"data": {"id": "ENSG00000150907_ENSG00000142208", "source": "ENSG00000150907", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000166501_ENSG00000123143", "source": "ENSG00000166501", "target": "ENSG00000123143"}, "label": "-"}, {"data": {"id": "ENSG00000140939_ENSG00000141510", "source": "ENSG00000140939", "target": "ENSG00000141510"}, "label": "-"}, {"data": {"id": "ENSG00000143514_ENSG00000073282", "source": "ENSG00000143514", "target": "ENSG00000073282"}, "label": "-"}, {"data": {"id": "ENSG00000143514_ENSG00000039068", "source": "ENSG00000143514", "target": "ENSG00000039068"}, "label": "-"}, {"data": {"id": "ENSG00000173482_ENSG00000039068", "source": "ENSG00000173482", "target": "ENSG00000039068"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000137486", "source": "ENSG00000141510", "target": "ENSG00000137486"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000143499", "source": "ENSG00000141510", "target": "ENSG00000143499"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000114062", "source": "ENSG00000141510", "target": "ENSG00000114062"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000163565", "source": "ENSG00000141510", "target": "ENSG00000163565"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000158941", "source": "ENSG00000141510", "target": "ENSG00000158941"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000197548", "source": "ENSG00000141510", "target": "ENSG00000197548"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000168411", "source": "ENSG00000141510", "target": "ENSG00000168411"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000068745", "source": "ENSG00000141510", "target": "ENSG00000068745"}, "label": "-"}, {"data": {"id": "ENSG00000141510_ENSG00000147889", "source": "ENSG00000141510", "target": "ENSG00000147889"}, "label": "-"}, {"data": {"id": "ENSG00000151617_ENSG00000141480", "source": "ENSG00000151617", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000163918_ENSG00000132646", "source": "ENSG00000163918", "target": "ENSG00000132646"}, "label": "-"}, {"data": {"id": "ENSG00000147889_ENSG00000105810", "source": "ENSG00000147889", "target": "ENSG00000105810"}, "label": "-"}, {"data": {"id": "ENSG00000171522_ENSG00000137486", "source": "ENSG00000171522", "target": "ENSG00000137486"}, "label": "-"}, {"data": {"id": "ENSG00000103266_ENSG00000276155", "source": "ENSG00000103266", "target": "ENSG00000276155"}, "label": "-"}, {"data": {"id": "ENSG00000103266_ENSG00000142208", "source": "ENSG00000103266", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000103266_ENSG00000109971", "source": "ENSG00000103266", "target": "ENSG00000109971"}, "label": "-"}, {"data": {"id": "ENSG00000123143_ENSG00000142208", "source": "ENSG00000123143", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000152669_ENSG00000132646", "source": "ENSG00000152669", "target": "ENSG00000132646"}, "label": "-"}, {"data": {"id": "ENSG00000169252_ENSG00000141480", "source": "ENSG00000169252", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000175305_ENSG00000102098", "source": "ENSG00000175305", "target": "ENSG00000102098"}, "label": "-"}, {"data": {"id": "ENSG00000105173_ENSG00000111276", "source": "ENSG00000105173", "target": "ENSG00000111276"}, "label": "-"}, {"data": {"id": "ENSG00000105173_ENSG00000124762", "source": "ENSG00000105173", "target": "ENSG00000124762"}, "label": "-"}, {"data": {"id": "ENSG00000173207_ENSG00000250506", "source": "ENSG00000173207", "target": "ENSG00000250506"}, "label": "-"}, {"data": {"id": "ENSG00000173207_ENSG00000110092", "source": "ENSG00000173207", "target": "ENSG00000110092"}, "label": "-"}, {"data": {"id": "ENSG00000150995_ENSG00000142208", "source": "ENSG00000150995", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000040199_ENSG00000142208", "source": "ENSG00000040199", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000161270_ENSG00000141480", "source": "ENSG00000161270", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000140326_ENSG00000130222", "source": "ENSG00000140326", "target": "ENSG00000130222"}, "label": "-"}, {"data": {"id": "ENSG00000140326_ENSG00000116717", "source": "ENSG00000140326", "target": "ENSG00000116717"}, "label": "-"}, {"data": {"id": "ENSG00000158711_ENSG00000187531", "source": "ENSG00000158711", "target": "ENSG00000187531"}, "label": "-"}, {"data": {"id": "ENSG00000039068_ENSG00000110092", "source": "ENSG00000039068", "target": "ENSG00000110092"}, "label": "-"}, {"data": {"id": "ENSG00000159445_ENSG00000142208", "source": "ENSG00000159445", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000132646_ENSG00000160193", "source": "ENSG00000132646", "target": "ENSG00000160193"}, "label": "-"}, {"data": {"id": "ENSG00000132646_ENSG00000130222", "source": "ENSG00000132646", "target": "ENSG00000130222"}, "label": "-"}, {"data": {"id": "ENSG00000132646_ENSG00000145386", "source": "ENSG00000132646", "target": "ENSG00000145386"}, "label": "-"}, {"data": {"id": "ENSG00000119487_ENSG00000142208", "source": "ENSG00000119487", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000102098_ENSG00000124762", "source": "ENSG00000102098", "target": "ENSG00000124762"}, "label": "-"}, {"data": {"id": "ENSG00000124762_ENSG00000058091", "source": "ENSG00000124762", "target": "ENSG00000058091"}, "label": "-"}, {"data": {"id": "ENSG00000160193_ENSG00000168496", "source": "ENSG00000160193", "target": "ENSG00000168496"}, "label": "-"}, {"data": {"id": "ENSG00000100526_ENSG00000123374", "source": "ENSG00000100526", "target": "ENSG00000123374"}, "label": "-"}, {"data": {"id": "ENSG00000100526_ENSG00000250506", "source": "ENSG00000100526", "target": "ENSG00000250506"}, "label": "-"}, {"data": {"id": "ENSG00000131023_ENSG00000123374", "source": "ENSG00000131023", "target": "ENSG00000123374"}, "label": "-"}, {"data": {"id": "ENSG00000145386_ENSG00000142208", "source": "ENSG00000145386", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000043591_ENSG00000141480", "source": "ENSG00000043591", "target": "ENSG00000141480"}, "label": "-"}, {"data": {"id": "ENSG00000059728_ENSG00000142208", "source": "ENSG00000059728", "target": "ENSG00000142208"}, "label": "-"}, {"data": {"id": "ENSG00000059728_ENSG00000117676", "source": "ENSG00000059728", "target": "ENSG00000117676"}, "label": "-"}, {"data": {"id": "ENSG00000111276_ENSG00000117676", "source": "ENSG00000111276", "target": "ENSG00000117676"}, "label": "-"}, {"data": {"id": "ENSG00000189060_ENSG00000123374", "source": "ENSG00000189060", "target": "ENSG00000123374"}, "label": "-"}];
+      let max_score =
+          Math.max(
+            ...data.map(cur => {
+              return cur["data"]["score"];
+            }).filter(cur => !!cur)
+          ) + 1;
+        let max_module =
+          Math.max(
+            ...data.map(cur => {
+                return !!cur["data"]["modules"] ? cur["data"]["modules"] : [];
+              })
+              .reduce((a, c) => a.concat(c), [])
+          ) + 1;
+      data = data.map(cur => {cur["label"] = !!cur["data"]["gene_symbol"] ? cur["data"]["gene_symbol"] : cur["data"]["eid"];
+              cur["data"]["node_color"] = bwr(
+                max_score,
+                cur["data"]["score"],
+                1,
+                1
+              );
+              cur["data"]["line_color"] = rainbow(
+                max_module,
+                cur["data"]["modules"],
+                0.75,
+                0.75
+              );
+              return cur;})
+      let cy1 = load_network(data)
+      window.cy=cy1;
+      generateTable()
+      generateEnrichedModulesReport()
+      generateDiseaseReport()
+    };
+
+  </script>
+
+
+
+
+  <style>
+    /* The Cytoscape Web container must have its dimensions set. */
+    html,
+    body {
+      position: relative;
+      height: 100% !important;
+      width: 100% !important;
+      padding: 0;
+      margin: 0;
+    }
+
+    #cy1, #cy2 {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .image-wrapper {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      opacity: 1;
+    }
+
+    .image-wrapper.fade-out {
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+  </style>
+
+</head>
+
+<body>
+  <noscript>
+    You need to enable JavaScript to run this app.
+  </noscript>
+  <div class='container m-3' >
+    <div class='row' style="width: 100vw">
+      <div class='col-md-3'>
+        <div class="row">
+          <div id="root"></div>
+        </div>
+        <div class="row m-2">
+          <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">name</th>
+                    <th scope="col">modules</th>
+                  </tr>
+                </thead>
+                <tbody div id="note"></tbody>
+              </table>
+	<button onclick="showActiveGenes()" class="btn btn-info"> show labels on genes</button>
+        </div>
+      </div>
+      <div class='col-md-9'>
+           <div id="cytoscapeweb" style="height: 70vh;width: 90vw">
+        </div>
+      </div>
+    </div>
+    <div class='row' style="height: 100vh;width: 100vw">
+	<div class='col-md-12'>
+		 <div><h3>Total numer of genes: 92</h3></div>
+                 <div id="disease_title"></div>
+		 <div class='row'>
+			<div class='col-md-3'>
+                 		<div id="disease_content"></div>
+                 	</div>
+		 </div>
+		 <div id="num_of_enriched_terms_title"></div>
+		 <div class='row'>
+			<div class='col-md-3'>
+                 		<div id="num_of_enriched_terms"></div>
+                 	</div>
+		 </div>
+		 <div id="hg_total_number"></div>
+		 <div id="hg_report"></div>
+	</div>
+    </div>
+  </div>
+
+  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+</body>
+
+</html>
