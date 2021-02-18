@@ -1,6 +1,6 @@
 # DOMINO webinized - Finding active modules has never been easier!
 
-DOMINO as a web-based service is avaliable [here](http://rack-shamir3.cs.tau.ac.il:8000/)
+DOMINO as a web-based service is avaliable [here](http://rack-shamir3.cs.tau.ac.il:8000/) (only via TAU VPN).
 
 The original standalone version of DOMINO is available [here](https://github.com/Shamir-Lab/DOMINO)
 
