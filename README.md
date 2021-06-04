@@ -11,6 +11,18 @@ To run a domino server perform the following steps:
 ```
     git clone https://github.com/hag007/domino_web.git
     cd domino_web
+```
+3. In the file `config.json`, Change the `conf_server` as follows:
+```
+const conf_server = {
+  IP_ADDRESS: "your DNS/server IP",
+  PYTHON_ENV: "/path/to/domino-env",
+  DOMINO_PATH: "/path/to/DOMINO/"
+
+};
+```
+4. Complete the setup process
+```
     npm install     # Install dependencies
     npm run start   # Build the client side: Needs to be done each time client side files are modified
     node server     # run the server
