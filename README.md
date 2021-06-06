@@ -24,7 +24,7 @@ const conf_server = {
 4. Complete the setup process
 ```
     npm install     # Install dependencies
-    npm run start   # Build the client side: Needs to be done each time client side files are modified
+    npm run build   # Build the client side: Needs to be done each time client side files are modified
     node server     # run the server
 ```
 
