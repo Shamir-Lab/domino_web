@@ -72,28 +72,37 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
       req.files[cur + "_file_content"]
     ]);
 
-    zipped.map(files => {
-      let p = new Promise((resolve, reject) => {
-        if (files[0] != "") {
-          console.log("about to start moving " + files[0]);
-          files[1].mv(`${__dirname}/public/${files[0]}`, function(err) {
+    /** @author: Nima Rahmanian
+     * Moves the user's uploaded files to a directory accessible by the
+     * DOMINO algorithm.
+     * @param response: the POST request response object.
+     * @returns: a Promise (to move the file)
+     * */
+    const move_file = (file_name, file_contents, response) => {
+      return new Promise((resolve, reject) => {
+        if (file_name === "") {
+          resolve("");
+        } else {
+          console.log("about to start moving " + file_name);
+          file_contents.mv(`${__dirname}/public/${file_name}`, function(err) {
             console.log("got cb");
             if (err) {
               console.log("error while moving file: \n" + err);
               resolve();
-              res.status(err.status || 500);
-              res.render("error");
-              return;
+              response.status(err.status || 500);
+              response.render("error");
+              return; // is this necessary?
             } else {
-              console.log("resolved " + files[0]);
-              resolve(files[0]);
+              console.log("resolved " + file_name);
+              resolve(file_name);
             }
           });
-        } else {
-          resolve("");
         }
       });
-      promises.push(p);
+    }
+
+    zipped.map(files => {
+      promises.push(move_file(files[0], files[1], res));
     });
   } catch (e) {
     res.status(e.status || 500);
