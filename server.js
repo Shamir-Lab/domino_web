@@ -64,27 +64,29 @@ let modules_indices = (c, s) =>
 app.post("/upload", timeout("10m"), (req, res, next) => {
   console.log(req.body)
   console.log("start.. " + req.body["algo"]);
+
+  // make directory to store user's file on server
+  let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
+  let userDirectory = `${__dirname}/public/${req.body["active_genes_file_name"]}%${req.body["network_file_name"]}%${timestamp}`;
+  fs.mkdirSync(userDirectory);
+  fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
+
   promises = [];
   let file_types = ["active_genes", "network"];
   try {
-    let zipped = file_types.map(cur => [
-      req.body[cur + "_file_name"],
-      req.files[cur + "_file_content"]
-    ]);
-
     /** @author: Nima Rahmanian
      * Moves the user's uploaded files to a directory accessible by the
      * DOMINO algorithm.
      * @param response: the POST request response object.
      * @returns: a Promise (to move the file)
      * */
-    const move_file = (file_name, file_contents, response) => {
+    const moveFile = (userDirectory, fileName, fileContents, response) => {
       return new Promise((resolve, reject) => {
-        if (file_name === "") {
+        if (fileName === "") {
           resolve("");
         } else {
-          console.log("about to start moving " + file_name);
-          file_contents.mv(`${__dirname}/public/${file_name}`, function(err) {
+          console.log("about to start moving " + fileName);
+          fileContents.mv(`${userDirectory}/${fileName}`, function(err) {
             console.log("got cb");
             if (err) {
               console.log("error while moving file: \n" + err);
@@ -93,16 +95,18 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               response.render("error");
               return; // is this necessary?
             } else {
-              console.log("resolved " + file_name);
-              resolve(file_name);
+              console.log("resolved " + fileName);
+              resolve(fileName);
             }
           });
         }
       });
     }
 
-    zipped.map(files => {
-      promises.push(move_file(files[0], files[1], res));
+    file_types.map(cur => {
+      let fileName = req.body[cur + "_file_name"];
+      let fileContents = req.files[cur + "_file_content"];
+      promises.push(moveFile(userDirectory, fileName, fileContents, res));
     });
   } catch (e) {
     res.status(e.status || 500);
@@ -111,10 +115,13 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     res.render("error");
     return;
   }
+
   Promise.all(promises).then(values => {
     console.log("about to start py execution");
+    let algExecutor =
+        `bash domino_runner.sh ${userDirectory}/${req.body["active_genes_file_name"]} ${userDirectory}/${req.body["network_file_name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
     exec(
-      "bash domino_runner.sh "+req.body["active_genes_file_name"]+"  "+req.body["network_file_name"]+"  "+"public"+" "+conf.PYTHON_ENV,
+      algExecutor,
       { cwd: conf.BASE_FOLDER },
       (err, stdout, stderr) => {
         console.log(stdout)
