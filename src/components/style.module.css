@@ -1,0 +1,14 @@
+.file_header {
+  font-size: 20px;
+}
+
+.file_desc {
+  font-size: 15px;
+  font-style: italic;
+}
+
+.file_block {
+  width: 80%;
+  margin: 10px auto 10px auto;
+
+}

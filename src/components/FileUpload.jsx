@@ -1,3 +1,146 @@
+import React, { useState } from "react";
+import axios from "axios";
+import { Spinner } from "@chevtek/react-spinners";
+import { spinnerService } from "@chevtek/react-spinners";
+import fileStructure from "./public/files";
+import { conf } from "./config.js";
+import {file_header, file_desc, file_block} from "./style.module.css";
+
+const FileUpload = (props) => {
+    console.log("here", fileStructure);
+    const emptyDict = fileStructure.files.reduce((obj, val) => ({
+        ...obj,
+        [val]: ""
+    }), {});
+    const [inputFileNames, setInputFileNames] = useState(emptyDict);
+    const [inputFileContents, setInputFileContents] = useState(emptyDict);
+
+    const uploadFiles = () => {
+        console.log("prepare for uploading...");
+        spinnerService.show("mySpinner");
+
+        const data = new FormData();
+        for (const file in fileStructure.files) {
+            data.append(`${file.name}_file_name`, inputFileNames[file.name]);
+            data.append(`${file.name}_file_contents`, inputFileContents[file.name].files[0]);
+        }
+
+        axios
+            .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
+            .then(response => {
+                spinnerService.hide("mySpinner");
+                console.log(
+                    "successfully uploaded: " + fileStructure.files.map(file => file.name).join(", ")
+                );
+
+                // redirect to module component
+                props.history.push({
+                    pathname : '/modules',
+                    state: {
+                        active_gene_file_name: inputFileNames["Active genes file"],
+                        network_file_name: inputFileNames["Network file"],
+                        modules: response.data.modules,
+                        zipURL: "/test.zip",
+                    }
+                });
+                console.log({
+                    active_gene_file_name: inputFileNames["Active genes file"],
+                    modules: response.data.modules
+                });
+            })
+            .catch(error => {
+                spinnerService.hide("mySpinner");
+                console.log(error);
+            });
+    }
+    console.log("here2", fileStructure);
+
+    const fileUploadList = (
+        fileStructure.files.map(file =>
+            <div className = {file_block} key = {file.name}>
+                {/* File information */}
+                <div style = {{textAlign: "left"}}>
+                    <p className={file_header}>{file.name}</p>
+                    <p className={file_desc}>
+                        {(file.maxSize === 0) ?
+                            <></>:
+                            <>
+                                <span>Maximum file size: {file.maxSize}MB</span><br></br>
+                            </>
+                        }
+                        Recommended file type(s): {file.type} <br></br>
+                        {file.description}
+                    </p>
+                </div>
+
+                {/* Form */}
+                <div className="custom-file">
+                    <input
+                        className="form-control input-sm custom-file-input"
+                        type="file"
+                        onChange={e => {
+                            let name = "";
+                            if (e.target.files[0] !== undefined) {
+                                name = e.target.files[0].name;
+                            }
+                            setInputFileNames(prev => ({
+                                ...prev,
+                                [file.name]: name
+                            }))
+                        }}
+                        ref={ref => {
+                            setInputFileContents(prev => ({
+                            ...prev,
+                            [file.name]: ref
+                            }))
+                        }}
+                    />
+                    <label className="custom-file-label">
+                        Choose file...
+                    </label>
+
+                    <div className="form-group">
+                        <input
+                            className="form-control"
+                            type="text"
+                            value={inputFileNames[file.name]}
+                            readOnly={true}
+                        />
+                    </div>
+                </div>
+            </div>
+        )
+    );
+
+    return (
+        <>
+            <div className="jumbotron">
+                <p style={{fontSize: "45px", textAlign: "center"}}>
+                    File Upload
+                </p>
+            </div>
+            {fileUploadList}
+            <div style = {{textAlign: "right", margin: "auto", width: "80%"}}>
+                <button className="btn btn-primary"
+                        onClick={uploadFiles}
+                >Upload</button>
+                <Spinner name="mySpinner">
+                    <img
+                        src="https://i.gifer.com/7plX.gif"
+                        style={{ height: "20px", width: "20px" }}
+                    />
+                </Spinner>
+            </div>
+            <footer className="text-center text-lg-start" style = {{backgroundColor: "#e9ecef"}}>
+                Footer
+            </footer>
+        </>
+    );
+};
+
+export default FileUpload;
+
+/*
 import React, { Component } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
@@ -59,16 +202,18 @@ export default class FileUpload extends Component {
         that.setState({ active_gene_file_name: response.data.active_gene_file_name });
         that.setState({ network_file_name: response.data.network_file_name });
         that.setState({ modules: response.data.modules });
-        // history.push({pathname: '/modules', state:{
-        //         active_gene_file_name: this.state.active_gene_file_name,
-        //         modules: this.state.modules
-        //       }});
+
         spinnerService.hide("mySpinner");
-        that.props.history.push({pathname : '/modules', state: {
-    active_gene_file_name: that.state.active_gene_file_name,
-    network_file_name: that.state.network_file_name,
-    modules: that.state.modules
-  }});   
+        // redirect to module component
+        that.props.history.push({
+            pathname : '/modules',
+            state: {
+                active_gene_file_name: that.state.active_gene_file_name,
+                network_file_name: that.state.network_file_name,
+                modules: that.state.modules,
+                zipURL: "/test.zip",
+            }
+        });
         console.log({
    active_gene_file_name: response.data.active_gene_file_name,
    modules: response.data.modules
@@ -153,4 +298,6 @@ export default class FileUpload extends Component {
       </React.Fragment>
     );
   }
+
 }
+ */
