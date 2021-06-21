@@ -6,14 +6,27 @@ import fileStructure from "./public/files";
 import { conf } from "./config.js";
 import {file_header, file_desc, file_block} from "./style.module.css";
 
+/**
+ {
+    "Active gene file": {
+        userFileName: "active_genes.txt",
+        ref: ...
+    },
+    ...
+ }
+ */
+
 const FileUpload = (props) => {
-    console.log("here", fileStructure);
-    const emptyDict = fileStructure.files.reduce((obj, val) => ({
-        ...obj,
-        [val]: ""
-    }), {});
-    const [inputFileNames, setInputFileNames] = useState(emptyDict);
-    const [inputFileContents, setInputFileContents] = useState(emptyDict);
+    const [fileData, setFileData] = useState(
+        fileStructure.files.reduce((obj, file) => ({
+          ...obj,
+          [file.name]: {
+              userFileName: "",
+              ref: undefined
+          }
+        }), {})
+    );
+    console.log(fileData);
 
     const uploadFiles = () => {
         console.log("prepare for uploading...");
@@ -21,8 +34,8 @@ const FileUpload = (props) => {
 
         const data = new FormData();
         for (const file in fileStructure.files) {
-            data.append(`${file.name}_file_name`, inputFileNames[file.name]);
-            data.append(`${file.name}_file_contents`, inputFileContents[file.name].files[0]);
+            data.append(`${file.name}_file_name`, fileData[file.name].name);
+            data.append(`${file.name}_file_contents`, fileData[file.name].current.files[0]);
         }
 
         axios
@@ -37,14 +50,14 @@ const FileUpload = (props) => {
                 props.history.push({
                     pathname : '/modules',
                     state: {
-                        active_gene_file_name: inputFileNames["Active genes file"],
-                        network_file_name: inputFileNames["Network file"],
+                        active_gene_file_name: fileData["Active genes file"].name,
+                        network_file_name: fileData["Network file"].name,
                         modules: response.data.modules,
                         zipURL: "/test.zip",
                     }
                 });
                 console.log({
-                    active_gene_file_name: inputFileNames["Active genes file"],
+                    active_gene_file_name: fileData["Active genes file"].name,
                     modules: response.data.modules
                 });
             })
@@ -53,10 +66,9 @@ const FileUpload = (props) => {
                 console.log(error);
             });
     }
-    console.log("here2", fileStructure);
 
-    const fileUploadList = (
-        fileStructure.files.map(file =>
+    const fileUploadList = fileStructure.files.map(file => {
+        return (
             <div className = {file_block} key = {file.name}>
                 {/* File information */}
                 <div style = {{textAlign: "left"}}>
@@ -83,16 +95,13 @@ const FileUpload = (props) => {
                             if (e.target.files[0] !== undefined) {
                                 name = e.target.files[0].name;
                             }
-                            setInputFileNames(prev => ({
+                            setFileData(prev => ({
                                 ...prev,
-                                [file.name]: name
-                            }))
-                        }}
-                        ref={ref => {
-                            setInputFileContents(prev => ({
-                            ...prev,
-                            [file.name]: ref
-                            }))
+                                [file.name] : {
+                                    ...prev[file.name],
+                                    userFileName: name
+                                }
+                            }));
                         }}
                     />
                     <label className="custom-file-label">
@@ -103,14 +112,18 @@ const FileUpload = (props) => {
                         <input
                             className="form-control"
                             type="text"
-                            value={inputFileNames[file.name]}
+                            value={
+                                fileData[file.name] === undefined ?
+                                    "" :
+                                    fileData[file.name].userFileName
+                            }
                             readOnly={true}
                         />
                     </div>
                 </div>
             </div>
-        )
-    );
+        );
+    });
 
     return (
         <>
