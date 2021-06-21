@@ -1,30 +1,27 @@
-import React, { Component, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
-import ComboSelect from "react-combo-select";
 import "react-combo-select/style.css";
-import { Spinner } from "@chevtek/react-spinners";
-import { spinnerService } from "@chevtek/react-spinners";
-import { conf } from "./config.js";
 
 const Modules = (props) => {
-    /* Initialize component states. */
-    const startingModuleURL = "";
-    const startingModuleId = "";
-    if (Object.keys(modules).length > 0){
-        startingModuleURL = moduleDirectory(0);
-        startingModuleId = "0";
-    }
-    const [selectedModuleURL, setSelectedModuleURL] = setState(startingModuleURL);
-    const [selectedModuleId, setSelectedModuleId] = setState(startingModuleId);
-
     const modules = props.location.state["modules"];
-    const moduleDirectory = (index) =>
-        "/"+fileNames["active_genes"].split(".").slice(0, -1).join(".") +`/module_${i}.html`;
     const fileNames = {
         "active_genes": props.location.state["active_gene_file_name"],
         "network": props.location.state["network_file_name"]
     };
+    const moduleDirectory = (index) =>
+        "/"+fileNames["active_genes"].split(".").slice(0, -1).join(".") +`/module_${index}.html`;
+
+
+    /* Initialize component states. */
+    let startingModuleURL = "";
+    let startingModuleId = "";
+    if (Object.keys(modules).length > 0){
+        startingModuleURL = moduleDirectory(0);
+        startingModuleId = "0";
+    }
+    const [selectedModuleURL, setSelectedModuleURL] = useState(startingModuleURL);
+    const [selectedModuleId, setSelectedModuleId] = useState(startingModuleId);
 
     /* Determines the className for the left module navbar.
     * Returns 'nav-link active' for the module tab that's being rendered.
