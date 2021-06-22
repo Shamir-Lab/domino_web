@@ -120,7 +120,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     res.render("error");
     return;
   }
-  
+
   Promise.all(fileUploadPromises)
     .then(values => {
       console.log("Starting domino py execution ...");

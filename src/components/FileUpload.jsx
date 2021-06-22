@@ -4,7 +4,7 @@ import { Spinner } from "@chevtek/react-spinners";
 import { spinnerService } from "@chevtek/react-spinners";
 import fileStructure from "./public/files";
 import { conf } from "./config.js";
-import {file_header, file_desc, file_block} from "./style.module.css";
+import {file_header, file_desc, file_error, file_block} from "./style.module.css";
 
 /**
  JSON Structures
@@ -19,13 +19,16 @@ import {file_header, file_desc, file_block} from "./style.module.css";
      }
  */
 
+const MAX_FILE_SIZE_MB = 10;
+
 const FileUpload = (props) => {
     const [fileData, setFileData] = useState(
         fileStructure.files.reduce((obj, file) => ({
           ...obj,
           [file.name]: {
               userFileName: "",
-              ref: React.createRef()
+              inputTagRef: React.createRef(),
+              errorMessage: ""
           }
         }), {})
     );
@@ -35,15 +38,49 @@ const FileUpload = (props) => {
      * to run the algorithm via a post request.*/
     const uploadFiles = () => {
         console.log("prepare for uploading...");
-        spinnerService.show("mySpinner");
+
+
+        /* Validate inputted files */
+        let goodFiles = true;
+        for (const file of fileStructure.files) {
+            const ref = fileData[file.name].inputTagRef;
+
+            const fileSizeMB = ref.current.files[0].size / (10 ** 6); // in megabytes
+            if (fileSizeMB > MAX_FILE_SIZE_MB) {
+                setFileData(prev => ({
+                    ...prev,
+                    [file.name]: {
+                        ...prev[file.name],
+                        errorMessage: `The ${file.name} uploaded is ${fileSizeMB.toFixed(2)}MB, which exceedes the ${MAX_FILE_SIZE_MB}MB limit. Submit a new file and then click 'Upload' again.`
+                    }
+                }));
+                goodFiles = false;
+            } else {
+                setFileData(prev => ({
+                    ...prev,
+                    [file.name]: {
+                        ...prev[file.name],
+                        errorMessage: ``
+                    }
+                }));
+            }
+        }
+
+        if (!goodFiles) {
+            console.log("Delayed \\upload POST request. Files exceed max file size.");
+            return;
+        }
 
         const data = new FormData();
         for (const file of fileStructure.files) {
-            const ref = fileData[file.name].ref;
+            const ref = fileData[file.name].inputTagRef;
+
             data.append(`${file.name} name`, fileData[file.name].userFileName);
             data.append(`${file.name} contents`, ref.current.files[0]);
         }
 
+        console.log("Sending POST request ...");
+        spinnerService.show("mySpinner");
         axios
             .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
             .then(response => {
@@ -90,12 +127,19 @@ const FileUpload = (props) => {
                     </p>
                 </div>
 
+                {/* Error message */}
+                <div style = {{textAlign: "left"}}>
+                    <p className={file_error}>
+                        {fileData[file.name].errorMessage}
+                    </p>
+                </div>
+
                 {/* Form */}
                 <div className="custom-file">
                     <input
                         className="form-control input-sm custom-file-input"
                         type="file"
-                        ref={fileData[file.name].ref}
+                        ref={fileData[file.name].inputTagRef}
                         onChange={e => {
                             let name = "";
                             if (e.target.files[0] !== undefined) {

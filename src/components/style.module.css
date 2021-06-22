@@ -7,8 +7,13 @@
   font-style: italic;
 }
 
+.file_error {
+  font-size: 15px;
+  font-weight: bold;
+  color: red
+}
+
 .file_block {
   width: 80%;
   margin: 10px auto 10px auto;
-
 }
