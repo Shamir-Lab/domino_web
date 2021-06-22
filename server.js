@@ -1,4 +1,5 @@
-const express = require("express"); // 
+const fileStructure = require("./src/components/public/files_node");
+const express = require("express"); //
 const path = require("path");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
@@ -73,12 +74,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
   // make directory to store user's file on server
   let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
-  let userDirectory = `${__dirname}/public/${req.body["active_genes_file_name"]}%${req.body["network_file_name"]}%${timestamp}`;
+  let userDirectory = `${__dirname}/public/${req.body["Active gene file name"]}%${req.body["Network file name"]}%${timestamp}`;
   fs.mkdirSync(userDirectory);
   fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
 
   fileUploadPromises = [];
-  let file_types = ["active_genes", "network"];
+  let fileNames = fileStructure.files.map(file => file.name);
   try {
     /** @author: Nima Rahmanian
      * Moves the user's uploaded files to a directory accessible by the
@@ -109,9 +110,10 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
       });
     }
 
-    file_types.map(cur => {
-      let fileName = req.body[cur + "_file_name"];
-      let fileContents = req.files[cur + "_file_content"];
+    fileNames.map(file => {
+      let fileName = req.body[`${file} name`];
+      let fileContents = req.files[`${file} contents`];
+      console.log(fileContents);
       fileUploadPromises.push(moveFile(userDirectory, fileName, fileContents, res));
     });
   } catch (e) {
@@ -126,7 +128,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     .then(values => {
       console.log("about to start py execution");
       let algExecutor =
-          `bash domino_runner.sh ${userDirectory}/${req.body["active_genes_file_name"]} ${userDirectory}/${req.body["network_file_name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
+          `bash domino_runner.sh ${userDirectory}/${req.body["Active gene file name"]} ${userDirectory}/${req.body["Network file name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
       exec(
         algExecutor,
         { cwd: conf.BASE_FOLDER },
@@ -140,7 +142,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             return;
           }
             py_output = new String(stdout);
-            output_folder = "/media/hag007/Data/repos/DOMINO/output/"+req.body["active_genes_file_name"].split('.').slice(0, -1).join('.'); // py_output.split("\n")[0].trim();
             let relative_output_dir = "";
             modules_str = py_output.split("\n");
             module_to_genes={}
@@ -159,7 +160,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             // nodes_ids = module_to_genes_arr.reduce((x, y) => {
             //   x.concat(y);}, []);
 
-            let nw = new String(req.files["network_file_content"].data);
+            let nw = new String(req.files["Network file contents"].data);
             let nw_edges = nw
               .trim()
               .split("\n")
@@ -226,6 +227,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               all_nodes: all_nodes,
               all_edges: all_edges,
               modules: module_to_genes,
+              userDir: userDirectory,
               report_link: !!relative_output_dir
                 ? conf.IP_ADDRESS +
                   ":8000/" +
@@ -237,6 +239,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
           });
 
       /* Create zip file. */
+      /*
       exec(
           `zip -r ${userDirectory}.zip ${userDirectory}`,
           { cwd: conf.BASE_FOLDER },
@@ -250,6 +253,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               return;
             }
           });
+
+       */
     });
 });
 

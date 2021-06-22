@@ -4,20 +4,22 @@ import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
 
 const Modules = (props) => {
+    console.log(props);
     const modules = props.location.state["modules"];
     const fileNames = {
-        "active_genes": props.location.state["active_gene_file_name"],
-        "network": props.location.state["network_file_name"]
+        "active_genes": props.location.state["Active gene file name"],
+        "network": props.location.state["Network file name"]
     };
     const moduleDirectory = (index) =>
-        "/"+fileNames["active_genes"].split(".").slice(0, -1).join(".") +`/module_${index}.html`;
-    const zipURL = props.location.state.["zipURL"];
+        `${props.location.state.userDir}/modules/module_${index}.html`;
+    const zipURL = props.location.state["zipURL"];
     console.log(zipURL);
 
     /* Initialize component states. */
     let startingModuleURL = "";
     let startingModuleId = "";
     if (Object.keys(modules).length > 0) {
+        console.log(moduleDirectory(0));
         startingModuleURL = moduleDirectory(0);
         startingModuleId = "0";
     }

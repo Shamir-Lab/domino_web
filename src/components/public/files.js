@@ -1,7 +1,7 @@
 const fileStructure = {
   files: [
     {
-      name: "Active genes file",
+      name: "Active gene file",
       type: ".txt",
       maxSize: 5, // in MB
       description: "Marks activity scores of nodes.",
