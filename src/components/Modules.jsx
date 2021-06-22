@@ -5,26 +5,27 @@ import "react-combo-select/style.css";
 
 const Modules = (props) => {
     console.log(props);
+
+    /* Unpack props. */
     const numModules = props.location.state["numModules"];
     const fileNames = {
         "active_genes": props.location.state["Active gene file name"],
         "network": props.location.state["Network file name"]
     };
-    const moduleDirectory = (index) =>
-        `${props.location.state.moduleDir}/module_${index}.html`;
     const zipURL = props.location.state["zipURL"];
-    console.log(zipURL);
+
+    /** Returns the directory (with respect to the public folder) to the
+    * ith static html file to display the ith module. */
+    const moduleDirectory = (i) =>
+        `${props.location.state.moduleDir}/module_${i}.html`;
 
     /* Initialize component states. */
-    let startingModuleURL = "";
-    let startingModuleId = "";
-    if (numModules > 0) {
-        console.log(moduleDirectory(0));
-        startingModuleURL = moduleDirectory(0);
-        startingModuleId = "0";
-    }
-    const [selectedModuleURL, setSelectedModuleURL] = useState(startingModuleURL);
-    const [selectedModuleId, setSelectedModuleId] = useState(startingModuleId);
+    const [selectedModuleURL, setSelectedModuleURL] = useState(
+        numModules > 0 ? moduleDirectory(0) : ""
+    );
+    const [selectedModuleId, setSelectedModuleId] = useState(
+        numModules > 0 ? "0" : ""
+    );
 
     /* Determines the className for the left module navbar.
     * Returns 'nav-link active' for the module tab that's being rendered.
