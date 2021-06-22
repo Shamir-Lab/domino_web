@@ -113,7 +113,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     fileNames.map(file => {
       let fileName = req.body[`${file} name`];
       let fileContents = req.files[`${file} contents`];
-      console.log(fileContents);
       fileUploadPromises.push(moveFile(userDirectory, fileName, fileContents, res));
     });
   } catch (e) {
@@ -220,7 +219,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             all_nodes = all_nodes.map(cur => {
               return { id: cur, eid: cur };
             });
-            // console.log(module_to_genes)
+
             res.json({
               nodes: nodes,
               edges: edges,
@@ -237,24 +236,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             });
             res.end();
           });
-
-      /* Create zip file. */
-      /*
-      exec(
-          `zip -r ${userDirectory}.zip ${userDirectory}`,
-          { cwd: conf.BASE_FOLDER },
-          (err, stdout, stderr) => {
-            console.log(stdout);
-            if (err) {
-              console.log(err);
-              res.status(err.status || 500);
-              res.render("error");
-              res.end();
-              return;
-            }
-          });
-
-       */
     });
 });
 
