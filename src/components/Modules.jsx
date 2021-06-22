@@ -5,7 +5,7 @@ import "react-combo-select/style.css";
 
 const Modules = (props) => {
     console.log(props);
-    const modules = props.location.state["modules"];
+    const numModules = props.location.state["numModules"];
     const fileNames = {
         "active_genes": props.location.state["Active gene file name"],
         "network": props.location.state["Network file name"]
@@ -18,7 +18,7 @@ const Modules = (props) => {
     /* Initialize component states. */
     let startingModuleURL = "";
     let startingModuleId = "";
-    if (Object.keys(modules).length > 0) {
+    if (numModules > 0) {
         console.log(moduleDirectory(0));
         startingModuleURL = moduleDirectory(0);
         startingModuleId = "0";
@@ -54,7 +54,7 @@ const Modules = (props) => {
                     </div>
                     <h4 className='display-6'>Modules:</h4>
                     <ul className="nav nav-pills flex-column">
-                        {Object.keys(modules).map(pr => (
+                        {[...Array(numModules).keys()].map(pr => (
                             <li className="nav-item"><a className={isActive(pr)} moduleId={pr} onClick={(t) => {fetchHtml(t);}}>module {pr} </a></li>
                         ))}
                     </ul>

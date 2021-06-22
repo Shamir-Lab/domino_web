@@ -7,13 +7,16 @@ import { conf } from "./config.js";
 import {file_header, file_desc, file_block} from "./style.module.css";
 
 /**
+ JSON Structures
+ fileData
+ --------
  {
     "Active gene file": {
         userFileName: "active_genes.txt",
         ref: ...
-    },
-    ...
- }
+        },
+        ...
+     }
  */
 
 const FileUpload = (props) => {
@@ -27,6 +30,9 @@ const FileUpload = (props) => {
         }), {})
     );
 
+    /** The onClick attribute for the upload button.
+     * The files uploaded by the user are sent to the server
+     * to run the algorithm via a post request.*/
     const uploadFiles = () => {
         console.log("prepare for uploading...");
         spinnerService.show("mySpinner");
@@ -56,9 +62,7 @@ const FileUpload = (props) => {
                     pathname : '/modules',
                     state: {
                         ...fileNaming,
-                        modules: response.data.modules,
-                        moduleDir: response.data.moduleDir,
-                        zipURL: response.data.zipURL
+                        ...response.data.webDetails
                     }
                 });
             })
