@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const cors = require("cors");
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
 const fs = require("fs");
 const ncp = require("ncp").ncp;
 const conf = require("./config.js").conf;
@@ -74,7 +74,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
   // make directory to store user's file on server
   let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
-  let userDirectory = `${__dirname}/public/${req.body["Active gene file name"]}%${req.body["Network file name"]}%${timestamp}`;
+  let customFile = `${req.body["Active gene file name"]}@${req.body["Network file name"]}@${timestamp}`;
+  let userDirectory = `${__dirname}/public/${customFile}`;
   fs.mkdirSync(userDirectory);
   fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
 
@@ -220,13 +221,37 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               return { id: cur, eid: cur };
             });
 
+            try {
+              console.log(execSync(
+                  `zip -r ${userDirectory}.zip ${userDirectory}`,
+                  { cwd: conf.BASE_FOLDER }
+              ));
+              console.log("Done zipping.");
+            } catch (e) {
+              console.log(e);
+              return;
+            }
+          try {
+            console.log(execSync(
+                `ls`,
+                { cwd: "./public" }
+            ));
+            console.log("Done printing. ");
+          } catch (e) {
+            console.log(e);
+          }
+
+          console.log(conf.BASE_FOLDER);
+          console.log("moduleDir", `${customFile}/modules`);
+
             res.json({
               nodes: nodes,
               edges: edges,
               all_nodes: all_nodes,
               all_edges: all_edges,
               modules: module_to_genes,
-              userDir: userDirectory,
+              moduleDir: `${customFile}/modules`,
+              zipURL: `${customFile}.zip`,
               report_link: !!relative_output_dir
                 ? conf.IP_ADDRESS +
                   ":8000/" +
@@ -237,6 +262,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             res.end();
           });
     });
+
+  /* Create zip file. */
+  /*
+
+
+   */
 });
 
 app.post("/getHTML", timeout("10m"), (req, res, next) => {

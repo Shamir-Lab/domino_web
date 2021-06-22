@@ -57,8 +57,8 @@ const FileUpload = (props) => {
                     state: {
                         ...fileNaming,
                         modules: response.data.modules,
-                        userDir: response.data.userDir,
-                        zipURL: "/test.zip",
+                        moduleDir: response.data.moduleDir,
+                        zipURL: response.data.zipURL
                     }
                 });
             })

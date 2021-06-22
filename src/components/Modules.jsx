@@ -11,7 +11,7 @@ const Modules = (props) => {
         "network": props.location.state["Network file name"]
     };
     const moduleDirectory = (index) =>
-        `${props.location.state.userDir}/modules/module_${index}.html`;
+        `${props.location.state.moduleDir}/module_${index}.html`;
     const zipURL = props.location.state["zipURL"];
     console.log(zipURL);
 
