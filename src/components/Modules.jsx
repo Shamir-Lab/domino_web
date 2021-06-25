@@ -9,9 +9,10 @@ const Modules = (props) => {
     /* Unpack props. */
     const numModules = props.location.state["numModules"];
     const fileNames = {
-        "active_genes": props.location.state["Active gene file name"],
-        "network": props.location.state["Network file name"]
+        "active_genes": props.location.state["Active gene file"],
+        "network": props.location.state["Network file"]
     };
+    console.log("fileNames", fileNames);
     const zipURL = props.location.state["zipURL"];
 
     /** Returns the directory (with respect to the public folder) to the

@@ -1,0 +1,29 @@
+.left_inner_block {
+    width: 50%;
+    float: left;
+    padding: 20px;
+}
+
+.right_inner_block {
+    width: 50%;
+    float: right;
+    padding: 20px;
+}
+
+.blue_background {
+    background-color: #acd8ff;
+    border: none;
+    border-radius: 10px;
+}
+
+.medium_text {
+    font-size: 25px;
+}
+
+.small_text {
+    font-size: 15px;
+}
+
+.btn_margin {
+    margin: 5px;
+}

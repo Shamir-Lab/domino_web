@@ -140,14 +140,14 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
           }
 
           const dominoPostProcess = (stdout, networkFileData) => {
-            py_output = new String(stdout);
-            modules_str = py_output.split("\n");
-            module_to_genes={}
-            nodes=[]
+            const py_output = new String(stdout);
+            const modules_str = py_output.split("\n");
+            const module_to_genes={};
+            let nodes=[];
             for (i=0;i<modules_str.length;i++){
               cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
-              module_to_genes[i] = cur_module
-              nodes=nodes.concat(cur_module)
+              module_to_genes[i] = cur_module;
+              nodes=nodes.concat(cur_module);
             }
             let module_to_genes_arr = [];
             let nodes_ids = []
@@ -232,7 +232,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
           try {
             execSync(
-                `zip -r ${userDirectory}.zip ${userDirectory}`,
+                `cd ${userDirectory}/..
+                zip -r ${customFile}.zip ${customFile}`,
                 { stdio: 'inherit' }
             );
           } catch (e) {
@@ -242,8 +243,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
           const algOutput = dominoPostProcess(stdout, req.files["Network file contents"].data);
           res.json({
-            algOutput : algOutput,
-            webDetails : {
+            algOutput: algOutput,
+            webDetails: {
               numModules: Object.keys(algOutput.modules).length,
               moduleDir: `${customFile}/modules`,
               zipURL: `${customFile}.zip`,

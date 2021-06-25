@@ -39,11 +39,16 @@ const FileUpload = (props) => {
     const uploadFiles = () => {
         console.log("prepare for uploading...");
 
-
         /* Validate inputted files */
         let goodFiles = true;
         for (const file of fileStructure.files) {
             const ref = fileData[file.name].inputTagRef;
+
+            // no file was inputted for this field
+            if (ref.current.files.length === 0) {
+                goodFiles = false;
+                continue;
+            }
 
             const fileSizeMB = ref.current.files[0].size / (10 ** 6); // in megabytes
             if (fileSizeMB > MAX_FILE_SIZE_MB) {
@@ -67,7 +72,7 @@ const FileUpload = (props) => {
         }
 
         if (!goodFiles) {
-            console.log("Delayed \\upload POST request. Files exceed max file size.");
+            console.log("Delayed \\upload POST request. Files exceed max file size and/or no files inputted.");
             return;
         }
 
@@ -94,6 +99,7 @@ const FileUpload = (props) => {
                     ...obj,
                     [file.name]: fileData[file.name].userFileName
                 }), {});
+                console.log("fileNaming", fileNaming);
 
                 props.history.push({
                     pathname : '/modules',
@@ -112,23 +118,9 @@ const FileUpload = (props) => {
     const fileUploadList = fileStructure.files.map(file => {
         return (
             <div className = {file_block} key = {file.name}>
-                {/* File information */}
+                {/* File header and error message */}
                 <div style = {{textAlign: "left"}}>
                     <p className={file_header}>{file.name}</p>
-                    <p className={file_desc}>
-                        {(file.maxSize === 0) ?
-                            <></>:
-                            <>
-                                <span>Maximum file size: {file.maxSize}MB</span><br></br>
-                            </>
-                        }
-                        Recommended file type(s): {file.type} <br></br>
-                        {file.description}
-                    </p>
-                </div>
-
-                {/* Error message */}
-                <div style = {{textAlign: "left"}}>
                     <p className={file_error}>
                         {fileData[file.name].errorMessage}
                     </p>
@@ -170,6 +162,22 @@ const FileUpload = (props) => {
                             readOnly={true}
                         />
                     </div>
+                </div>
+
+                {/* File information and Error message*/}
+                <div
+                    style = {{textAlign: "left",
+                              marginTop: "10px"}}>
+                    <p className={file_desc}>
+                        {(file.maxSize === 0) ?
+                            <></>:
+                            <>
+                                <span>Maximum file size: {file.maxSize}MB</span><br></br>
+                            </>
+                        }
+                        Recommended file type(s): {file.type} <br></br>
+                        {file.description}
+                    </p>
                 </div>
             </div>
         );
