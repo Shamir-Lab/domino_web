@@ -5,18 +5,24 @@ import {
     blue_background,
     small_text,
     medium_text,
-    btn_margin } from "./landing_page.module.css";
+    btn_margin,
+    domino_logo
+} from "./landing_page.module.css";
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
+import logo from "./DOMINO_logo.png";
 
 const LandingPage = ({ history }) => {
 
     return (
         <>
             <div className="jumbotron">
-                <p style={{fontSize: "45px", textAlign: "center"}}>
-                    Welcome to _____ Web Executor
-                </p>
+                <div style = {{margin: "auto", textAlign: "center"}}>
+                    <span style={{fontSize: "45px"}}>Welcome to</span>
+                    <img src = {logo} className = {domino_logo}></img>
+                    <span style={{fontSize: "45px"}}>Web Executor</span>
+                </div>
+
                 <p className="small_text"
                    style={{color: "#707070", textAlign: "center"}}>
                     DOMINO is an algorithm for detecting active network <br></br>
@@ -50,7 +56,11 @@ const LandingPage = ({ history }) => {
                             DOMINO's <br></br> Web Executor
                         </a>
                     </div>
-                    <button className={["btn", btn_margin, "btn-primary", small_text].join(" ")}>Report a problem via Git Issues</button>
+                    <a
+                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                        href={"https://github.com/hag007/domino_web/issues"}
+                    > Report a problem via Git Issues
+                    </a>
                 </div>
                 <div className={right_inner_block}>
                     <div className={blue_background}
