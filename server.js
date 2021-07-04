@@ -13,6 +13,7 @@ const conf = require("./config.js").conf;
 const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
 const app = express();
+
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Require static assets from public folder
@@ -21,26 +22,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set 'views' directory for any views 
 // being rendered res.render()
 app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "jade");
 
 // Set view engine as EJS
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
-
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
-
 app.use(logger("dev"));
 
 app.use(function(req, res, next) {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "http://" + "localhost"+ ":8000"
-  );
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.set({
+      "Access-Control-Allow-Origin": "http://" + "localhost"+ ":8000",
+      "Access-Control-Allow-Headers": "X-Requested-With",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "PUT, GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Credentials": "true"
+  });
   next();
 });
 
@@ -60,13 +57,6 @@ app.get('/file_upload', ...);
 
 app.get('/modules', ...);
 * */
-
-let modules_indices = (c, s) =>
-  s.reduce((a, e) => {
-    return e[Object.keys(e)[0]].indexOf(c) != -1
-      ? a.concat(Object.keys(e)[0])
-      : a;
-  }, []);
 
 app.post("/upload", timeout("10m"), (req, res, next) => {
   console.log("Starting upload POST request ...");
@@ -130,16 +120,16 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         algExecutor,
         { cwd: conf.BASE_FOLDER },
         (err, stdout, stderr) => {
-          console.log(stdout)
+          console.log(stdout);
           if (err) {
-            console.log(err);
-            res.status(err.status || 500);
-            res.render("error");
-            res.end();
+            console.log("Error with domino py execution.");
+            next(err);
             return;
           }
 
           const dominoPostProcess = (stdout, networkFileData) => {
+            console.log("DOMINO post process ...");
+
             const py_output = new String(stdout);
             const modules_str = py_output.split("\n");
             const module_to_genes={};
@@ -181,6 +171,13 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               }
             }
 
+            let modules_indices = (c, s) =>
+                s.reduce((a, e) => {
+                  return e[Object.keys(e)[0]].indexOf(c) != -1
+                      ? a.concat(Object.keys(e)[0])
+                      : a;
+                }, []);
+
             let all_edges = [];
             for (var i = 0; i < nw_edges.length; i++) {
               s_i = modules_indices(nw_edges[i][0], module_to_genes_arr);
@@ -214,11 +211,10 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               return { id: cur, eid: cur };
             });
 
-            console.log("DOMINO post process ...");
             console.log(
-                `number of edges: ${edges.length}
-                number of all_edges: ${all_edges.length}
-                number of all_nodes: ${all_nodes.length}`
+                `number of edges: ${edges.length}\n` +
+                `number of all_edges: ${all_edges.length}\n` +
+                `number of all_nodes: ${all_nodes.length}\n`
             );
 
             return {
@@ -228,7 +224,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
               all_edges: all_edges,
               modules: module_to_genes,
             };
-          }
+          };
 
           try {
             execSync(
@@ -264,6 +260,13 @@ app.post("/getHTML", timeout("10m"), (req, res, next) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  // delegate to the default Express error handler, when the headers have already been sent to the client
+  if (res.headersSent) {
+    return next(err);
+  }
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
-// app.listen(process.env.PORT || 8000);
-app.listen(process.env.PORT || 7000)
+app.listen(process.env.PORT || 8000);
