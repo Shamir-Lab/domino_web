@@ -63,7 +63,15 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
   // make directory to store user's file on server
   let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
-  let customFile = `${req.body["Active gene file name"]}@${req.body["Network file name"]}@${timestamp}`;
+
+  let strip_extension = (str) => {
+    return str.slice(0, str.indexOf("."));
+  };
+  let customFile = [
+    strip_extension(req.body["Active gene file name"]),
+    strip_extension(req.body["Network file name"]),
+    timestamp
+  ].join("@");
   let userDirectory = `${__dirname}/public/${customFile}`;
   fs.mkdirSync(userDirectory);
   fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
@@ -115,7 +123,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     .then(values => {
       console.log("Starting domino py execution ...");
       let algExecutor =
-          `bash domino_runner.sh ${userDirectory}/${req.body["Active gene file name"]} ${userDirectory}/${req.body["Network file name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
+          `bash domino_runner.sh ${userDirectory} ${req.body["Active gene file name"]} ${req.body["Network file name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
       exec(
         algExecutor,
         { cwd: conf.BASE_FOLDER },
@@ -236,6 +244,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             console.log(e);
             return;
           }
+
+          // run GO enrichment analysis
 
           const algOutput = dominoPostProcess(stdout, req.files["Network file contents"].data);
           res.json({
