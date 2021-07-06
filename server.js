@@ -13,6 +13,7 @@ const conf = require("./config.js").conf;
 const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
 const app = express();
+
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Require static assets from public folder
@@ -21,26 +22,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set 'views' directory for any views 
 // being rendered res.render()
 app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "jade");
 
 // Set view engine as EJS
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
-
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
-
 app.use(logger("dev"));
 
 app.use(function(req, res, next) {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "http://" + "localhost"+ ":8000"
-  );
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.set({
+    "Access-Control-Allow-Origin": "http://" + "localhost"+ ":8000",
+    "Access-Control-Allow-Headers": "X-Requested-With",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "PUT, GET, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Credentials": "true"
+  });
   next();
 });
 
@@ -61,19 +58,20 @@ app.get('/file_upload', ...);
 app.get('/modules', ...);
 * */
 
-let modules_indices = (c, s) =>
-  s.reduce((a, e) => {
-    return e[Object.keys(e)[0]].indexOf(c) != -1
-      ? a.concat(Object.keys(e)[0])
-      : a;
-  }, []);
-
 app.post("/upload", timeout("10m"), (req, res, next) => {
   console.log("Starting upload POST request ...");
 
   // make directory to store user's file on server
   let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
-  let customFile = `${req.body["Active gene file name"]}@${req.body["Network file name"]}@${timestamp}`;
+
+  let strip_extension = (str) => {
+    return str.slice(0, str.indexOf("."));
+  };
+  let customFile = [
+  strip_extension(req.body["Active gene file name"]),
+  strip_extension(req.body["Network file name"]),
+  timestamp
+  ].join("@");
   let userDirectory = `${__dirname}/public/${customFile}`;
   fs.mkdirSync(userDirectory);
   fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
@@ -87,7 +85,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
      * @param response: the POST request response object.
      * @returns: a Promise (to move the file)
      * */
-    const moveFile = (userDirectory, fileName, fileContents, response) => {
+     const moveFile = (userDirectory, fileName, fileContents, response) => {
       return new Promise((resolve, reject) => {
         if (fileName === "") {
           resolve("");
@@ -121,127 +119,142 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     return;
   }
 
-  Promise.all(fileUploadPromises)
-    .then(values => {
-      console.log("Starting domino py execution ...");
-      let algExecutor =
-          `bash domino_runner.sh ${userDirectory}/${req.body["Active gene file name"]} ${userDirectory}/${req.body["Network file name"]} ${userDirectory}/modules ${conf.PYTHON_ENV}`;
-      exec(
-        algExecutor,
-        { cwd: conf.BASE_FOLDER },
-        (err, stdout, stderr) => {
-          console.log(stdout)
-          if (err) {
-            console.log(err);
-            res.status(err.status || 500);
-            res.render("error");
-            res.end();
-            return;
-          }
+  const dominoPostProcess = (file_output_data, networkFileData) => {
+    console.log("DOMINO post process ...");
 
-          const dominoPostProcess = (stdout, networkFileData) => {
-            const py_output = new String(stdout);
-            const modules_str = py_output.split("\n");
-            const module_to_genes={};
-            let nodes=[];
-            for (i=0;i<modules_str.length;i++){
-              cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
-              module_to_genes[i] = cur_module;
-              nodes=nodes.concat(cur_module);
-            }
-            let module_to_genes_arr = [];
-            let nodes_ids = []
-            for (module in module_to_genes) {
-              module_to_genes_arr.push({ [module]: module_to_genes[module] });
-              nodes_ids.concat(module_to_genes[module])
-            }
+    const py_output = new String(file_output_data);
+    const modules_str = py_output.split("\n");
+    const module_to_genes={};
+    let nodes=[];
+    for (i=0;i<modules_str.length;i++){
+      cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
+      module_to_genes[i] = cur_module;
+      nodes=nodes.concat(cur_module);
+    }
+    let module_to_genes_arr = [];
+    let nodes_ids = []
+    for (module in module_to_genes) {
+      module_to_genes_arr.push({ [module]: module_to_genes[module] });
+      nodes_ids.concat(module_to_genes[module])
+    }
             // nodes_ids = module_to_genes_arr.reduce((x, y) => {
             //   x.concat(y);}, []);
 
             let nw = new String(networkFileData);
             let nw_edges = nw
-                .trim()
-                .split("\n")
-                .map(cur => {
-                  let x = cur.split("\t");
-                  x.splice(1, 1);
-                  return x;
-                });
+            .trim()
+            .split("\n")
+            .map(cur => {
+              let x = cur.split("\t");
+              x.splice(1, 1);
+              return x;
+            });
 
             let edges = [];
             for (var i = 0; i < nw_edges.length; i++) {
               for (module in module_to_genes) {
                 if (
-                    module_to_genes[module].indexOf(nw_edges[i][0]) != -1 &&
-                    module_to_genes[module].indexOf(nw_edges[i][1]) != -1
-                ) {
+                  module_to_genes[module].indexOf(nw_edges[i][0]) != -1 &&
+                  module_to_genes[module].indexOf(nw_edges[i][1]) != -1
+                  ) {
                   edges.push(nw_edges[i]);
-                  break;
-                }
+                break;
               }
             }
+          }
 
-            let all_edges = [];
-            for (var i = 0; i < nw_edges.length; i++) {
-              s_i = modules_indices(nw_edges[i][0], module_to_genes_arr);
-              t_i = modules_indices(nw_edges[i][1], module_to_genes_arr);
-              if (s_i.length != 0 || t_i.length != 0) all_edges.push(nw_edges[i]);
-            }
+          let modules_indices = (c, s) =>
+          s.reduce((a, e) => {
+            return e[Object.keys(e)[0]].indexOf(c) != -1
+            ? a.concat(Object.keys(e)[0])
+            : a;
+          }, []);
 
-            let all_nodes = all_edges.reduce((acc, cur1) => {
-              return acc.concat(
-                  (cur1[0] == cur1[1] ? [cur1[0]] : cur1).filter(
-                      cur2 => acc.indexOf(cur2) == -1
-                  )
+          let all_edges = [];
+          for (var i = 0; i < nw_edges.length; i++) {
+            s_i = modules_indices(nw_edges[i][0], module_to_genes_arr);
+            t_i = modules_indices(nw_edges[i][1], module_to_genes_arr);
+            if (s_i.length != 0 || t_i.length != 0) all_edges.push(nw_edges[i]);
+          }
+
+          let all_nodes = all_edges.reduce((acc, cur1) => {
+            return acc.concat(
+              (cur1[0] == cur1[1] ? [cur1[0]] : cur1).filter(
+                cur2 => acc.indexOf(cur2) == -1
+                )
               );
-            }, []);
+          }, []);
 
-            edges = edges.map(cur => {
-              return {
-                id: cur[1] + "_" + cur[0],
-                target: cur[1],
-                source: cur[0]
-              };
-            });
-            all_edges = all_edges.map(cur => {
-              return {
-                id: cur[1] + "_" + cur[0],
-                target: cur[1],
-                source: cur[0]
-              };
-            });
-            all_nodes = all_nodes.map(cur => {
-              return { id: cur, eid: cur };
-            });
-
-            console.log("DOMINO post process ...");
-            console.log(
-                `number of edges: ${edges.length}
-                number of all_edges: ${all_edges.length}
-                number of all_nodes: ${all_nodes.length}`
-            );
-
+          edges = edges.map(cur => {
             return {
-              nodes: nodes,
-              edges: edges,
-              all_nodes: all_nodes,
-              all_edges: all_edges,
-              modules: module_to_genes,
+              id: cur[1] + "_" + cur[0],
+              target: cur[1],
+              source: cur[0]
             };
-          }
+          });
+          all_edges = all_edges.map(cur => {
+            return {
+              id: cur[1] + "_" + cur[0],
+              target: cur[1],
+              source: cur[0]
+            };
+          });
+          all_nodes = all_nodes.map(cur => {
+            return { id: cur, eid: cur };
+          });
 
-          try {
-            execSync(
-                `cd ${userDirectory}/..
-                zip -r ${customFile}.zip ${customFile}`,
-                { stdio: 'inherit' }
+          console.log(
+            `number of edges: ${edges.length}\n` +
+            `number of all_edges: ${all_edges.length}\n` +
+            `number of all_nodes: ${all_nodes.length}\n`
             );
-          } catch (e) {
-            console.log(e);
-            return;
-          }
 
-          const algOutput = dominoPostProcess(stdout, req.files["Network file contents"].data);
+          return {
+            nodes: nodes,
+            edges: edges,
+            all_nodes: all_nodes,
+            all_edges: all_edges,
+            modules: module_to_genes,
+          };
+        };
+
+        Promise.all(fileUploadPromises)
+        .then(values => {
+          console.log("Starting domino py execution ...");
+          let algExecutor =
+          `bash domino_runner.sh ${userDirectory} ${req.body["Active gene file name"]} ${req.body["Network file name"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+          exec(
+            algExecutor,
+            { cwd: conf.BASE_FOLDER },
+            (err, stdout, stderr) => {
+              console.log(stdout);
+              if (err) {
+                console.log("Error with domino py execution.");
+                next(err);
+                return;
+              }
+              fs.readFile(userDirectory+"/modules/modules.out", function(err, file_output_data){
+                if (err) {
+                  console.log("Cannot read modules.out file.");
+                  next(err);
+                  return;
+                }
+
+                try {
+                  execSync(
+                    `cd ${userDirectory}/..
+                    zip -r ${customFile}.zip ${customFile}`,
+                    { stdio: 'inherit' }
+                    );
+                } catch (e) {
+                  console.log(e);
+                  return;
+                }
+
+          // run GO enrichment analysis
+
+          const algOutput = dominoPostProcess(file_output_data, req.files["Network file contents"].data);
+          
           res.json({
             algOutput: algOutput,
             webDetails: {
@@ -251,9 +264,10 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             }
           });
           res.end();
-          });
-    });
-});
+        });
+            });
+        });
+      });
 
 app.post("/getHTML", timeout("10m"), (req, res, next) => {
   console.log(req.body["filename"]);
@@ -264,9 +278,16 @@ app.post("/getHTML", timeout("10m"), (req, res, next) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  // delegate to the default Express error handler, when the headers have already been sent to the client
+  if (res.headersSent) {
+    return next(err);
+  }
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 app.listen(process.env.PORT || 8000);
-
 
 
 

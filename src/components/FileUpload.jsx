@@ -19,6 +19,8 @@ import {file_header, file_desc, file_error, file_block} from "./style.module.css
      }
  */
 
+// TODO: file_error class is used for general error messages. change class name
+
 const MAX_FILE_SIZE_MB = 10;
 
 const FileUpload = (props) => {
@@ -32,6 +34,8 @@ const FileUpload = (props) => {
           }
         }), {})
     );
+
+    const [serverErrorResponse, setServerErrorResponse] = useState("");
 
     /** The onClick attribute for the upload button.
      * The files uploaded by the user are sent to the server
@@ -86,9 +90,10 @@ const FileUpload = (props) => {
 
         console.log("Sending POST request ...");
         spinnerService.show("mySpinner");
+        setServerErrorResponse("");
         axios
             .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
-            .then(response => {
+            .then(res => {
                 spinnerService.hide("mySpinner");
                 console.log(
                     "successfully uploaded: " + fileStructure.files.map(file => file.name).join(", ")
@@ -105,13 +110,16 @@ const FileUpload = (props) => {
                     pathname : '/modules',
                     state: {
                         ...fileNaming,
-                        ...response.data.webDetails
+                        ...res.data.webDetails
                     }
                 });
             })
             .catch(error => {
                 spinnerService.hide("mySpinner");
                 console.log(error);
+                setServerErrorResponse(
+                    "Oops! There's an error with the DOMINO execution. Please check your inputted files for correctness."
+                );
             });
     }
 
@@ -190,6 +198,14 @@ const FileUpload = (props) => {
                     File Upload
                 </p>
             </div>
+
+            {/* Error with file upload. */}
+            <div style = {{textAlign: "left", margin: "auto", width: "80%"}}>
+                <p className={file_error}>
+                    {serverErrorResponse}
+                </p>
+            </div>
+
             {fileUploadList}
             <div style = {{textAlign: "right", margin: "auto", width: "80%"}}>
                 <button className="btn btn-primary"
