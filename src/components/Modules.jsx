@@ -41,64 +41,30 @@ const Modules = (props) => {
         setSelectedModuleId(t.target.getAttribute("moduleId"));
     };
 
-    const sidebar = (
-        <div className="wrapper">
-            <!-- Sidebar -->
-            <nav id="sidebar">
-                <div className="sidebar-header">
-                    <h3>DOMINO Web Executor</h3>
-                </div>
-
-                <ul className="list-unstyled components">
-                    <p>Visualization Details</p>
-                    <li className="active">
-                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false"
-                           className="dropdown-toggle">Identified Modules</a>
-                        <ul className="collapse list-unstyled" id="homeSubmenu">
-                            {[...Array(numModules).keys()].map(pr => (
-                                <li className="nav-item">
-                                    <a className={isActive(pr)}
-                                       moduleId={pr}
-                                       onClick={t => fetchHtml(t)}>module {pr}</a>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                </ul>
-
-                {/* Download Visualization button*/}
-                <a className="btn btn-primary"
-                   style={{position:"absolute", bottom:"15px", color:"white"}}
-                   href={zipURL}
-                   download
-                >Download Visualization</a>
-
-                {/* Parameter description */}
-                <div style={{backgroundColor: "grey"}}>
-                    <h4 style={{fontSize: "20px"}}>Parameters:</h4>
-                    <div className="row">
-                        <div className="col-md-4"><p style={{fontSize: "15px"}}>Active genes:</p></div>
-                        <div className="col-md-8"><p style={{fontSize: "15px"}>{fileNames.active_genes}</p></div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-4"><p style={{fontSize: "15px"}}>Network:</p></div>
-                        <div className="col-md-8"><p style={{fontSize: "15px"}>{fileNames.network}</p></div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
-    );
-
     return (
         <>
             <div className="row"  style={{width: "100vw", height: "100vh", margin: "0px"}}>
                 <div className="col-md-2" style={{position: "relative"}}>
+                    <h4 className='display-6'>Parameters:</h4>
+                    <div className="row">
+                        <div className="col-md-4"><label className="col-form-label"> Active genes:</label></div>
+                        <div className="col-md-8"><input type="text" className="form-control" value={fileNames.active_genes} disabled/></div>
+                    </div>
+                    <div className="row">
+                        <div className="col-md-4"><label className="col-form-label"> Network:</label></div>
+                        <div className="col-md-8"><input type="text" className="form-control" value={fileNames.network} disabled/></div>
+                    </div>
                     <h4 className='display-6'>Modules:</h4>
                     <ul className="nav nav-pills flex-column">
-
+                        {[...Array(numModules).keys()].map(pr => (
+                            <li className="nav-item"><a className={isActive(pr)} moduleId={pr} onClick={(t) => {fetchHtml(t);}}>module {pr} </a></li>
+                        ))}
                     </ul>
-
+                    <a className="btn btn-primary"
+                       style={{position:"absolute", bottom:"10px", color:"white"}}
+                       href={zipURL}
+                       download
+                    >Download Visualization</a>
                 </div>
                 <div className="col-md-10">
                     <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
