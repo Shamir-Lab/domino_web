@@ -66,7 +66,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
 
     let strip_extension = (str) => {
-    return str.slice(0, str.indexOf("."));
+        /* Returns the string's base name before any ".txt" or ".sif" extension. */
+        return str.slice(0, str.indexOf("."));
     };
     let fileNames = fileStructure.files.map(file => file.name);
     let customFile = [
@@ -82,7 +83,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
       let fileName = req.body[`${file} name`];
       let fileContents = req.files[`${file} contents`];
       if (fileName === "") {
-          resolve("");
+          return; // potential source of bug
       }
 
       return fileContents.mv(`${userDirectory}/${fileName}`);
