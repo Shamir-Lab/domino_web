@@ -42,7 +42,13 @@ declare -a pids=();
 for i in $(seq 0 $n_modules); 
 do
     echo $i
-    visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${user_directory}/modules & pids+=($!)
+    visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${output_folder} & pids+=($!)
 done
 
-wait "${pids[@]}"
+# wait "${pids[@]}"
+for pid in "${pids[@]}"; do
+  wait "$pid"
+done 
+
+echo 'done with visualization'
+ls ${output_folder}

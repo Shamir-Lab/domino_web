@@ -113,4 +113,4 @@ const separateActiveGenes = (fileString) => {
 module.exports = {
     dominoPostProcess,
     separateActiveGenes
-}
+};

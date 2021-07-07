@@ -35,22 +35,18 @@ const FileUpload = (props) => {
           }
         }), {})
     );
-
-    const [seen, setSeen] = useState(false);
-     useEffect(() => {
-                        console.log("test here", seen)
-                    }, [seen]);
-
-    const togglePop = () => {
-        setSeen(!seen)
-    };
-
     const [serverErrorResponse, setServerErrorResponse] = useState("");
 
-    /** The onClick attribute for the upload button.
-     * The files uploaded by the user are sent to the server
-     * to run the algorithm via a post request.*/
+    const [seen, setSeen] = useState(false);
+    const togglePop = () => {
+        setSeen(!seen);
+    };
+
     const uploadFiles = () => {
+        /** The onClick attribute for the upload button.
+         * The files uploaded by the user are sent to the server
+         * to run the algorithm via a post request.*/
+
         console.log("prepare for uploading...");
 
         /* Validate inputted files */
@@ -114,11 +110,8 @@ const FileUpload = (props) => {
                     ...obj,
                     [file.name]: fileData[file.name].userFileName
                 }), {});
-                console.log("fileNaming", fileNaming);
-                console.log("", res.data.webDetails)
                 if (!res.data.webDetails.numModules){
-                    setSeen(true)
-          
+                    setSeen(true);
                 }
                 else{
                     props.history.push({
@@ -234,7 +227,7 @@ const FileUpload = (props) => {
                 <Spinner name="mySpinner">
                     <img
                         src="https://i.gifer.com/7plX.gif"
-                        style={{ height: "20px", width: "20px" }}
+                        style={{ height: "20px", width: "20px", margin: "5px" }}
                     />
                 </Spinner>
             </div>
