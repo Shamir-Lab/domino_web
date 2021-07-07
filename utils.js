@@ -1,6 +1,6 @@
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
-    const modules_str = py_output.split("\n");
+    modules_str= py_output=='' ? [] : py_output.split("\n");
     const module_to_genes={};
     let nodes=[];
     for (i=0;i<modules_str.length;i++){

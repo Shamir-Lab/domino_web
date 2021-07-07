@@ -29,5 +29,9 @@
 }
 
 .domino_logo {
-    mix-blend-mode: soft-light;
+    width: 332px;
+    height: 201px;
+    margin-bottom: 49px;
+    margin-left: 17px;
+    margin-right: 17px; 
 }

@@ -111,6 +111,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             `number of all_edges: ${algOutput.all_edges.length}\n` +
             `number of all_nodes: ${algOutput.all_nodes.length}\n`
         );
+        console.log(algOutput.modules, Object.keys(algOutput.modules))
         res.json({
             algOutput: algOutput,
             webDetails: {

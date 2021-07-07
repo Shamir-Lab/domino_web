@@ -1,0 +1,38 @@
+.modal_popup {
+  display: block;
+  position: fixed;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.25);
+}
+
+.modal_content_popup {
+  display: table;
+  background-color: white;
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  width: 40%;
+  height: 30%;
+  padding: 20px;
+  border-radius: 5px;
+  border: 2px solid black;
+}
+
+.close_popup {
+  color: Black;
+  float: right;
+}
+
+.close_popup:hover {
+  color: red;
+  cursor: pointer;
+}
+
+.text_popup{
+    display: table-row;
+    font-size: 22px;
+    text-align: center
+}
+
