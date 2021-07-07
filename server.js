@@ -88,38 +88,47 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
       return fileContents.mv(`${userDirectory}/${fileName}`);
     });
 
-    Promise.all(fileUploadPromises).then(_ => {
-      console.log("Starting domino py execution ...");
-      let algExecutor =
-          `bash domino_runner.sh ${userDirectory} ${req.body["Active gene file name"]} ${req.body["Network file name"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
-      execSync(algExecutor);
+    Promise.all(fileUploadPromises)
+        .then(_ => {
+            console.log("Starting domino py execution ...");
+            let algExecutor =
+                `bash domino_runner.sh ${userDirectory} ${req.body["Active gene file name"]} ${req.body["Network file name"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+            execSync(algExecutor);
 
-      console.log("Reading the output of domino py ...");
-      const file_output_data = fs.readFileSync(userDirectory+"/modules/modules.out");
+            console.log("Zipping solution ...");
+            const zipPromise = exec(
+                `cd ${userDirectory}/..
+                zip -r ${customFile}.zip ${customFile}`
+            );
 
-      console.log("Zipping solution ...");
-      execSync(
-          `cd ${userDirectory}/..
-            zip -r ${customFile}.zip ${customFile}`
-      );
+            console.log("Reading the output of domino py ...");
+            let algOutput;
+            const postProcessPromise = fs.readFile(userDirectory + "/modules/modules.out", (err, file_output_data) => {
+                console.log("DOMINO post process ...");
+                algOutput = dominoPostProcess(file_output_data, req.files["Network file contents"].data);
+                console.log(
+                    `number of edges: ${algOutput.edges.length}\n` +
+                    `number of all_edges: ${algOutput.all_edges.length}\n` +
+                    `number of all_nodes: ${algOutput.all_nodes.length}\n`
+                );
+            });
 
-      console.log("DOMINO post process ...");
-      const algOutput = dominoPostProcess(file_output_data, req.files["Network file contents"].data);
-      console.log(
-          `number of edges: ${algOutput.edges.length}\n` +
-          `number of all_edges: ${algOutput.all_edges.length}\n` +
-          `number of all_nodes: ${algOutput.all_nodes.length}\n`
-      );
-      res.json({
-          algOutput: algOutput,
-          webDetails: {
-              numModules: Object.keys(algOutput.modules).length,
-              moduleDir: `${customFile}/modules`,
-              zipURL: `${customFile}.zip`,
-          }
-      });
-      res.end();
-    });
+            return new Promise((res, rej) => {
+                Promise.all(zipPromise, postProcessPromise).then(_ => res(algOutput));
+            });
+        })
+        .then(algOutput => {
+
+          res.json({
+              algOutput: algOutput,
+              webDetails: {
+                  numModules: Object.keys(algOutput.modules).length,
+                  moduleDir: `${customFile}/modules`,
+                  zipURL: `${customFile}.zip`,
+              }
+          });
+          res.end();
+        });
 });
 
 app.post("/getHTML", timeout("10m"), (req, res, next) => {
