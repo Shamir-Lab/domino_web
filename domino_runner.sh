@@ -11,6 +11,7 @@ ami_plugins_python_env=${6}
 
 echo ${ami_plugins_python_env}
 echo ${active_genes_file_name}
+echo ${output_folder}
 
 # activate virtual environment
 source ${domino_python_env}/bin/activate
@@ -33,7 +34,7 @@ mkdir ${user_directory}/go
 go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_genes ${network_file} --qval_th 0.05 --output_folder ${user_directory}/go
 
 n_modules=$(wc -l ${user_directory}/modules/modules.out | cut -d ' '  -f 1)
-n_modules=$((n_modules-1))
+n_modules=${n_modules}
 
 
 # visualize modules 
@@ -45,10 +46,4 @@ do
     visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${output_folder} & pids+=($!)
 done
 
-# wait "${pids[@]}"
-for pid in "${pids[@]}"; do
-  wait "$pid"
-done 
-
-echo 'done with visualization'
-ls ${output_folder}
+wait "${pids[@]}"
