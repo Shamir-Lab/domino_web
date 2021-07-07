@@ -30,7 +30,7 @@ source ${ami_plugins_python_env}/bin/activate
 
 mkdir ${user_directory}/go
 
-source /specific/netapp5/gaga/guests/nimsi/ami_plugins/ami_plugins-env/bin/activate && go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_genes ${network_file} --qval_th 0.05 --output_folder ${user_directory}/go
+go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_genes ${network_file} --qval_th 0.05 --output_folder ${user_directory}/go
 
 n_modules=$(wc -l ${user_directory}/modules/modules.out | cut -d ' '  -f 1)
 n_modules=$(($n_modules-1))
@@ -40,6 +40,6 @@ n_modules=$(($n_modules-1))
 for i in $(seq 0 $n_modules); 
 do
 	echo $i
-        source /specific/netapp5/gaga/guests/nimsi/ami_plugins/ami_plugins-env/bin/activate && visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${user_directory}/modules
+        visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${user_directory}/modules
 done
 

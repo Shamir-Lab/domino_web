@@ -43,7 +43,7 @@ const Modules = (props) => {
 
     const sidebar = (
         <div className="wrapper">
-            <!-- Sidebar -->
+            
             <nav id="sidebar">
                 <div className="sidebar-header">
                     <h3>DOMINO Web Executor</h3>
