@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import axios from "axios";
 import { Spinner } from "@chevtek/react-spinners";
 import { spinnerService } from "@chevtek/react-spinners";
 import fileStructure from "./public/files";
 import { conf } from "./config.js";
 import {file_header, file_desc, file_error, file_block} from "./style.module.css";
+import PopUp from "./PopUp";
 
 /**
  JSON Structures
@@ -34,6 +35,15 @@ const FileUpload = (props) => {
           }
         }), {})
     );
+
+    const [seen, setSeen] = useState(false);
+     useEffect(() => {
+                        console.log("test here", seen)
+                    }, [seen]);
+
+    const togglePop = () => {
+        setSeen(!seen)
+    };
 
     const [serverErrorResponse, setServerErrorResponse] = useState("");
 
@@ -98,21 +108,27 @@ const FileUpload = (props) => {
                 console.log(
                     "successfully uploaded: " + fileStructure.files.map(file => file.name).join(", ")
                 );
-
+               
                 // redirect to module component
                 const fileNaming = fileStructure.files.reduce((obj, file) => ({
                     ...obj,
                     [file.name]: fileData[file.name].userFileName
                 }), {});
                 console.log("fileNaming", fileNaming);
-
-                props.history.push({
-                    pathname : '/modules',
-                    state: {
-                        ...fileNaming,
-                        ...res.data.webDetails
-                    }
-                });
+                console.log("", res.data.webDetails)
+                if (!res.data.webDetails.numModules){
+                    setSeen(true)
+          
+                }
+                else{
+                    props.history.push({
+                        pathname : '/modules',
+                        state: {
+                            ...fileNaming,
+                            ...res.data.webDetails
+                        }
+                    });
+                }
             })
             .catch(error => {
                 spinnerService.hide("mySpinner");
@@ -193,6 +209,10 @@ const FileUpload = (props) => {
 
     return (
         <>
+            <div>
+                {seen ? <PopUp toggle={togglePop} /> : null}
+            </div>
+
             <div className="jumbotron">
                 <p style={{fontSize: "45px", textAlign: "center"}}>
                     File Upload

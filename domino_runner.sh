@@ -33,13 +33,16 @@ mkdir ${user_directory}/go
 go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_genes ${network_file} --qval_th 0.05 --output_folder ${user_directory}/go
 
 n_modules=$(wc -l ${user_directory}/modules/modules.out | cut -d ' '  -f 1)
-n_modules=$(($n_modules-1))
+n_modules=$((n_modules-1))
+
 
 # visualize modules 
 
+declare -a pids=();
 for i in $(seq 0 $n_modules); 
 do
-	echo $i
-        visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${user_directory}/modules
+    echo $i
+    visualize_module --module_file_name ${user_directory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file} --network_file_name ${network_file} --go_file_name ${user_directory}/go/module_go_${i}.tsv --output_folder ${user_directory}/modules & pids+=($!)
 done
 
+wait "${pids[@]}"
