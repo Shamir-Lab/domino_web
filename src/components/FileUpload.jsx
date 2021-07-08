@@ -128,10 +128,17 @@ const FileUpload = (props) => {
                 );
                
                 // redirect to module component
-                const fileNaming = fileStructure.files.reduce((obj, file) => ({
-                    ...obj,
-                    [file.name]: fileData[file.name].userFileName
-                }), {});
+                const fileNaming = fileStructure.files.reduce((obj, file) => {
+                    const f = fileData[file.name];
+
+                    return {
+                        ...obj,
+                        [file.name]: (f.dropdownOption === DROPDOWN_DEFAULT ?
+                            fileData[file.name].userFileName:
+                            f.dropdownOption
+                        )
+                    };
+                }, {});
                 if (!res.data.webDetails.numModules){
                     setSeen(true);
                 }

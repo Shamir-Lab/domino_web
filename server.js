@@ -12,7 +12,7 @@ const ncp = require("ncp").ncp;
 const conf = require("./config.js").conf;
 const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
-const util = require('util')
+const util = require('util');
 const app = express();
 const { dominoPostProcess, separateActiveGenes } = require("./utils.js");
 
@@ -99,13 +99,35 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
          *      req
          *      userFileNames
          *      */
+
         const subRunDirectory = `${userDirectory}/${setName}`;
 
-        await fs.mkdir(`${subRunDirectory}`);
-        await fs.mkdir(`${subRunDirectory}/modules`);
+        /* Promise wrappers. */
+        const makeDir = util.promisify(fs.mkdir);
+        const writeFile = util.promisify(fs.writeFile);
+        const readFile = util.promisify(fs.readFile);
+
+        /**
+         * Executes a shell command and return it as a Promise.
+         * @param cmd {string}
+         * @return {Promise<string>}
+         */
+        const execAsync = (cmd) => {
+            return new Promise((resolve, reject) => {
+                exec(cmd, (error, stdout, stderr) => {
+                    if (error) {
+                        console.warn(error);
+                    }
+                    resolve(stdout? stdout : stderr);
+                });
+            });
+        }
+
+        await makeDir(`${subRunDirectory}`);
+        await makeDir(`${subRunDirectory}/modules`);
 
         // active gene file
-        const p1 = fs.writeFile(
+        const p1 = writeFile(
             `${subRunDirectory}/active_gene_file.txt`,
             activeGenesSet[setName].join("\n")
         );
@@ -114,7 +136,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         let p2;
         let filePath = req.body[`Network file path`];
         if (filePath) {
-            p2 = exec(`cp ${filePath} ${subRunDirectory}`);
+            p2 = execAsync(`cp ${filePath} ${subRunDirectory}`);
         } else {
             let fileContents = req.files[`Network file contents`];
             p2 = fileContents.mv(`${subRunDirectory}/${userFileNames["Network file"]}`);
@@ -125,12 +147,22 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         console.log(`Starting domino py execution on set ${setName}...`);
         let algExecutor =
             `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
-        await exec(algExecutor);
+        await execAsync(algExecutor);
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
-        const dominoOutput = await fs.readFile(
+        const dominoOutput = await readFile(
             `${subRunDirectory}/modules/modules.out`
         );
+
+        await execAsync(`
+            FILE=${subRunDirectory}/modules/modules_0.html
+            if test -f "$FILE"
+            then
+                echo "$FILE exists."
+            else
+                echo "$FILE does not exist."
+            fi
+            `, {stdio: "inherit"});
 
         const algOutput = dominoPostProcess(
             dominoOutput,
@@ -145,78 +177,31 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         allAlgOutput[setName] = algOutput;
     };
 
-    const dominoRunPromises = setNames.map(setName => {
-        organizeDOMINORun(userDirectory, setName);
-    });
+    const dominoRunPromises = setNames.map(setName =>
+        organizeDOMINORun(userDirectory, setName)
+    );
 
-    /*
-    setNames.map(setName => {
-        const subRunDirectory = `${userDirectory}/${setName}`;
+    Promise.all(dominoRunPromises)
+        .then((_) => {
+            execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
 
-        fs.mkdirSync(`${subRunDirectory}`);
-        fs.mkdirSync(`${subRunDirectory}/modules`);
-
-        // active gene file
-        fs.writeFileSync(
-                `${subRunDirectory}/active_gene_file.txt`,
-                activeGenesSet[setName].join("\n")
+            console.log("Zipping solution ...");
+            execSync(
+                `cd ${userDirectory}/..
+                zip -r ${customFile}.zip ${customFile}`
             );
 
-        // network file
-        let filePath = req.body[`Network file path`];
-        if (filePath) {
-            execSync(`cp ${filePath} ${subRunDirectory}`);
-        } else {
-            let fileContents = req.files[`Network file contents`];
-            fileContents.mv(`${subRunDirectory}/${userFileNames["Network file"]}`);
-        }
-
-        console.log(`Starting domino py execution on set ${setName}...`);
-        let algExecutor =
-            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
-        execSync(algExecutor);
-
-        console.log(`Reading the output of domino py on set ${setName} ...`);
-        const dominoOutput = fs.readFileSync(
-            `${subRunDirectory}/modules/modules.out`
-        );
-
-
-        const algOutput = dominoPostProcess(
-            dominoOutput,
-            fs.readFileSync(`${subRunDirectory}/${userFileNames["Network file"]}`)
-        );
-        console.log(`DOMINO post process on set ${setName} ...`);
-        console.log(
-            `number of edges: ${algOutput.edges.length}\n` +
-            `number of all_edges: ${algOutput.all_edges.length}\n` +
-            `number of all_nodes: ${algOutput.all_nodes.length}\n`
-        );
-        allAlgOutput[setName] = algOutput;
-    });
-
-     */
-
-    dominoRunPromises.then(_ => {
-        execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
-
-        console.log("Zipping solution ...");
-        execSync(
-            `cd ${userDirectory}/..
-            zip -r ${customFile}.zip ${customFile}`
-        );
-
-        const algOutput = allAlgOutput[setNames[0]];
-        res.json({
-            algOutput: algOutput,
-            webDetails: {
-                numModules: Object.keys(algOutput.modules).length,
-                moduleDir: `${userDirectory}/${setNames[0]}/modules`,
-                zipURL: `${customFile}.zip`,
-            }
+            const algOutput = allAlgOutput[setNames[0]];
+            res.json({
+                algOutput: algOutput,
+                webDetails: {
+                    numModules: Object.keys(algOutput.modules).length,
+                    moduleDir: `${userDirectory}/${setNames[0]}/modules`,
+                    zipURL: `${customFile}.zip`,
+                }
+            });
+            res.end();
         });
-        res.end();
-    });
 
 
 
