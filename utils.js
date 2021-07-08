@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
     modules_str= py_output=='' ? [] : py_output.split("\n");
@@ -115,7 +117,19 @@ const separateActiveGenes = (fileString) => {
     return activeGenesSet;
 };
 
+const writeGeneSetsToFile = (baseDirectory, activeGenesSet) => {
+    /** For each key:value pair of setName: list of genes,
+     * we write the list of genes to a text file within .
+     * Assumes a folder named by the gene set name for the
+     * sub run of DOMINO is already made. */
+    const setNames = Object.keys(activeGenesSet);
+    return setNames.map(setName => {
+        fs.writeFile(`${baseDirectory}/${setName}/active_gene_file.txt`, activeGenesSet[setName].join("\n"));
+    });
+};
+
 module.exports = {
     dominoPostProcess,
-    separateActiveGenes
+    separateActiveGenes,
+    writeGeneSetsToFile
 };
