@@ -196,50 +196,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 algOutput: algOutput,
                 webDetails: {
                     numModules: Object.keys(algOutput.modules).length,
-                    moduleDir: `${userDirectory}/${setNames[0]}/modules`,
+                    moduleDir: `${customFile}/${setNames[0]}/modules`,
                     zipURL: `${customFile}.zip`,
                 }
             });
             res.end();
         });
-
-
-
-    /*
-    Promise.all(fileUploadPromises).then(_ => {
-        console.log("Starting domino py execution ...");
-        let algExecutor =
-            `bash domino_runner.sh ${userDirectory} ${userFileNames["Active gene file"]} ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
-        execSync(algExecutor);
-
-        console.log("Reading the output of domino py ...");
-        const file_output_data = fs.readFileSync(userDirectory+"/modules/modules.out");
-
-        console.log("Zipping solution ...");
-        execSync(
-            `cd ${userDirectory}/..
-            zip -r ${customFile}.zip ${customFile}`
-        );
-
-        console.log("DOMINO post process ...");
-        const algOutput = dominoPostProcess(file_output_data, fs.readFileSync(userDirectory + "/" + userFileNames["Network file"]));
-        console.log(
-            `number of edges: ${algOutput.edges.length}\n` +
-            `number of all_edges: ${algOutput.all_edges.length}\n` +
-            `number of all_nodes: ${algOutput.all_nodes.length}\n`
-        );
-
-        res.json({
-            algOutput: algOutput,
-            webDetails: {
-                numModules: Object.keys(algOutput.modules).length,
-                moduleDir: `${customFile}/modules`,
-                zipURL: `${customFile}.zip`,
-            }
-        });
-        res.end();
-    });
-     */
 
 });
 
