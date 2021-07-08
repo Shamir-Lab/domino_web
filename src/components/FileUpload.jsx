@@ -50,17 +50,22 @@ const FileUpload = (props) => {
         /** The onClick attribute for the upload button.
          * The files uploaded by the user are sent to the server
          * to run the algorithm via a post request.
-         * Files chosen in the dropdown menu are always analyzed first.*/
+         * Files chosen in the dropdown menu are always analyzed first.
+         * Passes if for each required input file:
+         *      a file of the appropriate size and file name is uploaded by the user,
+         *      OR a file from the list of available files is chosen.*/
 
         console.log("prepare for uploading...");
+        setServerErrorResponse("");
 
         /* Validate inputted files */
         let goodFiles = true;
         for (const file of fileStructure.files) {
             const ref = fileData[file.name].inputTagRef;
 
-            // no file was inputted for this field
-            if (ref.current.files.length === 0 && fileData[file.name].dropdownOption === DROPDOWN_DEFAULT) {
+            const noFileChosen = ref.current.files.length === 0 && fileData[file.name].dropdownOption === DROPDOWN_DEFAULT;
+            const notValidInputFileName = ref.current.files.length !== 0 && fileData[file.name].userFileName === "";
+            if (noFileChosen || notValidInputFileName) {
                 goodFiles = false;
                 continue;
             }
@@ -114,7 +119,6 @@ const FileUpload = (props) => {
 
         console.log("Sending POST request ...");
         spinnerService.show("mySpinner");
-        setServerErrorResponse("");
         axios
             .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
             .then(res => {

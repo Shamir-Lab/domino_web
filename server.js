@@ -69,9 +69,16 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         /* Returns the string's base name before any ".txt" or ".sif" extension. */
         return str.slice(0, str.indexOf("."));
     };
+
     let fileNames = fileStructure.files.map(file => file.name);
+    const userFileNames = fileNames.reduce(
+        (obj, file) => ({
+            ...obj,
+            [file]: req.body[`${file} name`]
+        }),{}); // input files to DOMINO selected by the user
+
     let customFile = [
-        ...fileNames.map(file => strip_extension(req.body[`${file} name`])),
+        ...Object.values(userFileNames).map(userFileName => strip_extension(userFileName)),
         timestamp
     ].join("@");
     let userDirectory = `${__dirname}/public/${customFile}`;
@@ -79,20 +86,23 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
 
     // upload files to userDirectory
+
     const fileUploadPromises = fileNames.map(file => {
-      let fileName = req.body[`${file} name`];
+      let userFileName = userFileNames[file];
+      let filePath = req.body[`${file} path`];
       let fileContents = req.files[`${file} contents`];
-      if (fileName === "") {
-          return; // potential source of bug
+
+      if (filePath) {
+          return exec(`cp ${filePath} ${userDirectory}`);
       }
 
-      return fileContents.mv(`${userDirectory}/${fileName}`);
+      return fileContents.mv(`${userDirectory}/${userFileName}`);
     });
 
     Promise.all(fileUploadPromises).then(_ => {
         console.log("Starting domino py execution ...");
         let algExecutor =
-            `bash domino_runner.sh ${userDirectory} ${req.body["Active gene file name"]} ${req.body["Network file name"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+            `bash domino_runner.sh ${userDirectory} ${userFileNames["Active gene file"]} ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
         execSync(algExecutor);
 
         console.log("Reading the output of domino py ...");
@@ -105,13 +115,13 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         );
 
         console.log("DOMINO post process ...");
-        const algOutput = dominoPostProcess(file_output_data, req.files["Network file contents"].data);
+        const algOutput = dominoPostProcess(file_output_data, fs.readFileSync(userDirectory + "/" + userFileNames["Network file"]));
         console.log(
             `number of edges: ${algOutput.edges.length}\n` +
             `number of all_edges: ${algOutput.all_edges.length}\n` +
             `number of all_nodes: ${algOutput.all_nodes.length}\n`
         );
-        console.log(algOutput.modules, Object.keys(algOutput.modules))
+
         res.json({
             algOutput: algOutput,
             webDetails: {
