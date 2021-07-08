@@ -91,22 +91,27 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
 
 const separateActiveGenes = (fileString) => {
     /** Partitions active genes into sets of genes.
-     * Returns -1 if the string has one column.
-     * Returns an object {setID: list of genes} if the string has two columns.
+     * Returns an object {setID: list of genes}.
+     * In the case that the file has one column, as opposed to two,
+     * return an object with a single key:value pair.
      */
     const lines = fileString.split("\n");
-    if (lines[0].split("\t").length === 1) {
-        return -1;
-    }
     const activeGenesSet = {};
-    lines.map(line => {
-        const fields = line.split("\t");
-        const [gene, setID] = fields;
-        if (activeGenesSet[[setID]] === undefined) {
-            activeGenesSet[[setID]] = [];
-        }
-        activeGenesSet[[setID]].push(gene);
-    })
+
+    if (lines[0].split("\t").length === 1) {
+        const genericSetName = "GenericSet";
+        activeGenesSet[genericSetName] = lines;
+    } else {
+        lines.map(line => {
+            const fields = line.split("\t");
+            const [gene, setID] = fields;
+            if (activeGenesSet[[setID]] === undefined) {
+                activeGenesSet[[setID]] = [];
+            }
+            activeGenesSet[[setID]].push(gene);
+        })
+    }
+
     return activeGenesSet;
 };
 
