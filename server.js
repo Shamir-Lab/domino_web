@@ -12,8 +12,9 @@ const ncp = require("ncp").ncp;
 const conf = require("./config.js").conf;
 const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
+const util = require('util')
 const app = express();
-const { dominoPostProcess } = require("./utils.js");
+const { dominoPostProcess, separateActiveGenes } = require("./utils.js");
 
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -63,7 +64,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
     // make userDirectory, which stores the user's file on the server
-    let timestamp = (new Date()).getTime(); // the number of elapsed milliseconds since Jan 1, 1970
+    let timestamp = (new Date()).getTime();
 
     let strip_extension = (str) => {
         /* Returns the string's base name before any ".txt" or ".sif" extension. */
@@ -83,22 +84,78 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     ].join("@");
     let userDirectory = `${__dirname}/public/${customFile}`;
     fs.mkdirSync(userDirectory);
-    fs.mkdirSync(userDirectory + "/modules"); // to store the output of DOMINO
 
-    // upload files to userDirectory
+    // sub runs directory
 
-    const fileUploadPromises = fileNames.map(file => {
-      let userFileName = userFileNames[file];
-      let filePath = req.body[`${file} path`];
-      let fileContents = req.files[`${file} contents`];
+    const activeGeneContent = new String(req.files["Active gene file contents"].data);
+    const activeGenesSet = separateActiveGenes(activeGeneContent);
+    const setNames = Object.keys(activeGenesSet);
+    const allAlgOutput = {};
+    setNames.map(setName => {
+        const subRunDirectory = `${userDirectory}/${setName}`;
 
-      if (filePath) {
-          return exec(`cp ${filePath} ${userDirectory}`);
-      }
+        fs.mkdirSync(`${subRunDirectory}`);
+        fs.mkdirSync(`${subRunDirectory}/modules`);
 
-      return fileContents.mv(`${userDirectory}/${userFileName}`);
+        // active gene file
+        fs.writeFileSync(
+                `${subRunDirectory}/active_gene_file.txt`,
+                activeGenesSet[setName].join("\n")
+            );
+
+        // network file
+        let filePath = req.body[`Network file path`];
+        if (filePath) {
+            execSync(`cp ${filePath} ${subRunDirectory}`);
+        } else {
+            let fileContents = req.files[`Network file contents`];
+            fileContents.mv(`${subRunDirectory}/${userFileNames["Network file"]}`);
+        }
+
+        console.log(`Starting domino py execution on set ${setName}...`);
+        let algExecutor =
+            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+        execSync(algExecutor);
+
+        console.log(`Reading the output of domino py on set ${setName} ...`);
+        const dominoOutput = fs.readFileSync(
+            `${subRunDirectory}/modules/modules.out`
+        );
+
+
+        const algOutput = dominoPostProcess(
+            dominoOutput,
+            fs.readFileSync(`${subRunDirectory}/${userFileNames["Network file"]}`)
+        );
+        console.log(`DOMINO post process on set ${setName} ...`);
+        console.log(
+            `number of edges: ${algOutput.edges.length}\n` +
+            `number of all_edges: ${algOutput.all_edges.length}\n` +
+            `number of all_nodes: ${algOutput.all_nodes.length}\n`
+        );
+        allAlgOutput[setName] = algOutput;
     });
 
+    execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
+
+    console.log("Zipping solution ...");
+    execSync(
+        `cd ${userDirectory}/..
+            zip -r ${customFile}.zip ${customFile}`
+    );
+
+    const algOutput = allAlgOutput[setNames[0]];
+    res.json({
+        algOutput: algOutput,
+        webDetails: {
+            numModules: Object.keys(algOutput.modules).length,
+            moduleDir: `${userDirectory}/${setNames[0]}/modules`,
+            zipURL: `${customFile}.zip`,
+        }
+    });
+    res.end();
+
+    /*
     Promise.all(fileUploadPromises).then(_ => {
         console.log("Starting domino py execution ...");
         let algExecutor =
@@ -132,6 +189,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         });
         res.end();
     });
+     */
 
 });
 

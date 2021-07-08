@@ -97,7 +97,7 @@ const separateActiveGenes = (fileString) => {
      * In the case that the file has one column, as opposed to two,
      * return an object with a single key:value pair.
      */
-    const lines = fileString.split("\n");
+    const lines = fileString.split("\r\n");
     const activeGenesSet = {};
 
     if (lines[0].split("\t").length === 1) {
@@ -121,10 +121,17 @@ const writeGeneSetsToFile = (baseDirectory, activeGenesSet) => {
     /** For each key:value pair of setName: list of genes,
      * we write the list of genes to a text file within .
      * Assumes a folder named by the gene set name for the
-     * sub run of DOMINO is already made. */
+     * sub run of DOMINO is already made.
+     * Returns a list of Promises.*/
     const setNames = Object.keys(activeGenesSet);
     return setNames.map(setName => {
-        fs.writeFile(`${baseDirectory}/${setName}/active_gene_file.txt`, activeGenesSet[setName].join("\n"));
+        fs.writeFile(
+            `${baseDirectory}/${setName}/active_gene_file.txt`,
+            activeGenesSet[setName].join("\n"),
+            (err) => {
+                console.log(err);
+            }
+        );
     });
 };
 
