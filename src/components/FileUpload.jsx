@@ -6,6 +6,8 @@ import fileStructure from "./public/files";
 import { conf } from "./config.js";
 import {file_header, file_desc, file_error, file_block} from "./style.module.css";
 import PopUp from "./PopUp";
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Dropdown from 'react-bootstrap/Dropdown';
 
 /**
  JSON Structures
@@ -25,12 +27,14 @@ import PopUp from "./PopUp";
 const MAX_FILE_SIZE_MB = 10;
 
 const FileUpload = (props) => {
+    const DROPDOWN_DEFAULT = "Select from available network files";
     const [fileData, setFileData] = useState(
         fileStructure.files.reduce((obj, file) => ({
           ...obj,
           [file.name]: {
               userFileName: "",
               inputTagRef: React.createRef(),
+              dropdownOption: DROPDOWN_DEFAULT,
               errorMessage: ""
           }
         }), {})
@@ -45,7 +49,8 @@ const FileUpload = (props) => {
     const uploadFiles = () => {
         /** The onClick attribute for the upload button.
          * The files uploaded by the user are sent to the server
-         * to run the algorithm via a post request.*/
+         * to run the algorithm via a post request.
+         * Files chosen in the dropdown menu are always analyzed first.*/
 
         console.log("prepare for uploading...");
 
@@ -55,8 +60,12 @@ const FileUpload = (props) => {
             const ref = fileData[file.name].inputTagRef;
 
             // no file was inputted for this field
-            if (ref.current.files.length === 0) {
+            if (ref.current.files.length === 0 && fileData[file.name].dropdownOption === DROPDOWN_DEFAULT) {
                 goodFiles = false;
+                continue;
+            }
+
+            if (fileData[file.name].dropdownOption !== DROPDOWN_DEFAULT) {
                 continue;
             }
 
@@ -89,9 +98,18 @@ const FileUpload = (props) => {
         const data = new FormData();
         for (const file of fileStructure.files) {
             const ref = fileData[file.name].inputTagRef;
+            const dropdownOption = fileData[file.name].dropdownOption;
 
-            data.append(`${file.name} name`, fileData[file.name].userFileName);
-            data.append(`${file.name} contents`, ref.current.files[0]);
+            if (dropdownOption !== DROPDOWN_DEFAULT) {
+                data.append(`${file.name} name`, dropdownOption);
+                data.append(
+                    `${file.name} path`,
+                    file.availableFiles.directory + dropdownOption
+                );
+            } else {
+                data.append(`${file.name} name`, fileData[file.name].userFileName);
+                data.append(`${file.name} contents`, ref.current.files[0]);
+            }
         }
 
         console.log("Sending POST request ...");
@@ -144,47 +162,78 @@ const FileUpload = (props) => {
                 </div>
 
                 {/* Form */}
-                <div className="custom-file">
-                    <input
-                        className="form-control input-sm custom-file-input"
-                        type="file"
-                        ref={fileData[file.name].inputTagRef}
-                        onChange={e => {
-                            let name = "";
-                            if (e.target.files[0] !== undefined) {
-                                name = e.target.files[0].name;
-                            }
-                            setFileData(prev => ({
-                                ...prev,
-                                [file.name] : {
-                                    ...prev[file.name],
-                                    userFileName: name
-                                }
-                            }));
-                        }}
-                    />
-                    <label className="custom-file-label">
-                        Choose file...
-                    </label>
-
-                    <div className="form-group">
+                <div className = "row">
+                    {/* Dropdown menu for available files. */}
+                    {file.availableFiles ?
+                        <>
+                            <div className = "col">
+                                <DropdownButton
+                                    title = {fileData[[file.name]].dropdownOption}
+                                    onSelect={fileName =>
+                                        setFileData(prev => ({
+                                            ...prev,
+                                            [file.name]: {
+                                                ...prev[file.name],
+                                                dropdownOption: fileName
+                                                }
+                                            }))
+                                    }>
+                                    {file.availableFiles.fileNames.map(fileName =>
+                                        <Dropdown.Item eventKey = {fileName}>
+                                            {fileName}
+                                        </Dropdown.Item>
+                                    )}
+                                </DropdownButton>
+                            </div>
+                            <div className = "col">
+                                <span>or ...</span>
+                            </div>
+                        </>
+                        :
+                        <></>
+                    }
+                    <div className={(file.availableFiles ? "col-8" : "col") + " custom-file"}>
                         <input
-                            className="form-control"
-                            type="text"
-                            value={
-                                fileData[file.name] === undefined ?
-                                    "" :
-                                    fileData[file.name].userFileName
-                            }
-                            readOnly={true}
+                            className="form-control input-sm custom-file-input"
+                            type="file"
+                            ref={fileData[file.name].inputTagRef}
+                            onChange={e => {
+                                let name = "";
+                                if (e.target.files[0] !== undefined) {
+                                    name = e.target.files[0].name;
+                                }
+                                setFileData(prev => ({
+                                    ...prev,
+                                    [file.name] : {
+                                        ...prev[file.name],
+                                        userFileName: name
+                                    }
+                                }));
+                            }}
                         />
+                        <label className="custom-file-label">
+                            Choose file...
+                        </label>
+
+                        <div className="form-group">
+                            <input
+                                className="form-control"
+                                type="text"
+                                value={
+                                    fileData[file.name] === undefined ?
+                                        "" :
+                                        fileData[file.name].userFileName
+                                }
+                                readOnly={true}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* File information and Error message*/}
                 <div
                     style = {{textAlign: "left",
-                              marginTop: "10px"}}>
+                              marginTop: "40px"}}>
                     <p className={file_desc}>
                         {(file.maxSize === 0) ?
                             <></>:

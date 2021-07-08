@@ -36,7 +36,7 @@ go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_
 n_modules=$(wc -l ${user_directory}/modules/modules.out | cut -d ' '  -f 1)
 n_modules=${n_modules}
 
-
+echo "num modules $n_modules"
 # visualize modules 
 
 declare -a pids=();
