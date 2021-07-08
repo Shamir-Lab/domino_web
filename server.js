@@ -91,6 +91,65 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     const activeGenesSet = separateActiveGenes(activeGeneContent);
     const setNames = Object.keys(activeGenesSet);
     const allAlgOutput = {};
+
+    const organizeDOMINORun = async (userDirectory, setName) => {
+        /** Manages one run of DOMINO until completion of DOMINO postprocessing.
+         * Takes advantage of:
+         *      activeGenesSet
+         *      req
+         *      userFileNames
+         *      */
+        const subRunDirectory = `${userDirectory}/${setName}`;
+
+        await fs.mkdir(`${subRunDirectory}`);
+        await fs.mkdir(`${subRunDirectory}/modules`);
+
+        // active gene file
+        const p1 = fs.writeFile(
+            `${subRunDirectory}/active_gene_file.txt`,
+            activeGenesSet[setName].join("\n")
+        );
+
+        // network file
+        let p2;
+        let filePath = req.body[`Network file path`];
+        if (filePath) {
+            p2 = exec(`cp ${filePath} ${subRunDirectory}`);
+        } else {
+            let fileContents = req.files[`Network file contents`];
+            p2 = fileContents.mv(`${subRunDirectory}/${userFileNames["Network file"]}`);
+        }
+
+        await Promise.all([p1, p2]); // load the active gene and network file
+
+        console.log(`Starting domino py execution on set ${setName}...`);
+        let algExecutor =
+            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+        await exec(algExecutor);
+
+        console.log(`Reading the output of domino py on set ${setName} ...`);
+        const dominoOutput = await fs.readFile(
+            `${subRunDirectory}/modules/modules.out`
+        );
+
+        const algOutput = dominoPostProcess(
+            dominoOutput,
+            fs.readFileSync(`${subRunDirectory}/${userFileNames["Network file"]}`)
+        );
+        console.log(`DOMINO post process on set ${setName} ...`);
+        console.log(
+            `number of edges: ${algOutput.edges.length}\n` +
+            `number of all_edges: ${algOutput.all_edges.length}\n` +
+            `number of all_nodes: ${algOutput.all_nodes.length}\n`
+        );
+        allAlgOutput[setName] = algOutput;
+    };
+
+    const dominoRunPromises = setNames.map(setName => {
+        organizeDOMINORun(userDirectory, setName);
+    });
+
+    /*
     setNames.map(setName => {
         const subRunDirectory = `${userDirectory}/${setName}`;
 
@@ -136,24 +195,30 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         allAlgOutput[setName] = algOutput;
     });
 
-    execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
+     */
 
-    console.log("Zipping solution ...");
-    execSync(
-        `cd ${userDirectory}/..
+    dominoRunPromises.then(_ => {
+        execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
+
+        console.log("Zipping solution ...");
+        execSync(
+            `cd ${userDirectory}/..
             zip -r ${customFile}.zip ${customFile}`
-    );
+        );
 
-    const algOutput = allAlgOutput[setNames[0]];
-    res.json({
-        algOutput: algOutput,
-        webDetails: {
-            numModules: Object.keys(algOutput.modules).length,
-            moduleDir: `${userDirectory}/${setNames[0]}/modules`,
-            zipURL: `${customFile}.zip`,
-        }
+        const algOutput = allAlgOutput[setNames[0]];
+        res.json({
+            algOutput: algOutput,
+            webDetails: {
+                numModules: Object.keys(algOutput.modules).length,
+                moduleDir: `${userDirectory}/${setNames[0]}/modules`,
+                zipURL: `${customFile}.zip`,
+            }
+        });
+        res.end();
     });
-    res.end();
+
+
 
     /*
     Promise.all(fileUploadPromises).then(_ => {
