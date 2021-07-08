@@ -117,26 +117,24 @@ const separateActiveGenes = (fileString) => {
     return activeGenesSet;
 };
 
-const writeGeneSetsToFile = (baseDirectory, activeGenesSet) => {
-    /** For each key:value pair of setName: list of genes,
-     * we write the list of genes to a text file within .
-     * Assumes a folder named by the gene set name for the
-     * sub run of DOMINO is already made.
-     * Returns a list of Promises.*/
-    const setNames = Object.keys(activeGenesSet);
-    return setNames.map(setName => {
-        fs.writeFile(
-            `${baseDirectory}/${setName}/active_gene_file.txt`,
-            activeGenesSet[setName].join("\n"),
-            (err) => {
-                console.log(err);
-            }
-        );
-    });
-};
+const draftSessionDirectoryDetails = (userFileNames) => {
+    /** Returns the directory path and directory name for this one user's domino web execution session. */
 
+    let strip_extension = (str) => {
+        /* Returns the string's base name before any ".txt" or ".sif" extension. */
+        return str.slice(0, str.indexOf("."));
+    };
+
+    let timestamp = (new Date()).getTime();
+    let customFile = [
+        ...Object.values(userFileNames).map(userFileName => strip_extension(userFileName)),
+        timestamp
+    ].join("@");
+
+    return [`${__dirname}/public/${customFile}`, customFile];
+};
 module.exports = {
     dominoPostProcess,
     separateActiveGenes,
-    writeGeneSetsToFile
+    draftSessionDirectoryDetails
 };

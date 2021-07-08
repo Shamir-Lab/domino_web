@@ -14,7 +14,11 @@ const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
 const util = require('util');
 const app = express();
-const { dominoPostProcess, separateActiveGenes } = require("./utils.js");
+const {
+    dominoPostProcess,
+    separateActiveGenes,
+    draftSessionDirectoryDetails
+} = require("./utils.js");
 
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -60,16 +64,28 @@ app.get('/file_upload', ...);
 app.get('/modules', ...);
 * */
 
+/* Promise wrappers. */
+const makeDir = util.promisify(fs.mkdir);
+const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFile);
+const execAsync = (cmd) => {
+    /**
+     * Executes a shell command and return it as a Promise.
+     * @param cmd {string}
+     * @return {Promise<string>}
+     */
+    return new Promise((resolve, reject) => {
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                console.warn(error);
+            }
+            resolve(stdout? stdout : stderr);
+        });
+    });
+}
+
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
-
-    // make userDirectory, which stores the user's file on the server
-    let timestamp = (new Date()).getTime();
-
-    let strip_extension = (str) => {
-        /* Returns the string's base name before any ".txt" or ".sif" extension. */
-        return str.slice(0, str.indexOf("."));
-    };
 
     let fileNames = fileStructure.files.map(file => file.name);
     const userFileNames = fileNames.reduce(
@@ -78,56 +94,29 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             [file]: req.body[`${file} name`]
         }),{}); // input files to DOMINO selected by the user
 
-    let customFile = [
-        ...Object.values(userFileNames).map(userFileName => strip_extension(userFileName)),
-        timestamp
-    ].join("@");
-    let userDirectory = `${__dirname}/public/${customFile}`;
-    fs.mkdirSync(userDirectory);
+    const [sessionDirectory, customFile] = draftSessionDirectoryDetails(userFileNames);
 
-    // sub runs directory
+    fs.mkdirSync(sessionDirectory);
 
-    const activeGeneContent = new String(req.files["Active gene file contents"].data);
-    const activeGenesSet = separateActiveGenes(activeGeneContent);
+    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
     const setNames = Object.keys(activeGenesSet);
-    const allAlgOutput = {};
-
-    const organizeDOMINORun = async (userDirectory, setName) => {
+    
+    const singleDOMINORun = async (sessionDirectory, setName) => {
         /** Manages one run of DOMINO until completion of DOMINO postprocessing.
+         * Returns a Promise.
          * Takes advantage of:
          *      activeGenesSet
          *      req
          *      userFileNames
          *      */
 
-        const subRunDirectory = `${userDirectory}/${setName}`;
-
-        /* Promise wrappers. */
-        const makeDir = util.promisify(fs.mkdir);
-        const writeFile = util.promisify(fs.writeFile);
-        const readFile = util.promisify(fs.readFile);
-
-        /**
-         * Executes a shell command and return it as a Promise.
-         * @param cmd {string}
-         * @return {Promise<string>}
-         */
-        const execAsync = (cmd) => {
-            return new Promise((resolve, reject) => {
-                exec(cmd, (error, stdout, stderr) => {
-                    if (error) {
-                        console.warn(error);
-                    }
-                    resolve(stdout? stdout : stderr);
-                });
-            });
-        }
+        const subRunDirectory = `${sessionDirectory}/${setName}`;
 
         await makeDir(`${subRunDirectory}`);
         await makeDir(`${subRunDirectory}/modules`);
 
         // active gene file
-        const p1 = writeFile(
+        let p1 = writeFile(
             `${subRunDirectory}/active_gene_file.txt`,
             activeGenesSet[setName].join("\n")
         );
@@ -149,20 +138,32 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
         await execAsync(algExecutor);
 
+        /*
+        console.log(`Reading the output of domino py and network file for set ${setName} ...`);
+        p1 = readFile(`${subRunDirectory}/modules/modules.out`);
+        p2 = readFile(`${subRunDirectory}/${userFileNames["Network file"]}`);
+
+        return Promise.all([p1, p2])
+            .then((dominoOutput, networkFileData) => {
+                console.log(new String(dominoOutput), new String(networkFileData));
+                const algOutput = dominoPostProcess(dominoOutput, networkFileData);
+                console.log(algOutput);
+                console.log(`DOMINO post process on set ${setName} ...`);
+                console.log(
+                    `number of edges: ${algOutput.edges.length}\n` +
+                    `number of all_edges: ${algOutput.all_edges.length}\n` +
+                    `number of all_nodes: ${algOutput.all_nodes.length}\n`
+                );
+                allAlgOutput[setName] = algOutput;
+            });
+
+         */
+
+
         console.log(`Reading the output of domino py on set ${setName} ...`);
         const dominoOutput = await readFile(
             `${subRunDirectory}/modules/modules.out`
         );
-
-        await execAsync(`
-            FILE=${subRunDirectory}/modules/modules_0.html
-            if test -f "$FILE"
-            then
-                echo "$FILE exists."
-            else
-                echo "$FILE does not exist."
-            fi
-            `, {stdio: "inherit"});
 
         const algOutput = dominoPostProcess(
             dominoOutput,
@@ -174,24 +175,21 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             `number of all_edges: ${algOutput.all_edges.length}\n` +
             `number of all_nodes: ${algOutput.all_nodes.length}\n`
         );
-        allAlgOutput[setName] = algOutput;
+        // allAlgOutput[setName] = algOutput;
+        return {[setName]: algOutput};
     };
 
     const dominoRunPromises = setNames.map(setName =>
-        organizeDOMINORun(userDirectory, setName)
+        singleDOMINORun(sessionDirectory, setName)
     );
 
     Promise.all(dominoRunPromises)
-        .then((_) => {
-            execSync(`ls -LR ${userDirectory}`, {stdio: "inherit"});
+        .then(listOfOutputs => {
+            const algOutputs = listOfOutputs.reduce((obj, output) =>
+                Object.assign(obj, output)
+            , {});
 
-            console.log("Zipping solution ...");
-            execSync(
-                `cd ${userDirectory}/..
-                zip -r ${customFile}.zip ${customFile}`
-            );
-
-            const algOutput = allAlgOutput[setNames[0]];
+            const algOutput = algOutputs[setNames[0]];
             res.json({
                 algOutput: algOutput,
                 webDetails: {
@@ -200,8 +198,14 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                     zipURL: `${customFile}.zip`,
                 }
             });
-            res.end();
-        });
+        })
+        .then(_ => {
+            console.log("Zipping solution ...");
+            return execAsync(
+                `cd ${sessionDirectory}/..
+                zip -r ${customFile}.zip ${customFile}`
+            )
+        }).then(_ => res.end());
 
 });
 
