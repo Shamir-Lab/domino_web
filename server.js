@@ -1,28 +1,28 @@
-const fileStructure = require("./src/components/public/files_node");
-const express = require("express"); //
+const express = require("express");
 const path = require("path");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
-const cors = require("cors");
-const { exec, execSync } = require("child_process");
+const { exec } = require("child_process");
 const fs = require("fs");
-const ncp = require("ncp").ncp;
-const conf = require("./config.js").conf;
+
 const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
+const ncp = require("ncp").ncp;
+const cors = require("cors");
+
 const util = require('util');
-const app = express();
 const {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails
 } = require("./utils.js");
+const fileStructure = require("./src/components/public/files_node");
+const conf = require("./config.js").conf;
 
+const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
-
-// Require static assets from public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set 'views' directory for any views 
@@ -79,6 +79,7 @@ const execAsync = (cmd) => {
             if (error) {
                 console.warn(error);
             }
+            console.log(stdout);
             resolve(stdout? stdout : stderr);
         });
     });

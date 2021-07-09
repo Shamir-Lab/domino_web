@@ -13,7 +13,7 @@ const fileStructure = {
       description: "Edges that compose the graph.",
       availableFiles: {
         directory: "./public/networks/", // with respect to server.js
-        fileNames: ["dip.sif", "dipOG.sif", "huri.sif", "string.sif"]
+        fileNames: ["dip.sif", "huri.sif", "string.sif"]
       }
     }
   ],

@@ -1,8 +1,12 @@
-const fs = require("fs");
-
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
-    modules_str= py_output=='' ? [] : py_output.split("\n");
+
+    /*
+    if (py_output.trim() === '') {
+        return ...;
+    }*/
+
+    const modules_str = py_output.trim() === '' ? [] : py_output.split("\n").slice(0, -1);
     const module_to_genes={};
     let nodes=[];
     for (i=0;i<modules_str.length;i++){
@@ -82,6 +86,13 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
         return { id: cur, eid: cur };
     });
 
+    console.log({
+        nodes: nodes,
+        edges: edges,
+        all_nodes: all_nodes,
+        all_edges: all_edges,
+        modules: module_to_genes,
+    });
     return {
         nodes: nodes,
         edges: edges,
@@ -101,7 +112,7 @@ const separateActiveGenes = (fileString) => {
     const activeGenesSet = {};
 
     if (lines[0].split("\t").length === 1) {
-        const genericSetName = "GenericSet";
+        const genericSetName = "DefaultSet";
         activeGenesSet[genericSetName] = lines;
     } else {
         lines.map(line => {

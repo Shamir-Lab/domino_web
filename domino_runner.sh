@@ -17,7 +17,7 @@ echo ${output_folder}
 source ${domino_python_env}/bin/activate
 
 # run DOMINO preprocess and DOMINO
-slicer --network_file ${network_file} --output_file ${network_file}".slicer" &&  domino  --active_genes_files ${active_genes_file} --network_file  ${network_file} --slices_file ${network_file}".slicer" --output_folder  ${output_folder} --visualization false &>/dev/null
+slicer --network_file ${network_file} --output_file ${network_file}".slicer" &&  domino  --active_genes_files ${active_genes_file} --network_file  ${network_file} --slices_file ${network_file}".slicer" --output_folder  ${output_folder} --visualization false # &>/dev/null
 
 # set the directory of the modules static html files
 mv ${output_folder}/${active_genes_file_name%.*}/* ${output_folder}
@@ -34,7 +34,7 @@ mkdir ${user_directory}/go
 go_enrichment --tested_genes ${user_directory}/modules/modules.out --background_genes ${network_file} --qval_th 0.05 --output_folder ${user_directory}/go
 
 n_modules=$(wc -l ${user_directory}/modules/modules.out | cut -d ' '  -f 1)
-n_modules=${n_modules}
+n_modules=$(($n_modules-1))
 
 echo "num modules $n_modules"
 # visualize modules 
