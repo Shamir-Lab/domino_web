@@ -80,6 +80,7 @@ const execAsync = (cmd) => {
                 console.warn(error);
             }
             console.log(stdout);
+            console.log(stderr);
             resolve(stdout? stdout : stderr);
         });
     });
@@ -124,19 +125,23 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
         // network file
         let p2;
-        let filePath = req.body[`Network file path`];
-        if (filePath) {
-            p2 = execAsync(`cp ${filePath} ${subRunDirectory}`);
+        let networkFilePath = req.body[`Network file path`];
+        let cachedNetworkFile;
+        if (networkFilePath) {
+            p2 = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
+            cachedNetworkFile = 1;
         } else {
             let fileContents = req.files[`Network file contents`];
-            p2 = fileContents.mv(`${subRunDirectory}/${userFileNames["Network file"]}`);
+            networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
+            p2 = fileContents.mv(networkFilePath);
+            cachedNetworkFile = 0;
         }
 
         await Promise.all([p1, p2]); // load the active gene and network file
 
         console.log(`Starting domino py execution on set ${setName}...`);
         let algExecutor =
-            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${userFileNames["Network file"]} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${networkFilePath} ${cachedNetworkFile} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
         await execAsync(algExecutor);
 
         /*
@@ -168,7 +173,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
         const algOutput = dominoPostProcess(
             dominoOutput,
-            fs.readFileSync(`${subRunDirectory}/${userFileNames["Network file"]}`)
+            fs.readFileSync(networkFilePath)
         );
         console.log(`DOMINO post process on set ${setName} ...`);
         console.log(
@@ -176,7 +181,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             `number of all_edges: ${algOutput.all_edges.length}\n` +
             `number of all_nodes: ${algOutput.all_nodes.length}\n`
         );
-        // allAlgOutput[setName] = algOutput;
         return {[setName]: algOutput};
     };
 

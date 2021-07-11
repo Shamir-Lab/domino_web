@@ -4,20 +4,25 @@ set -e
 user_directory=${1}
 active_genes_file_name=${2}
 active_genes_file=${user_directory}/${active_genes_file_name}
-network_file=${user_directory}/${3}
-output_folder=${user_directory}/${4}
-domino_python_env=${5}
-ami_plugins_python_env=${6}
-
-echo ${ami_plugins_python_env}
-echo ${active_genes_file_name}
-echo ${output_folder}
+network_file=${3} # not necessarily in user_directory like the other values
+cached_network=${4}
+output_folder=${user_directory}/${5}
+domino_python_env=${6}
+ami_plugins_python_env=${7}
 
 # activate virtual environment
 source ${domino_python_env}/bin/activate
 
 # run DOMINO preprocess and DOMINO
-slicer --network_file ${network_file} --output_file ${network_file}".slicer" &&  domino  --active_genes_files ${active_genes_file} --network_file  ${network_file} --slices_file ${network_file}".slicer" --output_folder  ${output_folder} --visualization false # &>/dev/null
+if [ ${cached_network} == "0" ]
+then
+  echo "executing slicer"
+  slicer --network_file ${network_file} --output_file ${network_file}".slicer"
+else
+  echo "using cached files"
+fi
+
+domino  --active_genes_files ${active_genes_file} --network_file  ${network_file} --slices_file ${network_file}".slicer" --output_folder  ${output_folder} --visualization false &>/dev/null
 
 # set the directory of the modules static html files
 mv ${output_folder}/${active_genes_file_name%.*}/* ${output_folder}

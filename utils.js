@@ -86,13 +86,6 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
         return { id: cur, eid: cur };
     });
 
-    console.log({
-        nodes: nodes,
-        edges: edges,
-        all_nodes: all_nodes,
-        all_edges: all_edges,
-        modules: module_to_genes,
-    });
     return {
         nodes: nodes,
         edges: edges,
