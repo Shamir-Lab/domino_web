@@ -113,68 +113,55 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
          *      */
 
         const subRunDirectory = `${sessionDirectory}/${setName}`;
+        const outputFile = `${subRunDirectory}/modules`;
 
-        await makeDir(`${subRunDirectory}`);
-        await makeDir(`${subRunDirectory}/modules`);
+        await makeDir(subRunDirectory);
+        await makeDir(outputFile);
 
-        // active gene file
-        let p1 = writeFile(
-            `${subRunDirectory}/active_gene_file.txt`,
+        // load the active gene and network file into the session directory
+        // prepare files for DOMINO run
+        const activeGenesFilePath = `${subRunDirectory}/active_gene_file.txt`;
+        const writeActiveGeneFile = writeFile(
+            activeGenesFilePath,
             activeGenesSet[setName].join("\n")
         );
 
-        // network file
-        let p2;
+        let mvNetworkFile;
         let networkFilePath = req.body[`Network file path`];
+        let networkFileContents;
         let cachedNetworkFile;
         if (networkFilePath) {
-            p2 = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
+            mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
+            networkFileContents = readFile(networkFilePath);
             cachedNetworkFile = 1;
         } else {
-            let fileContents = req.files[`Network file contents`];
+            let networkFile = req.files[`Network file contents`];
             networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
-            p2 = fileContents.mv(networkFilePath);
+            mvNetworkFile = networkFile.mv(networkFilePath);
+            networkFileContents = new String(networkFile);
             cachedNetworkFile = 0;
         }
 
-        await Promise.all([p1, p2]); // load the active gene and network file
+        await Promise.all([writeActiveGeneFile, mvNetworkFile]);
 
         console.log(`Starting domino py execution on set ${setName}...`);
-        let algExecutor =
-            `bash domino_runner.sh ${subRunDirectory} active_gene_file.txt ${networkFilePath} ${cachedNetworkFile} modules ${conf.DOMINO_PYTHON_ENV} ${conf.AMI_PLUGINS_PYTHON_ENV}`;
+
+        let algExecutor = "bash domino_runner.sh " +
+            [
+                subRunDirectory,
+                "active_gene_file.txt", `${subRunDirectory}/active_gene_file.txt`,
+                networkFilePath, cachedNetworkFile,
+                outputFile,
+                conf.DOMINO_PYTHON_ENV, conf.AMI_PLUGINS_PYTHON_ENV
+            ].join(" ");
         await execAsync(algExecutor);
 
-        /*
-        console.log(`Reading the output of domino py and network file for set ${setName} ...`);
-        p1 = readFile(`${subRunDirectory}/modules/modules.out`);
-        p2 = readFile(`${subRunDirectory}/${userFileNames["Network file"]}`);
-
-        return Promise.all([p1, p2])
-            .then((dominoOutput, networkFileData) => {
-                console.log(new String(dominoOutput), new String(networkFileData));
-                const algOutput = dominoPostProcess(dominoOutput, networkFileData);
-                console.log(algOutput);
-                console.log(`DOMINO post process on set ${setName} ...`);
-                console.log(
-                    `number of edges: ${algOutput.edges.length}\n` +
-                    `number of all_edges: ${algOutput.all_edges.length}\n` +
-                    `number of all_nodes: ${algOutput.all_nodes.length}\n`
-                );
-                allAlgOutput[setName] = algOutput;
-            });
-
-         */
-
-
         console.log(`Reading the output of domino py on set ${setName} ...`);
-        const dominoOutput = await readFile(
-            `${subRunDirectory}/modules/modules.out`
-        );
+        let dominoOutput = readFile(`${outputFile}/modules.out`);
 
-        const algOutput = dominoPostProcess(
-            dominoOutput,
-            fs.readFileSync(networkFilePath)
-        );
+        [networkFileContents, dominoOutput] = await Promise.all([networkFileContents, dominoOutput]);
+
+        const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         console.log(`DOMINO post process on set ${setName} ...`);
         console.log(
             `number of edges: ${algOutput.edges.length}\n` +
@@ -188,7 +175,9 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         singleDOMINORun(sessionDirectory, setName)
     );
 
-    Promise.all(dominoRunPromises)
+    const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
+
+    Promise.all(dominoRunPromises.concat([rmCachedFiles]))
         .then(listOfOutputs => {
             const algOutputs = listOfOutputs.reduce((obj, output) =>
                 Object.assign(obj, output)
