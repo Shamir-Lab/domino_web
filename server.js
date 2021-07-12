@@ -78,6 +78,7 @@ const execAsync = (cmd) => {
         exec(cmd, (error, stdout, stderr) => {
             if (error) {
                 console.warn(error);
+                reject(error);
             }
             console.log(stdout);
             console.log(stderr);
@@ -154,7 +155,13 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
-        await execAsync(algExecutor);
+        try {
+            await execAsync(algExecutor);
+        } catch (error) {
+            console.log(`Error with DOMINO execution on set ${setName}.`);
+            return Promise.reject(error);
+        }
+
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
         const dominoOutput = await readFile(`${outputFile}/modules.out`);
@@ -209,6 +216,9 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             );
 
             return Promise.all([rmCachedFiles, zipFiles]);
+        })
+        .catch(error => {
+            res.status(400);
         })
         .then(_ => res.end());
 });
