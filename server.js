@@ -89,6 +89,9 @@ const execAsync = (cmd) => {
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
+    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
+    const setNames = Object.keys(activeGenesSet);
+
     let fileNames = fileStructure.files.map(file => file.name);
     const userFileNames = fileNames.reduce(
         (obj, file) => ({
@@ -100,9 +103,20 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
     fs.mkdirSync(sessionDirectory);
 
-    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
-    const setNames = Object.keys(activeGenesSet);
-    
+    let networkFilePath = req.body[`Network file path`];
+    let mvNetworkFile, networkFileContents, cachedNetworkFile;
+    if (networkFilePath) {
+        mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`); // this should be outside of this function
+        networkFileContents = readFile(networkFilePath);
+        cachedNetworkFile = 1;
+    } else {
+        let networkFile = req.files[`Network file contents`];
+        networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
+        mvNetworkFile = networkFile.mv(networkFilePath);
+        networkFileContents = new String(networkFile);
+        cachedNetworkFile = 0;
+    }
+
     const singleDOMINORun = async (sessionDirectory, setName) => {
         /** Manages one run of DOMINO until completion of DOMINO postprocessing.
          * Returns a Promise.
@@ -110,6 +124,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
          *      activeGenesSet
          *      req
          *      userFileNames
+         *      networkFilePath, cachedNetworkFile,
+         *      networkFileContents (guaranteed to be resolved when this function runs)
          *      */
 
         const subRunDirectory = `${sessionDirectory}/${setName}`;
@@ -121,45 +137,27 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         // load the active gene and network file into the session directory
         // prepare files for DOMINO run
         const activeGenesFilePath = `${subRunDirectory}/active_gene_file.txt`;
-        const writeActiveGeneFile = writeFile(
+        await writeFile(
             activeGenesFilePath,
             activeGenesSet[setName].join("\n")
         );
 
-        let mvNetworkFile;
-        let networkFilePath = req.body[`Network file path`];
-        let networkFileContents;
-        let cachedNetworkFile;
-        if (networkFilePath) {
-            mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
-            networkFileContents = readFile(networkFilePath);
-            cachedNetworkFile = 1;
-        } else {
-            let networkFile = req.files[`Network file contents`];
-            networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
-            mvNetworkFile = networkFile.mv(networkFilePath);
-            networkFileContents = new String(networkFile);
-            cachedNetworkFile = 0;
-        }
-
-        await Promise.all([writeActiveGeneFile, mvNetworkFile]);
-
         console.log(`Starting domino py execution on set ${setName}...`);
-
         let algExecutor = "bash domino_runner.sh " +
             [
                 subRunDirectory,
-                "active_gene_file.txt", `${subRunDirectory}/active_gene_file.txt`,
-                networkFilePath, cachedNetworkFile,
+                "active_gene_file.txt",
+                `${subRunDirectory}/active_gene_file.txt`,
+                networkFilePath,
+                cachedNetworkFile,
                 outputFile,
-                conf.DOMINO_PYTHON_ENV, conf.AMI_PLUGINS_PYTHON_ENV
+                conf.DOMINO_PYTHON_ENV,
+                conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
         await execAsync(algExecutor);
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
-        let dominoOutput = readFile(`${outputFile}/modules.out`);
-
-        [networkFileContents, dominoOutput] = await Promise.all([networkFileContents, dominoOutput]);
+        const dominoOutput = await readFile(`${outputFile}/modules.out`);
 
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         console.log(`DOMINO post process on set ${setName} ...`);
@@ -171,36 +169,48 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         return {[setName]: algOutput};
     };
 
-    const dominoRunPromises = setNames.map(setName =>
-        singleDOMINORun(sessionDirectory, setName)
-    );
-
-    const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
-
-    Promise.all(dominoRunPromises.concat([rmCachedFiles]))
+    Promise.all([mvNetworkFile, networkFileContents])
+        .then(_ =>
+            Promise.all(
+                setNames.map(setName => singleDOMINORun(sessionDirectory, setName))
+            )
+        )
         .then(listOfOutputs => {
             const algOutputs = listOfOutputs.reduce((obj, output) =>
-                Object.assign(obj, output)
-            , {});
+                    Object.assign(obj, output)
+                , {});
 
             const algOutput = algOutputs[setNames[0]];
+
+            console.log(req.body["fromWebExecutor"]);
+            console.log(typeof req.body["fromWebExecutor"]);
+            console.log(req.body);
+
             res.json({
                 algOutput: algOutput,
-                webDetails: {
-                    numModules: Object.keys(algOutput.modules).length,
-                    moduleDir: `${customFile}/${setNames[0]}/modules`,
-                    zipURL: `${customFile}.zip`,
-                }
+                ...((req.body["fromWebExecutor"] === "true") ?
+                        {webDetails: {
+                            numModules: Object.keys(algOutput.modules).length,
+                            moduleDir: `${customFile}/${setNames[0]}/modules`,
+                            zipURL: `${customFile}.zip`,
+                        }}
+                        :
+                        {}
+                )
             });
         })
         .then(_ => {
+            const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
+
             console.log("Zipping solution ...");
-            return execAsync(
+            const zipFiles = execAsync(
                 `cd ${sessionDirectory}/..
                 zip -r ${customFile}.zip ${customFile}`
-            )
-        }).then(_ => res.end());
+            );
 
+            return Promise.all([rmCachedFiles, zipFiles]);
+        })
+        .then(_ => res.end());
 });
 
 app.post("/getHTML", timeout("10m"), (req, res, next) => {

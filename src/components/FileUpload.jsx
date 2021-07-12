@@ -101,6 +101,8 @@ const FileUpload = (props) => {
         }
 
         const data = new FormData();
+        data.append("fromWebExecutor", "true");
+
         for (const file of fileStructure.files) {
             const ref = fileData[file.name].inputTagRef;
             const dropdownOption = fileData[file.name].dropdownOption;
@@ -115,6 +117,9 @@ const FileUpload = (props) => {
                 data.append(`${file.name} name`, fileData[file.name].userFileName);
                 data.append(`${file.name} contents`, ref.current.files[0]);
             }
+        }
+        for(var pair of data.entries()) {
+            console.log(pair[0]+ ', '+ pair[1]);
         }
 
         console.log("Sending POST request ...");
