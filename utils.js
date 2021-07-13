@@ -109,6 +109,7 @@ const separateActiveGenes = (fileString) => {
         activeGenesSet[genericSetName] = lines;
     } else {
         lines.map(line => {
+            if (line.trim()===''){return;}
             const fields = line.split("\t");
             const [gene, setID] = fields;
             if (activeGenesSet[[setID]] === undefined) {
@@ -117,7 +118,7 @@ const separateActiveGenes = (fileString) => {
             activeGenesSet[[setID]].push(gene);
         })
     }
-
+    console.log(activeGenesSet)
     return activeGenesSet;
 };
 

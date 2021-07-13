@@ -128,7 +128,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
          *      networkFilePath, cachedNetworkFile,
          *      networkFileContents (guaranteed to be resolved when this function runs)
          *      */
-
+        console.log('Starting a single DOMINO run')
         const subRunDirectory = `${sessionDirectory}/${setName}`;
         const outputFile = `${subRunDirectory}/modules`;
 
@@ -159,6 +159,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             await execAsync(algExecutor);
         } catch (error) {
             console.log(`Error with DOMINO execution on set ${setName}.`);
+            console.log(error)
             return Promise.reject(error);
         }
 
@@ -175,7 +176,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         );
         return {[setName]: algOutput};
     };
-
+    console.log(setNames)
     Promise.all([mvNetworkFile, networkFileContents])
         .then(_ =>
             Promise.all(
@@ -234,10 +235,10 @@ app.post("/getHTML", timeout("10m"), (req, res, next) => {
 
 app.use((err, req, res, next) => {
   // delegate to the default Express error handler, when the headers have already been sent to the client
+  console.error(err.stack);
   if (res.headersSent) {
     return next(err);
   }
-  console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 

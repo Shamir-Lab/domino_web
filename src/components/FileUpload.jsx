@@ -124,6 +124,7 @@ const FileUpload = (props) => {
 
         console.log("Sending POST request ...");
         spinnerService.show("mySpinner");
+        console.log(data)
         axios
             .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
             .then(res => {
