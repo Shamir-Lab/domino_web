@@ -55,7 +55,6 @@ const Modules = (props) => {
     };
     const sidebar = (
         <div className="wrapper">
-            <!-- Sidebar -->
             <nav id="sidebar">
                 <div className="sidebar-header">
                     <h3>DOMINO Web Executor</h3>
@@ -90,20 +89,30 @@ const Modules = (props) => {
                     <h4 style={{fontSize: "20px"}}>Parameters:</h4>
                     <div className="row">
                         <div className="col-md-4"><p style={{fontSize: "15px"}}>Active genes:</p></div>
-                        <div className="col-md-8"><p style={{fontSize: "15px"}>{fileNames.active_genes}</p></div>
+                        <div className="col-md-8"><p style={{fontSize: "15px"}}>{fileNames.active_genes}</p></div>
                     </div>
                     <div className="row">
                         <div className="col-md-4"><p style={{fontSize: "15px"}}>Network:</p></div>
-                        <div className="col-md-8"><p style={{fontSize: "15px"}>{fileNames.network}</p></div>
+                        <div className="col-md-8"><p style={{fontSize: "15px"}}>{fileNames.network}</p></div>
                     </div>
                 </div>
+
             </nav>
         </div>
-
     );
 
     return (
-        <>
+        <div id={"container"}>
+            {sidebar}
+            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                <div className="container-fluid">
+                    <button type="button" id="sidebarCollapse" className="btn btn-info">
+                        <i className="fas fa-align-left"></i>
+                        <span>Toggle Sidebar</span>
+                    </button>
+
+                </div>
+            </nav>
             <div className="row"  style={{width: "100vw", height: "100vh", margin: "0px"}}>
                 <div className="col-md-2" style={{position: "relative"}}>
                     <h4 className='display-6'>Modules:</h4>
@@ -115,7 +124,7 @@ const Modules = (props) => {
                     <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
                 </div>
             </div>
-        </>
+        </div>
     );
 
 };
