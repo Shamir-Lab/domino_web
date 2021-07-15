@@ -1,23 +1,20 @@
 import React, { useState } from "react";
 import { NavLink } from 'react-router-dom';
 import { Container, Row, Col, Dropdown } from "react-bootstrap";
-
-import {
-    CDBSidebar,
-    CDBSidebarHeader,
-    CDBSidebarContent,
-    CDBSidebarMenu,
-    CDBSidebarMenuItem,
-    CDBSidebarFooter
-} from "cdbreact";
-
 import axios from "axios";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
+import {
+    sidebar,
+    module_btn,
+    closebtn,
+    openbtn,
+    content
+} from "./Sidebar.module.css";
 
 const Modules = (props) => {
-
+    const [collapse, setCollapse] = useState(false);
 
     /* Unpack props. */
     /*
@@ -67,90 +64,21 @@ const Modules = (props) => {
         setSelectedModuleId(t.target.getAttribute("moduleId"));
     };
 
-    const Sidebar = () => {
-        return (
-            <div
-                style={{ display: 'flex', height: '100vh', overflow: 'scroll initial' }}
-            >
-                <CDBSidebar textColor="#fff" backgroundColor="#333">
-                    <CDBSidebarHeader prefix={<i className="fa fa-bars fa-large"></i>}>
-                        <a
-                            href="/"
-                            className="text-decoration-none"
-                            style={{ color: 'inherit' }}
-                        >
-                            Sidebar
-                        </a>
-                    </CDBSidebarHeader>
-
-                    <CDBSidebarContent className="sidebar-content">
-                        <Dropdown>
-                            <Dropdown.Toggle variant="success" id="dropdown-basic" style={{margin:"auto", backgroundColor: "rgb(51 51 51)"}}>
-                                Modules
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                {[...Array(numModules).keys()].map(index => (
-                                    <Dropdown.Item>
-                                        <CDBSidebarMenuItem>
-                                            <a className={isActive(index)}
-                                               moduleId={index}
-                                               onClick={t => fetchHtml(t)}
-                                            >module {index}</a>
-                                        </CDBSidebarMenuItem>
-                                    </Dropdown.Item>
-                                ))}
-                            </Dropdown.Menu>
-                        </Dropdown>
-
-                        <h4>Parameters:</h4>
-                        <div className="col-md-4"><label className="col-form-label"> Network:</label></div>
-                        <div className="col-md-8"></div>
-                        <Row>
-                            <Col>
-                                <label className="col-form-label">Active gene file:</label>
-                            </Col>
-                            <Col>
-                                <input type="text" className="form-control" value={fileNames.active_genes} disabled/>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <label className="col-form-label">Network file:</label>
-                            </Col>
-                            <Col>
-                                <input type="text" className="form-control" value={fileNames.network} disabled/>
-                            </Col>
-                        </Row>
-                    </CDBSidebarContent>
-
-                    <CDBSidebarFooter style={{ textAlign: 'center' }}>
-                        <div
-                            style={{
-                                padding: '20px 5px',
-                            }}
-                        >
-                            Sidebar Footer
-                        </div>
-                    </CDBSidebarFooter>
-                </CDBSidebar>
-            </div>
-        );
-    };
-
     return (
-        <Container fluid>
-            <Row style={{width: "100vw", height: "100vh", margin: "0px"}}>
-
-                <Col xs={2} >
-                    <Sidebar/>
-                </Col>
-                <Col xs={10} id="page-content-wrapper">
-                    <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
-                </Col>
-            </Row>
-        </Container>
+        <>
+            <div id={sidebar} style={{width: (collapse? "0px": "250px"), backgroundColor:"grey"}}>
+                <a className={closebtn} onClick={() => setCollapse(true)}>×</a>
+                <a>About</a>
+                <a>Services</a>
+                <a>Clients</a>
+                <a>Contact</a>
+            </div>
+            <div id={content} style={{marginLeft: (collapse? "0px": "250px")}}>
+                <button className={openbtn} onClick={() => setCollapse(false)}>☰ Open Sidebar</button>
+                <h2>Collapsed Sidebar</h2>
+                <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
+            </div>
+        </>
     );
 
 };
