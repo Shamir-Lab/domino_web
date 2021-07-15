@@ -1,17 +1,21 @@
 import React, { useState } from "react";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { NavLink } from 'react-router-dom';
-import { Container, Row, Col, Dropdown } from "react-bootstrap";
 import axios from "axios";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
+
 import {
-    sidebar,
-    module_btn,
-    closebtn,
-    openbtn,
-    content
-} from "./Sidebar.module.css";
+    ProSidebar,
+    SidebarHeader,
+    SidebarFooter,
+    SidebarContent,
+    Menu,
+    MenuItem,
+    SubMenu
+} from 'react-pro-sidebar';
+import 'react-pro-sidebar/dist/css/styles.css';
 
 const Modules = (props) => {
     const [collapse, setCollapse] = useState(false);
@@ -30,6 +34,10 @@ const Modules = (props) => {
 
     // for testing purposes
     const numModules = 3;
+    const geneSets = {
+        "C1": 5,
+        "C2": 4
+    };
     const fileNames = {
         "active_genes": "active_genes_file.txt",
         "network": "network_file.txt"
@@ -64,23 +72,75 @@ const Modules = (props) => {
         setSelectedModuleId(t.target.getAttribute("moduleId"));
     };
 
+    // <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
+
     return (
         <>
-            <div id={sidebar} style={{width: (collapse? "0px": "250px"), backgroundColor:"grey"}}>
-                <a className={closebtn} onClick={() => setCollapse(true)}>×</a>
-                <a>About</a>
-                <a>Services</a>
-                <a>Clients</a>
-                <a>Contact</a>
-            </div>
-            <div id={content} style={{marginLeft: (collapse? "0px": "250px")}}>
-                <button className={openbtn} onClick={() => setCollapse(false)}>☰ Open Sidebar</button>
-                <h2>Collapsed Sidebar</h2>
-                <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
-            </div>
+            <Container fluid>
+                <Row style={{width: "100vw", height: "100vh", margin: "0px"}}>
+                    <Col xs={collapse? 1: 2}>
+                        <ProSidebar collapsed={collapse} style={{height: "100%"}}>
+                            <SidebarHeader>
+
+                            </SidebarHeader>
+                            <SidebarContent>
+                                <Menu iconShape="square">
+                                    <MenuItem>DOMINO Web Executor</MenuItem>
+
+                                    {Object.keys(geneSets).map(setName =>
+                                        <SubMenu title={setName}>
+                                            {[...Array(numModules).keys()].map(index =>
+                                                <MenuItem>module {index}</MenuItem>
+                                            )}
+                                        </SubMenu>
+                                    )}
+                                </Menu>
+                            </SidebarContent>
+                            <SidebarFooter>
+
+                                <div style={collapse? {display:"none"}: {}}>
+                                    <h4>Parameters</h4>
+                                    <hr></hr>
+                                    <Row>
+                                        <Col>
+                                            <label className="col-form-label"> Active genes:</label>
+                                        </Col>
+                                        <Col>
+                                            <input type="text" className="form-control" value={fileNames.active_genes} disabled/>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>
+                                            <label className="col-form-label">Networks:</label>
+                                        </Col>
+                                        <Col>
+                                            <input type="text" className="form-control" value={fileNames.network} disabled/>
+                                        </Col>
+                                    </Row>
+                                </div>
+
+
+                            </SidebarFooter>
+                        </ProSidebar>
+                    </Col>
+                    <Col xs={collapse? 11: 10}>
+                        <Button
+                            onClick = {() => setCollapse(!collapse)}
+                        >Toggle</Button>
+                        <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
+                    </Col>
+                </Row>
+            </Container>
         </>
+
     );
 
 };
+
+/*
+
+
+
+*/
 
 export default Modules;
