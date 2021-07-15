@@ -189,15 +189,17 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
             const algOutput = algOutputs[setNames[0]];
 
-            console.log(req.body["fromWebExecutor"]);
-            console.log(typeof req.body["fromWebExecutor"]);
-            console.log(req.body);
+
+            const geneSets = Object.keys(algOutputs).reduce((obj, setName) => ({
+                ...obj,
+                [setName]: Object.keys(algOutputs[setName].modules).length
+            }), {});
 
             res.json({
                 algOutput: algOutput,
                 ...((req.body["fromWebExecutor"] === "true") ?
                         {webDetails: {
-                            numModules: Object.keys(algOutput.modules).length,
+                            geneSets: geneSets,
                             moduleDir: `${customFile}/${setNames[0]}/modules`,
                             zipURL: `${customFile}.zip`,
                         }}

@@ -18,20 +18,17 @@ import {
 import 'react-pro-sidebar/dist/css/styles.css';
 
 const Modules = (props) => {
-    const [collapse, setCollapse] = useState(false);
-
     /* Unpack props. */
-    /*
     console.log(props);
-    const numModules = props.location.state["numModules"];
+    const geneSets = props.location.state["geneSets"];
     const fileNames = {
         "active_genes": props.location.state["Active gene file"],
         "network": props.location.state["Network file"]
     };
     console.log("fileNames", fileNames);
     const zipURL = props.location.state["zipURL"];
-     */
 
+    /*
     // for testing purposes
     const numModules = 3;
     const geneSets = {
@@ -44,41 +41,34 @@ const Modules = (props) => {
     };
     const zipURL = "active_genes_file@dip@1626296233416.zip";
 
+     */
+
     /** Returns the directory (with respect to the public folder) to the
-    * ith static html file to display the ith module. */
-    const moduleDirectory = (i) =>
-        //`${props.location.state.moduleDir}/module_${i}.html`;
-        `active_genes_file@dip@1626296233416/DefaultSet/modules/module_${i}.html`;
+    * proper static html file. */
+    const moduleDirectory = (setName, moduleNum) =>
+        `${props.location.state.sessionDirectory}/${setName}/modules/module_${moduleNum}.html`;
 
 
     /* Initialize component states. */
-    const [selectedModuleURL, setSelectedModuleURL] = useState(
-        numModules > 0 ? moduleDirectory(0) : ""
-    );
-    const [selectedModuleId, setSelectedModuleId] = useState(
-        numModules > 0 ? "0" : ""
-    );
+    // Being on the visualization page, we guarantee that we have modules to display
+    const firstSetName = Object.keys(geneSets)[0]; // assumption: this set has modules to display. might lead to bugs
+    const [selectedModuleFeatures, setSelectedModuleFeatures] = useState({
+            setName: firstSetName,
+            moduleNum: 0
+    });
+    const [collapse, setCollapse] = useState(false);
 
-    /* Determines the className for the left module navbar.
-    * Returns 'nav-link active' for the module tab that's being rendered.
-    * Returns 'nav-link otherwise. */
-    const isActive = (moduleId) =>
-        selectedModuleId==moduleId ? 'activeClicked' : '';
-
-    /* Determines the static html file to render on the visualization page. */
-    const fetchHtml = (t) => {
-        const pr = t.target.getAttribute("moduleId");
-        setSelectedModuleURL(moduleDirectory(pr));
-        setSelectedModuleId(t.target.getAttribute("moduleId"));
-    };
+    /* Determines the button is displaying the corresponding static html. */
+    const isActive = (setName, moduleNum) =>
+        (selectedModuleFeatures.setName == setName && selectedModuleFeatures.moduleNum == moduleNum);
 
     // <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
-
+    // style={{width: (collapse? "7%": "20%")}}
     return (
         <>
             <Container fluid>
                 <Row style={{width: "100vw", height: "100vh", margin: "0px"}}>
-                    <Col xs={collapse? 1: 2}>
+                    <div>
                         <ProSidebar collapsed={collapse} style={{height: "100%"}}>
                             <SidebarHeader>
 
@@ -87,13 +77,25 @@ const Modules = (props) => {
                                 <Menu iconShape="square">
                                     <MenuItem>DOMINO Web Executor</MenuItem>
 
-                                    {Object.keys(geneSets).map(setName =>
-                                        <SubMenu title={setName}>
+                                    {Object.keys(geneSets).map(setName => {
+                                        const numModules = geneSets[setName];
+                                        return (<SubMenu title={setName}>
                                             {[...Array(numModules).keys()].map(index =>
-                                                <MenuItem>module {index}</MenuItem>
+                                                <MenuItem>
+                                                    <a
+                                                        onClick={_ =>
+                                                            setSelectedModuleFeatures({
+                                                                setName: setName,
+                                                                moduleNum: index
+                                                            })
+                                                        }
+                                                    >
+                                                        module {index}
+                                                    </a>
+                                                </MenuItem>
                                             )}
-                                        </SubMenu>
-                                    )}
+                                        </SubMenu>);
+                                    })}
                                 </Menu>
                             </SidebarContent>
                             <SidebarFooter>
@@ -122,13 +124,17 @@ const Modules = (props) => {
 
                             </SidebarFooter>
                         </ProSidebar>
-                    </Col>
-                    <Col xs={collapse? 11: 10}>
+                    </div>
+                    <div style={{width: (collapse? "93%": "80%")}}>
                         <Button
                             onClick = {() => setCollapse(!collapse)}
                         >Toggle</Button>
-                        <iframe src = {selectedModuleURL} style={{width: "100%", height: "100%"}}></iframe>
-                    </Col>
+                        <iframe src = {
+                                moduleDirectory(selectedModuleFeatures.setName, selectedModuleFeatures.moduleNum)
+                            }
+                            style={{width: "100%", height: "100%"}}
+                        ></iframe>
+                    </div>
                 </Row>
             </Container>
         </>
