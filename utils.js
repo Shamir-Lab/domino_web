@@ -117,8 +117,7 @@ const separateActiveGenes = (fileString) => {
             }
             activeGenesSet[[setID]].push(gene);
         })
-    }
-    console.log(activeGenesSet)
+    }    
     return activeGenesSet;
 };
 
