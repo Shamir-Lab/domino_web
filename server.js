@@ -122,7 +122,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     const setNames = Object.keys(activeGenesSet);
     console.log("set names identified --> ", setNames.join(", "));
 
-    const singleDOMINORun = async (sessionDirectory, setName) => {
+    const singleDOMINORun = async (serverNum, sessionDirectory, setName) => {
         /** Manages one run of DOMINO until completion of DOMINO postprocessing.
          * Returns a Promise.
          * Takes advantage of:
@@ -139,8 +139,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         await makeDir(subRunDirectory);
         await makeDir(outputFile);
 
-        // load the active gene and network file into the session directory
-        // prepare files for DOMINO run
+        // load the active gene file into the sub run directory
         const activeGenesFilePath = `${subRunDirectory}/active_gene_file.txt`;
         await writeFile(
             activeGenesFilePath,
@@ -148,7 +147,9 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         );
 
         console.log(`Starting domino py execution on set ${setName}...`);
-        let algExecutor = "bash domino_runner.sh " +
+        // question -> not sure why gdocker up after cd works but not the other way around?!
+        let algExecutor = `ssh nimsi@rack-shamir${serverNum}.cs.tau.ac.il cd /specific/netapp5/gaga/guests/nimsi/domino_web; gdocker up; ` +
+            "bash domino_runner.sh " +
             [
                 subRunDirectory,
                 "active_gene_file.txt",
@@ -158,14 +159,13 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
+        console.log("algExecutor...\n", algExecutor);
         try {
             await execAsync(algExecutor);
         } catch (error) {
             console.log(`Error with DOMINO execution on set ${setName}.`);
-            console.log(error);
             return Promise.reject(error);
         }
-
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
         const dominoOutput = await readFile(`${outputFile}/modules.out`);
@@ -177,11 +177,18 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     };
 
     Promise.all([mvNetworkFile, networkFileContents, sliceNetworkFile])
-        .then(_ =>
-            Promise.all(
-                setNames.map(setName => singleDOMINORun(sessionDirectory, setName))
-            )
-        )
+        .then(_ => {
+            let serverBase = 3;
+            let serverOffset = 0;
+            let serverOffsetLimit = 3;
+            return Promise.all(
+                setNames.map(setName => {
+                    let serverNum = serverBase + serverOffset;
+                    serverOffset = (serverOffset + 1) % serverOffsetLimit;
+                    return singleDOMINORun(serverNum, sessionDirectory, setName);
+                })
+            );
+        })
         .then(listOfOutputs => {
             const algOutputs = listOfOutputs.reduce((obj, output) =>
                     Object.assign(obj, output)
