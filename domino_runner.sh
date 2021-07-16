@@ -12,10 +12,10 @@ ami_plugins_python_env=${8}
 
 echo ${output_folder}
 
-# activate virtual environment for DOMINO
+echo activate virtual environment for DOMINO
 source ${domino_python_env}/bin/activate
 
-# run DOMINO preprocess and DOMINO
+echo run DOMINO preprocess and DOMINO
 if [ ${cached_network} == "0" ] # in the case that we're running domino on multiple sets, we might have already sliced the common network file!
 then
   echo "executing slicer"
@@ -24,27 +24,26 @@ else
   echo "using cached files"
 fi
 
-domino  --active_genes_files ${active_genes_file_path} --network_file  ${network_file_path} --slices_file ${network_file_path}".slicer" --output_folder  ${output_folder} --visualization false &>/dev/null
+domino  --active_genes_files ${active_genes_file_path} --network_file  ${network_file_path} --slices_file ${network_file_path}".slicer" --output_folder  ${output_folder} --visualization false # &>/dev/null
 deactivate
 
-# correct session directory structure (modules_{}.html)
+echo 'correct session directory structure (modules_{}.html)'
 mv ${output_folder}/${active_genes_file_name%.*}/* ${output_folder}
 rm -d ${output_folder}/${active_genes_file_name%.*}
 
-# activate virtual environment for AMI plugins
+echo activate virtual environment for AMI plugins
 source ${ami_plugins_python_env}/bin/activate
 
-# GO enrichment
+echo GO enrichment
 mkdir ${dominoRunDirectory}/go
 
 go_enrichment --tested_genes ${output_folder}/modules.out --background_genes ${network_file_path} --qval_th 0.05 --output_folder ${dominoRunDirectory}/go
-# deactivate?
 
 n_modules=$(wc -l ${output_folder}/modules.out | cut -d ' '  -f 1)
 n_modules=$(($n_modules-1))
 echo "num modules $n_modules"
 
-# visualize modules 
+echo visualize modules 
 
 declare -a pids=();
 for i in $(seq 0 $n_modules); 
@@ -53,4 +52,6 @@ do
     visualize_module --module_file_name ${dominoRunDirectory}/go/module_genes_${i}.txt --active_genes_file_name ${active_genes_file_path} --network_file_name ${network_file_path} --go_file_name ${dominoRunDirectory}/go/module_go_${i}.tsv --output_folder ${output_folder} & pids+=($!)
 done
 
+echo "waiting for visualization to be completed..."
 wait "${pids[@]}"
+echo done!
