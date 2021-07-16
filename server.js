@@ -144,6 +144,17 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         );
 
         console.log(`Starting domino py execution on set ${setName}...`);
+        console.log("arguments to domino...");
+        console.log([
+            subRunDirectory,
+            "active_gene_file.txt",
+            `${subRunDirectory}/active_gene_file.txt`,
+            networkFilePath,
+            cachedNetworkFile,
+            outputFile,
+            conf.DOMINO_PYTHON_ENV,
+            conf.AMI_PLUGINS_PYTHON_ENV
+        ].join(" "));
         let algExecutor = "bash domino_runner.sh " +
             [
                 subRunDirectory,
@@ -200,7 +211,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 ...((req.body["fromWebExecutor"] === "true") ?
                         {webDetails: {
                             geneSets: geneSets,
-                            moduleDir: `${customFile}/${setNames[0]}/modules`,
+                            sessionDirectory: sessionDirectory,
                             zipURL: `${customFile}.zip`,
                         }}
                         :

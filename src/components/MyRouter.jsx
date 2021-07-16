@@ -16,6 +16,7 @@ render() {
 		  <div className='routerContainer'>
               <Router>
                   <Switch>
+                      {/*<Route path="/" component={Modules} />*/}
                       <Route path="/modules" component={Modules} render={props => <Modules {...props} /> } />
                       <Route path="/" component={FileUpload} />
                       {/*<Route path="/" component={LandingPage} />*/}
