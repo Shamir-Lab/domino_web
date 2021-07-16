@@ -5,24 +5,16 @@ dominoRunDirectory=${1}
 active_genes_file_name=${2}
 active_genes_file_path=${3}
 network_file_path=${4}
-cached_network=${5} # "0" or "1"
-output_folder=${6}
-domino_python_env=${7}
-ami_plugins_python_env=${8}
+output_folder=${5}
+domino_python_env=${6}
+ami_plugins_python_env=${7}
 
 echo ${output_folder}
 
-echo activate virtual environment for DOMINO
+echo "activate virtual environment for DOMINO"
 source ${domino_python_env}/bin/activate
 
-echo run DOMINO preprocess and DOMINO
-if [ ${cached_network} == "0" ] # in the case that we're running domino on multiple sets, we might have already sliced the common network file!
-then
-  echo "executing slicer"
-  slicer --network_file ${network_file_path} --output_file ${network_file_path}".slicer"
-else
-  echo "using cached files"
-fi
+echo "run DOMINO"
 
 domino  --active_genes_files ${active_genes_file_path} --network_file  ${network_file_path} --slices_file ${network_file_path}".slicer" --output_folder  ${output_folder} --visualization false # &>/dev/null
 deactivate

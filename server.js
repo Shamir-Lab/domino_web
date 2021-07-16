@@ -90,33 +90,37 @@ const execAsync = (cmd) => {
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
-    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
-    const setNames = Object.keys(activeGenesSet);
-
+    // create session directory (within the public folder)
     let fileNames = fileStructure.files.map(file => file.name);
     const userFileNames = fileNames.reduce(
         (obj, file) => ({
             ...obj,
             [file]: req.body[`${file} name`]
         }),{}); // input files to DOMINO selected by the user
-
     const [sessionDirectory, customFile] = draftSessionDirectoryDetails(userFileNames);
-
     fs.mkdirSync(sessionDirectory);
 
+    // move network file to session directory
+    // initialize values for the following variables
     let networkFilePath = req.body[`Network file path`];
-    let mvNetworkFile, networkFileContents, cachedNetworkFile;
+    let mvNetworkFile, networkFileContents;
     if (networkFilePath) {
-        mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`); // this should be outside of this function
+        mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
         networkFileContents = readFile(networkFilePath);
-        cachedNetworkFile = 1;
     } else {
         let networkFile = req.files[`Network file contents`];
         networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
         mvNetworkFile = networkFile.mv(networkFilePath);
         networkFileContents = new String(networkFile);
-        cachedNetworkFile = 0;
     }
+
+    const sliceNetworkFile = execAsync(
+        `bash slicer_runner.sh ` + [networkFilePath, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
+    );
+
+    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
+    const setNames = Object.keys(activeGenesSet);
+    console.log("set names identified --> ", setNames.join(", "));
 
     const singleDOMINORun = async (sessionDirectory, setName) => {
         /** Manages one run of DOMINO until completion of DOMINO postprocessing.
@@ -144,24 +148,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         );
 
         console.log(`Starting domino py execution on set ${setName}...`);
-        console.log("arguments to domino...");
-        console.log([
-            subRunDirectory,
-            "active_gene_file.txt",
-            `${subRunDirectory}/active_gene_file.txt`,
-            networkFilePath,
-            cachedNetworkFile,
-            outputFile,
-            conf.DOMINO_PYTHON_ENV,
-            conf.AMI_PLUGINS_PYTHON_ENV
-        ].join(" "));
         let algExecutor = "bash domino_runner.sh " +
             [
                 subRunDirectory,
                 "active_gene_file.txt",
                 `${subRunDirectory}/active_gene_file.txt`,
                 networkFilePath,
-                cachedNetworkFile,
                 outputFile,
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
@@ -170,25 +162,21 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             await execAsync(algExecutor);
         } catch (error) {
             console.log(`Error with DOMINO execution on set ${setName}.`);
-            console.log(error)
+            console.log(error);
             return Promise.reject(error);
         }
 
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
         const dominoOutput = await readFile(`${outputFile}/modules.out`);
-
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
+        
         console.log(`DOMINO post process on set ${setName} ...`);
-        console.log(
-            `number of edges: ${algOutput.edges.length}\n` +
-            `number of all_edges: ${algOutput.all_edges.length}\n` +
-            `number of all_nodes: ${algOutput.all_nodes.length}\n`
-        );
+        console.log("numModules --> ", Object.keys(algOutput.modules).length);
         return {[setName]: algOutput};
     };
-    console.log(setNames)
-    Promise.all([mvNetworkFile, networkFileContents])
+
+    Promise.all([mvNetworkFile, networkFileContents, sliceNetworkFile])
         .then(_ =>
             Promise.all(
                 setNames.map(setName => singleDOMINORun(sessionDirectory, setName))
@@ -199,24 +187,20 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                     Object.assign(obj, output)
                 , {});
 
-            const algOutput = algOutputs[setNames[0]];
-
-
             const geneSets = Object.keys(algOutputs).reduce((obj, setName) => ({
                 ...obj,
                 [setName]: Object.keys(algOutputs[setName].modules).length
             }), {});
 
             res.json({
-                algOutput: algOutput,
+                algOutput: algOutputs,
                 ...((req.body["fromWebExecutor"] === "true") ?
                         {webDetails: {
                             geneSets: geneSets,
-                            sessionDirectory: sessionDirectory,
+                            customFile: customFile,
                             zipURL: `${customFile}.zip`,
                         }}
-                        :
-                        {}
+                        : {}
                 )
             });
         })

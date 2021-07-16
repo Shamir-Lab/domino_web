@@ -144,7 +144,10 @@ const FileUpload = (props) => {
                         )
                     };
                 }, {});
-                if (!res.data.webDetails.numModules){
+                const numModules = Object.values(res.data.webDetails.geneSets).reduce((sum, value) =>
+                    sum + value
+                );
+                if (numModules === 0){
                     setSeen(true);
                 }
                 else{

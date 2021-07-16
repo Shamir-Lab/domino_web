@@ -19,20 +19,19 @@ import 'react-pro-sidebar/dist/css/styles.css';
 
 const Modules = (props) => {
     /* Unpack props. */
-    /*
 
     console.log(props);
     const geneSets = props.location.state["geneSets"];
+    const customFile = props.location.state["customFile"];
     const fileNames = {
         "active_genes": props.location.state["Active gene file"],
         "network": props.location.state["Network file"]
     };
-    console.log("fileNames", fileNames);
     const zipURL = props.location.state["zipURL"];
-    */
 
+    /*
     // for testing purposes
-    const sessionDirectory = "active_genes_file@dip@1626447515852";
+    const customFile = "active_genes_file@dip@1626447515852";
     const geneSets = {
         "DefaultSet": 1
     };
@@ -41,13 +40,14 @@ const Modules = (props) => {
         "network": "network_file.txt"
     };
     const zipURL = "active_genes_file@dip@1626296233416.zip";
+     */
 
 
 
     /** Returns the directory (with respect to the public folder) to the
     * proper static html file. */
     const moduleDirectory = (setName, moduleNum) =>
-        `${sessionDirectory}/${setName}/modules/module_${moduleNum}.html`;
+        `${customFile}/${setName}/modules/module_${moduleNum}.html`;
 
 
     /* Initialize component states. */
