@@ -148,7 +148,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
         console.log(`Starting domino py execution on set ${setName}...`);
         // question -> not sure why gdocker up after cd works but not the other way around?!
-        let algExecutor = `ssh nimsi@rack-shamir${serverNum}.cs.tau.ac.il cd /specific/netapp5/gaga/guests/nimsi/domino_web; gdocker up; ` +
+        loadBalancer=`ssh ${conf.USERNAME}@rack-shamir${serverNum}.cs.tau.ac.il cd /specific/netapp5/gaga/guests/nimsi/domino_web; gdocker up --container_name=domino; `
+        let algExecutor = loadBalancer +
             "bash domino_runner.sh " +
             [
                 subRunDirectory,

@@ -21,7 +21,7 @@ import { BsLightning, BsList } from "react-icons/bs";
 
 const Modules = (props) => {
     /* Unpack props. */
-    /*
+    
     console.log(props);
     const geneSets = props.location.state["geneSets"];
     const customFile = props.location.state["customFile"];
@@ -30,18 +30,21 @@ const Modules = (props) => {
         "network": props.location.state["Network file"]
     };
     const zipURL = props.location.state["zipURL"];
-     */
+    
 
     // for testing purposes
-    const customFile = "active_genes_file@dip@1626447515852";
-    const geneSets = {
-        "DefaultSet": 2
+    // const customFile = "clusters@dip@1626548832943"; //"Active_genes_file@dip@1626447515852";
+
+    /* const geneSets = {
+        "C1": 2,
+        "C2": 3
     };
     const fileNames = {
         "active_genes": "active_genes_file.txt",
         "network": "network_file.txt"
     };
-    const zipURL = "active_genes_file@dip@1626296233416.zip";
+    // const zipURL = customFile+".zip";
+    */ 
 
     /* Initialize component states. */
     // Being on the visualization page, we guarantee that we have modules to display
@@ -79,12 +82,12 @@ const Modules = (props) => {
                                     {collapse ?
                                         <>
                                             <Col>
-                                                <BsList style={{height: "25px", width: "25px", marginLeft: "27px", marginTop: "12px"}} onClick = {() => setCollapse(!collapse)}/>
+                                                <BsList style={{height: "25px", width: "25px", marginLeft: "20%", marginTop: "12px"}} onClick = {() => setCollapse(!collapse)}/>
                                             </Col>
                                         </> :
                                         <>
                                             <Col xs={2}>
-                                                <BsList style={{height: "25px", width: "25px", marginLeft: "15px", marginTop: "12px"}} onClick = {() => setCollapse(!collapse)}/>
+                                                <BsList style={{height: "25px", width: "25px", marginLeft: "60%", marginTop: "12px"}} onClick = {() => setCollapse(!collapse)}/>
                                             </Col>
                                             <Col xs={8}
                                                  style={{marginTop: "12px"}}
