@@ -77,7 +77,7 @@ const Modules = (props) => {
                 <Row style={{width: "100vw", height: "100vh", margin: "0px"}}>
                     <div>
                         <ProSidebar collapsed={collapse} style={{height: "100%"}}>
-                            <SidebarHeader style={{height:"50px"}}>
+                            <SidebarHeader>
                                 <Row>
                                     {collapse ?
                                         <>
@@ -89,16 +89,7 @@ const Modules = (props) => {
                                             <Col xs={2}>
                                                 <BsList style={{height: "25px", width: "25px", marginLeft: "60%", marginTop: "12px"}} onClick = {() => setCollapse(!collapse)}/>
                                             </Col>
-                                            <Col xs={8}
-                                                 style={{marginTop: "12px"}}
-                                            >DOMINO Web Executor</Col>
-
-                                            <Col xs={1}
-                                                 style={{
-                                                    marginRight: "7px",
-                                                    marginTop: "7px"
-                                                 }}
-                                            ><BsLightning style={{height:"15px", width:"15px"}}/></Col>
+                                            <Col xs={8} style={{marginTop: "12px"}}>DOMINO Web Executor</Col>
                                         </>
                                     }
                                 </Row>
