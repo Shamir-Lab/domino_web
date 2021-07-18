@@ -127,7 +127,7 @@ const FileUpload = (props) => {
         axios
             .post("http://" + conf.IP_ADDRESS  + ":8000/upload", data)
             .then(res => {
-                spinnerService.hide("mySpinner");
+                spinnerService.hide("mySpinner")
                 console.log(
                     "successfully uploaded: " + fileStructure.files.map(file => file.name).join(", ")
                 );
@@ -151,17 +151,22 @@ const FileUpload = (props) => {
                     setSeen(true);
                 }
                 else{
-                    props.history.push({
+                    spinnerService.show("mySpinner2");
+                    setTimeout(() => {
+                        spinnerService.hide("mySpinner2");
+                        props.history.push({
                         pathname : '/modules',
                         state: {
                             ...fileNaming,
                             ...res.data.webDetails
                         }
                     });
+                },2000);
                 }
             })
             .catch(error => {
                 spinnerService.hide("mySpinner");
+                spinnerService.hide("mySpinner2");
                 console.log(error);
                 setServerErrorResponse(
                     "Oops! There's an error with the DOMINO execution. Please check your inputted files for correctness."
@@ -280,6 +285,12 @@ const FileUpload = (props) => {
 
     return (
         <>
+            <Spinner name="mySpinner">
+            <img src='https://acegif.com/wp-content/uploads/loading-48.gif' style={{position: 'fixed', height: '100vh',width: '100vw',margin: '5px', zIndex: '100', opacity: '0.85'}}/>
+            </Spinner>
+            <Spinner name="mySpinner2">
+            <img src='https://acegif.com/wp-content/uploads/loading-1.gif' style={{position: 'fixed', height: '100vh',width: '100vw',margin: '5px', zIndex: '100', opacity: '0.9'}}/>
+            </Spinner>
             <div>
                 {seen ? <PopUp toggle={togglePop} /> : null}
             </div>
@@ -301,13 +312,7 @@ const FileUpload = (props) => {
             <div style = {{textAlign: "right", margin: "auto", width: "80%"}}>
                 <button className="btn btn-primary" style={{width:'200px'}}
                         onClick={uploadFiles}
-                >Upload</button>
-                <Spinner name="mySpinner">
-                    <img
-                        src="https://i.gifer.com/7plX.gif"
-                        style={{ height: "20px", width: "20px", margin: "5px" }}
-                    />
-                </Spinner>
+                >Upload</button>    
             </div>
             <footer className="text-center text-lg-start" style = {{backgroundColor: "#e9ecef"}}>
                 Footer
