@@ -63,8 +63,8 @@ const FileUpload = (props) => {
         for (const file of fileStructure.files) {
             const ref = fileData[file.name].inputTagRef;
 
-            const noFileChosen = ref.current.files.length === 0 && fileData[file.name].dropdownOption === DROPDOWN_DEFAULT;
-            const notValidInputFileName = ref.current.files.length !== 0 && fileData[file.name].userFileName === "";
+            const noFileChosen = (!ref.current.files && fileData[file.name].dropdownOption === DROPDOWN_DEFAULT);
+            const notValidInputFileName = (ref.current.files && fileData[file.name].userFileName === "") && (!ref.current.files && !ref.current.value);
             if (noFileChosen || notValidInputFileName) {
                 goodFiles = false;
                 continue;
@@ -186,7 +186,7 @@ const FileUpload = (props) => {
                     {file.availableFiles ?
                         <>
                             <div className = "col">
-                                <DropdownButton
+                                <Dropdown
                                     title = {fileData[[file.name]].dropdownOption}
                                     onSelect={fileName =>
                                         setFileData(prev => ({
@@ -197,22 +197,30 @@ const FileUpload = (props) => {
                                                 }
                                             }))
                                     }>
+                                    <Dropdown.Toggle 
+                                        style={{width:'300px'}} ref={fileData[file.name].inputTagRef} value={fileData[[file.name]].dropdownOption}> {fileData[[file.name]].dropdownOption}
+                                        </Dropdown.Toggle>
+                                    <Dropdown.Menu style={{width:'300px'}}>
                                     {file.availableFiles.fileNames.map(fileName =>
                                         <Dropdown.Item eventKey = {fileName}>
                                             {fileName}
                                         </Dropdown.Item>
+
                                     )}
-                                </DropdownButton>
-                            </div>
-                            <div className = "col">
-                                <span>or ...</span>
+                                    <Dropdown.Item eventKey = 'Choose from your PC'>
+                                            Choose from your PC
+                                        </Dropdown.Item>
+                                    </Dropdown.Menu>    
+                                </Dropdown>
                             </div>
                         </>
                         :
                         <></>
                     }
-                    <div className={(file.availableFiles ? "col-8" : "col") + " custom-file"}>
-                        <input
+                    {(file.name=='Active gene file' || fileData[file.name].dropdownOption=='Choose from your PC') ? 
+                        <>
+                    <div className={(file.availableFiles ? "col-8" : "col-12") + " custom-file"}>
+                        <input                            
                             className="form-control input-sm custom-file-input"
                             type="file"
                             ref={fileData[file.name].inputTagRef}
@@ -230,7 +238,7 @@ const FileUpload = (props) => {
                                 }));
                             }}
                         />
-                        <label className="custom-file-label">
+                        <label className="custom-file-label" style={{marginLeft:'15px', marginRight:'15px'}}>
                             Choose file...
                         </label>
 
@@ -247,6 +255,8 @@ const FileUpload = (props) => {
                             />
                         </div>
                     </div>
+                    </> : 
+                    <></>}
                 </div>
 
                 {/* File information and Error message*/}
@@ -289,7 +299,7 @@ const FileUpload = (props) => {
 
             {fileUploadList}
             <div style = {{textAlign: "right", margin: "auto", width: "80%"}}>
-                <button className="btn btn-primary"
+                <button className="btn btn-primary" style={{width:'200px'}}
                         onClick={uploadFiles}
                 >Upload</button>
                 <Spinner name="mySpinner">

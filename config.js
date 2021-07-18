@@ -6,10 +6,10 @@ const conf_local = {
 
 const conf_server = {
   IP_ADDRESS: "rack-shamir3.cs.tau.ac.il",
-  DOMINO_PYTHON_ENV: "/specific/netapp5/gaga/guests/nimsi/DOMINO/domino-env",
-  AMI_PLUGINS_PYTHON_ENV: "/specific/netapp5/gaga/guests/nimsi/ami_plugins/ami_plugins-env",
-  DOMINO_PATH: "/specific/netapp5/gaga/guests/nimsi/DOMINO"
-
+  DOMINO_PYTHON_ENV: "/specific/netapp5/gaga/hagailevi/domino4web-env",
+  AMI_PLUGINS_PYTHON_ENV: "/specific/netapp5/gaga/hagailevi/ami_plugins-env",
+  DOMINO_PATH: "/specific/netapp5/gaga/hagailevi/DOMINO",
+  USERNAME: "hagailevi"
 };
 
 module.exports = { conf: conf_server };
