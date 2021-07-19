@@ -29,3 +29,6 @@ yarn-error.log*
 # config
 config.js
 
+
+/.idea
+/.prettier*
