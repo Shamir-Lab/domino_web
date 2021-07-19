@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { Container, Row, Col, Dropdown } from "react-bootstrap";
 import { Spinner } from "@chevtek/react-spinners";
 import { spinnerService } from "@chevtek/react-spinners";
-import fileStructure from "./public/files";
-import { conf } from "./config.js";
-import { Container, Row, Col } from "react-bootstrap";
-import {
-  file_header,
-  file_desc,
-  file_error,
-  file_block,
-} from "./style.module.css";
 import PopUp from "./PopUp";
-import DropdownButton from "react-bootstrap/DropdownButton";
-import Dropdown from "react-bootstrap/Dropdown";
+
+import axios from "axios";
+import fileStructure from "./public/files";
+
+import {
+    file_header,
+    file_desc,
+    file_error,
+    file_block,
+} from "./css/file_upload.module.css";
+
+const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";
 
 /**
  JSON Structures
@@ -144,7 +145,7 @@ const FileUpload = (props) => {
     console.log("Sending POST request ...");
     spinnerService.show("mySpinner");
     axios
-      .post("http://" + conf.IP_ADDRESS + ":8000/upload", data)
+      .post(`${baseURL}/upload`, data)
       .then((res) => {
         spinnerService.hide("mySpinner");
         console.log(

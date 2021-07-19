@@ -1,4 +1,14 @@
 import React from "react";
+
+import {
+    DOMINOExecutions,
+    gitCloneExecutions
+} from './public/plotting.js';
+
+import "bootstrap/dist/css/bootstrap.css";
+import "react-combo-select/style.css";
+import logo from "./png/DOMINO_logo.png";
+
 import {
     left_inner_block,
     right_inner_block,
@@ -6,12 +16,28 @@ import {
     small_text,
     medium_text,
     btn_margin,
-    domino_logo
-} from "./landing_page.module.css";
-import "bootstrap/dist/css/bootstrap.css";
-import "react-combo-select/style.css";
-import logo from "./DOMINO_logo.png";
-import { Jumbotron, Container, Row, Col, Button, Card } from "react-bootstrap";
+    domino_logo,
+    card
+} from "./css/landing_page.module.css";
+
+import {
+    Jumbotron,
+    Container,
+    Row,
+    Col,
+    Button,
+    Card
+} from "react-bootstrap";
+
+import {
+    BarChart,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    Bar
+} from "recharts";
 
 const LandingPage = ({history}) => {
 
@@ -38,6 +64,7 @@ const LandingPage = ({history}) => {
                     {[...Array(4).keys()].map(() =>
                         <Col>
                             <Card
+                                className={card}
                                 style={{width: "250px", height: "350px"}}
                             >
                                 <Card.Body>
@@ -60,15 +87,66 @@ const LandingPage = ({history}) => {
 
             <div
                 style={{
+                    padding: "10px",
+                    margin: "75px 20px 75px 20px"}}
+            >
+                <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
+
+                <div style={{margin:"10px 200px 10px 200px;"}}>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        data={DOMINOExecutions.weekly}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis name={"Date"} dataKey="date" />
+                        <YAxis name={"Frequency"}/>
+                        <Tooltip />
+                        <Bar dataKey="freq" fill="#82ca9d" />
+                    </BarChart>
+                </div>
+
+                <div style={{margin:"10px 200px 10px 200px;"}}>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        data={DOMINOExecutions.weekly}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis name={"Date"} dataKey="date" />
+                        <YAxis name={"Frequency"}/>
+                        <Tooltip />
+                        <Bar dataKey="freq" fill="#82ca9d" />
+                    </BarChart>
+                </div>
+
+            </div>
+
+            <div
+                style={{
                     height: "500px",
                     backgroundColor: "grey",
                     padding: "10px",
-                    margin: "150px 20px 0px 20px"}}
+                    margin: "75px 20px 75px 20px"}}
             >
-                <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
+                <h1 style={{textAlign: "center"}}>Documentation</h1>
             </div>
 
-            <footer className="text-center text-lg-start" style={{backgroundColor: "white"}}>
+            <div
+                style={{
+                    height: "500px",
+                    backgroundColor: "grey",
+                    padding: "10px",
+                    margin: "75px 20px 75px 20px"}}
+            >
+                <h1 style={{textAlign: "center"}}>API Specs</h1>
+            </div>
+
+            <footer className="text-center text-lg-start"
+                    style={{
+                        backgroundColor: "white",
+                        margin:"100px 0px 50px 0px"
+                    }}>
                 <p>Developed by Kobe Bryant.</p>
             </footer>
         </>
