@@ -31,7 +31,7 @@ const LandingPage = ({history}) => {
                 </p>
             </Jumbotron>
 
-            <Button style={{margin: "0px auto 40px auto", display: "block"}}>Run DOMINO</Button>
+            <Button style={{margin: "0px auto 40px auto", display: "block"}} onClick={() => history.push({pathname: "/file-upload"})}>Run DOMINO</Button>
 
             <Container>
                 <Row style={{marginBottom: "100px"}}>
