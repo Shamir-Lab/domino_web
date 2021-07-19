@@ -11,15 +11,16 @@ import {
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
 import logo from "./DOMINO_logo.png";
+import { Jumbotron, Container, Row, Col, Button, Card } from "react-bootstrap";
 
-const LandingPage = ({ history }) => {
+const LandingPage = ({history}) => {
 
     return (
         <>
-            <div className="jumbotron">
-                <div style = {{margin: "auto", textAlign: "center"}}>
+            <Jumbotron style={{backgroundColor: "white", padding: "10px", marginTop: "80px"}}>
+                <div style={{margin: "auto", textAlign: "center"}}>
                     <span style={{fontSize: "45px"}}>Welcome to</span>
-                    <img src = {logo} className = {domino_logo}></img>
+                    <img src={logo} className={domino_logo}></img>
                     <span style={{fontSize: "45px"}}>Web Executor</span>
                 </div>
 
@@ -28,57 +29,46 @@ const LandingPage = ({ history }) => {
                     DOMINO is an algorithm for detecting active network <br></br>
                     modules with a low rate of false GO term calls.
                 </p>
+            </Jumbotron>
+
+            <Button style={{margin: "0px auto 40px auto", display: "block"}}>Run DOMINO</Button>
+
+            <Container>
+                <Row style={{marginBottom: "100px"}}>
+                    {[...Array(4).keys()].map(() =>
+                        <Col>
+                            <Card
+                                style={{width: "250px", height: "350px"}}
+                            >
+                                <Card.Body>
+                                    <Card.Title>Card Title</Card.Title>
+                                    <Card.Text>
+                                        Some quick example text to build on the card title and make up the bulk of
+                                        the card's content.
+                                    </Card.Text>
+                                    <Button variant="primary">Go somewhere</Button>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    )}
+                </Row>
+            </Container>
+
+            <hr
+                style={{width:"80%"}}
+            ></hr>
+
+            <div
+                style={{
+                    height: "500px",
+                    backgroundColor: "grey",
+                    padding: "10px",
+                    margin: "150px 20px 0px 20px"}}
+            >
+                <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
             </div>
 
-            <div className="container"
-                 style={{width: "65%", height: "500px", margin: "auto"}}>
-                <div className={["text-center", left_inner_block].join(" ")}>
-                    <p className={medium_text}>How would you like to proceed?</p>
-                    <button
-                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                        onClick={() => history.push({pathname: "/file-upload"})}
-                    >
-                        Run DOMINO
-                    </button>
-                    <div className={blue_background}
-                         style={{padding: "10px", width: "70%", margin: "5px auto 5px auto"}}>
-                        <p className={small_text}>Visit the GitHub Page for</p>
-                        <a
-                            className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                            href={"https://github.com/Shamir-Lab/DOMINO"}
-                        >
-                            DOMINO
-                        </a>
-                        <a
-                            className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                            href={"https://github.com/hag007/domino_web"}
-                        >
-                            DOMINO's <br></br> Web Executor
-                        </a>
-                    </div>
-                    <a
-                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                        href={"https://github.com/hag007/domino_web/issues"}
-                    > Report a problem via Git Issues
-                    </a>
-                </div>
-                <div className={right_inner_block}>
-                    <div className={blue_background}
-                         style={{height: "350px", margin: "auto", padding: "20px", width: "90%"}}>
-                        <p className={medium_text}
-                           style={{textAlign: "center"}}>DOMINO's Popularity</p>
-                        <div style={{margin: "auto", width: "70%"}}>
-                            <p className={small_text}>
-                                # of DOMINO web runs: 24 <br></br>
-                                # of DOMINO git clones: 26 <br></br>
-                                # of DOMINO git visits: 52
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <footer className="text-center text-lg-start" style={{backgroundColor: "#e9ecef"}}>
+            <footer className="text-center text-lg-start" style={{backgroundColor: "white"}}>
                 <p>Developed by Kobe Bryant.</p>
             </footer>
         </>

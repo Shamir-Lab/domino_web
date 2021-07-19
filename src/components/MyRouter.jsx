@@ -17,9 +17,9 @@ render() {
               <Router>
                   <Switch>
                       <Route path="/modules" component={Modules} render={props => <Modules {...props} /> } />
-                      <Route path="/" component={FileUpload} />
+                      <Route path="/file-upload" component={FileUpload} />
                       {/*<Route path="/file-upload" component={FileUpload} />*/}
-                      {/*<Route path="/" component={LandingPage} />*/}
+                      <Route path="/" component={LandingPage} />
                   </Switch>
               </Router>
           </div>
