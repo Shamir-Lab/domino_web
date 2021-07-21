@@ -21,7 +21,7 @@
 }
 
 .small_text {
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .btn_margin {
@@ -34,4 +34,18 @@
     margin-bottom: 49px;
     margin-left: 17px;
     margin-right: 17px; 
+}
+
+.hover_shadow {
+    transition: box-shadow .3s;
+}
+
+.hover_shadow:hover {
+    box-shadow: 0 0 11px rgba(33,33,33,.2);
+}
+
+.card {
+    width: 275px;
+    height: 350px;
+    text-align: center
 }
