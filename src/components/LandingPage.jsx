@@ -11,8 +11,8 @@ import dominoLogo from "./png/DOMINO_logo.png";
 import githubLogo from "./png/GitHubLogo.png";
 import linkedInLogo from "./png/LinkedInLogo.png";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub, faLinkedin } from '@fortawesome/free-brands-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons';
 
 import {
     left_inner_block,
@@ -37,6 +37,7 @@ import {
 
 import {
     BarChart,
+    Label,
     CartesianGrid,
     XAxis,
     YAxis,
@@ -46,6 +47,45 @@ import {
 } from "recharts";
 
 const LandingPage = ({history}) => {
+
+    // DOMINO Executions
+    const FeatureUsage = (attr, data) => {
+        return (
+            <Row style={{marginLeft: "50px"}}>
+                <Col xs={8}>
+                    <p
+                        style={{textAlign: "center", fontSize: "18px"}}
+                    >
+                        Weekly {attr}
+                    </p>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        margin={{left: 10, bottom: 30}}
+                        data={data.weekly}
+                    >
+                        <Label value="Weekly DOMINO Executions" position="top"/>
+                        <CartesianGrid strokeDasharray="3 3"/>
+                        <XAxis
+                            dataKey="date"
+                            label={{value: 'Date', position: 'bottom'}}
+                        ></XAxis>
+                        <YAxis
+                            label={{value: 'Frequency', angle: -90, position: 'left'}}
+                        />
+                        <Tooltip/>
+                        <Bar dataKey="freq" fill="#80bdff"/>
+                    </BarChart>
+                </Col>
+                <Col xs={2} style={{textAlign: "center"}}>
+                    <p style={{paddingTop: "120px", fontSize: "24px"}}>
+                        {data.total}
+                    </p>
+                    <p style={{fontSize: "14px"}}>total {attr}</p>
+                </Col>
+            </Row>
+        );
+    };
 
     return (
         <>
@@ -92,7 +132,7 @@ const LandingPage = ({history}) => {
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
-                                                            width:"50px",
+                                                            width: "50px",
                                                             color: "black"
                                                         }}
                                                         className={hover_shadow}
@@ -105,7 +145,7 @@ const LandingPage = ({history}) => {
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
-                                                            width:"50px",
+                                                            width: "50px",
                                                             color: "blue"
                                                         }}
                                                         className={hover_shadow}
@@ -201,50 +241,11 @@ const LandingPage = ({history}) => {
             >
                 <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
 
-                <div style={{margin: "10px 200px 10px 200px"}}>
-                    <p
-                        style={{
-                            textAlign: "center",
-                            marginBottom: "0px"
-                        }}
-                    >
-                        Weekly DOMINO Executions
-                    </p>
-                    <BarChart
-                        width={800}
-                        height={300}
-                        data={DOMINOExecutions.weekly}
-                    >
-                        <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis name={"Date"} dataKey="date"/>
-                        <YAxis name={"Frequency"}/>
-                        <Tooltip/>
-                        <Bar dataKey="freq" fill="#82ca9d"/>
-                    </BarChart>
-                </div>
+                {/* DOMINO Web Executions */}
+                {FeatureUsage("DOMINO Executions", DOMINOExecutions)}
 
-                <div style={{margin: "10px 200px 10px 200px"}}>
-                    <p
-                        style={{
-                            textAlign: "center",
-                            marginBottom: "0px"
-                        }}
-                    >
-                        Weekly DOMINO git clone Executions
-                    </p>
-                    <BarChart
-                        width={800}
-                        height={300}
-                        data={gitCloneExecutions.weekly}
-                    >
-                        <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis name={"Date"} dataKey="date"/>
-                        <YAxis name={"Frequency"}/>
-                        <Tooltip/>
-                        <Bar dataKey="freq" fill="#82ca9d"/>
-                    </BarChart>
-                </div>
-
+                {/* Git clone Executions*/}
+                {FeatureUsage("Git Clone Executions", gitCloneExecutions)}
             </div>
 
             <div
