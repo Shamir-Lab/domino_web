@@ -247,7 +247,7 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(process.env.PORT || 7000);
+app.listen(process.env.PORT || conf.PORT);
 
 
 

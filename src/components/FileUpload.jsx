@@ -2,27 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Dropdown } from "react-bootstrap";
 import { Spinner } from "@chevtek/react-spinners";
 import { spinnerService } from "@chevtek/react-spinners";
-import PopUp from "./PopUp";
-
-import axios from "axios";
-import fileStructure from "./public/files";
-import {
-  file_header,
-  file_desc,
-  file_error,
-  file_block,
-} from "./css/file_upload.module.css";
-import loading_text from "./loading_text.png";
-import loading_text_dynamic from "./loading_text_dynamic.gif";
-import domino_fall from "./domino_fall.gif";
-
-
-import PopUp from "./PopUp";
 import DropdownButton from "react-bootstrap/DropdownButton";
-import Dropdown from "react-bootstrap/Dropdown";
 import Tour from 'reactour'
+import axios from "axios";
 
-const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";
+import PopUp from "./PopUp";
 
 /**
  JSON Structures
@@ -39,6 +23,19 @@ const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";
 
 // TODO: file_error class is used for general error messages. change class name
 
+import fileStructure from "./public/files";
+import {
+  file_header,
+  file_desc,
+  file_error,
+  file_block,
+} from "./css/file_upload.module.css";
+
+import loading1 from "./resources/loading1.gif";
+import loading2 from "./resources/loading2.gif";
+
+
+const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";
 const MAX_FILE_SIZE_MB = 10;
 
 const steps = [
@@ -106,10 +103,7 @@ const FileUpload = (props) => {
         (fileData[file.name].dropdownOption === DROPDOWN_DEFAULT ||
           fileData[file.name].dropdownOption === DROPDOWN_CUSTOM_NETWORK) &&
         (!ref.current.files || ref.current.files.length === 0);
-      // const notValidInputFileName =
-      //   fileData[file.name].dropdownOption === DROPDOWN_CUSTOM_NETWORK &&
-      //   fileData[file.name].userFileName === "";
-      if (noFileChosen) {  //|| notValidInputFileName
+      if (noFileChosen) {
         goodFiles = false;
         continue;
       }
@@ -348,7 +342,7 @@ const FileUpload = (props) => {
     <>
       <Spinner name="mySpinner">
         <img
-          src="https://acegif.com/wp-content/uploads/loading-48.gif"
+          src={loading1}
           style={{
             position: "absolute",
             left: 0,
@@ -362,7 +356,7 @@ const FileUpload = (props) => {
       </Spinner>
       <Spinner name="mySpinner2">
         <img
-          src="https://acegif.com/wp-content/uploads/loading-1.gif"
+          src={loading2}
           style={{
             position: "absolute",
             left: 0,

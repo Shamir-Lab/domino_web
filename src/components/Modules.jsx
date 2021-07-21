@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
-import { ReactComponent as ReactNetworkIcon } from "./network_icon_bright.svg";
-import "bootstrap/dist/css/bootstrap.css";
-import "react-combo-select/style.css";
-import Tour from "reactour";
-
 import {
 	ProSidebar,
 	SidebarHeader,
@@ -16,9 +10,16 @@ import {
 	MenuItem,
 	SubMenu,
 } from "react-pro-sidebar";
-import "react-pro-sidebar/dist/css/styles.css";
-
+import Tour from "reactour";
 import { BsLightning, BsList } from "react-icons/bs";
+
+
+import "bootstrap/dist/css/bootstrap.css";
+import "react-pro-sidebar/dist/css/styles.css";
+import "react-combo-select/style.css";
+
+import { ReactComponent as ReactNetworkIcon } from "./resources/network_icon_bright.svg";
+
 
 const steps = [
 	{
