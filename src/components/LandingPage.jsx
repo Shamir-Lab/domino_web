@@ -7,7 +7,12 @@ import {
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
-import logo from "./png/DOMINO_logo.png";
+import dominoLogo from "./png/DOMINO_logo.png";
+import githubLogo from "./png/GitHubLogo.png";
+import linkedInLogo from "./png/LinkedInLogo.png";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGithub, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 
 import {
     left_inner_block,
@@ -17,6 +22,7 @@ import {
     medium_text,
     btn_margin,
     domino_logo,
+    hover_shadow,
     card
 } from "./css/landing_page.module.css";
 
@@ -46,7 +52,7 @@ const LandingPage = ({history}) => {
             <Jumbotron style={{backgroundColor: "white", padding: "10px", marginTop: "80px"}}>
                 <div style={{margin: "auto", textAlign: "center"}}>
                     <span style={{fontSize: "45px"}}>Welcome to</span>
-                    <img src={logo} className={domino_logo}></img>
+                    <img src={dominoLogo} className={domino_logo}></img>
                     <span style={{fontSize: "45px"}}>Web Executor</span>
                 </div>
 
@@ -57,66 +63,185 @@ const LandingPage = ({history}) => {
                 </p>
             </Jumbotron>
 
-            <Button style={{margin: "0px auto 40px auto", display: "block"}} onClick={() => history.push({pathname: "/file-upload"})}>Run DOMINO</Button>
+            <Button style={{margin: "0px auto 40px auto", display: "block"}}
+                    onClick={() => history.push({pathname: "/file-upload"})}>Run DOMINO</Button>
 
             <Container>
                 <Row style={{marginBottom: "100px"}}>
-                    {[...Array(4).keys()].map(() =>
-                        <Col>
-                            <Card
-                                className={card}
-                                style={{width: "250px", height: "350px"}}
-                            >
-                                <Card.Body>
-                                    <Card.Title>Card Title</Card.Title>
-                                    <Card.Text>
-                                        Some quick example text to build on the card title and make up the bulk of
-                                        the card's content.
-                                    </Card.Text>
-                                    <Button variant="primary">Go somewhere</Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    )}
+                    {/* Developer Credits */}
+                    <Col>
+                        <Card
+                            className={[hover_shadow, card].join(" ")}
+                        >
+                            <Card.Body>
+                                <Card.Title>Developer Credits</Card.Title>
+                                <Card.Text>
+                                    <div>
+                                        <p className={small_text}>
+                                            Website developed by <br></br> Nima Rahmanian
+                                        </p>
+                                        {/* GitHub and LinkedIn buttons*/}
+                                        <Row
+                                            style={{
+                                                marginLeft: "5px",
+                                                marginRight: "5px"
+                                            }}
+                                        >
+                                            <Col>
+                                                <a href={"https://github.com/Nimsi123"}>
+                                                    <FontAwesomeIcon
+                                                        style={{
+                                                            height: "50px",
+                                                            width:"50px",
+                                                            color: "black"
+                                                        }}
+                                                        className={hover_shadow}
+                                                        icon={faGithub}
+                                                    />
+                                                </a>
+                                            </Col>
+                                            <Col>
+                                                <a href={"www.linkedin.com/in/nima-rahmanian-367b871aa"}>
+                                                    <FontAwesomeIcon
+                                                        style={{
+                                                            height: "50px",
+                                                            width:"50px",
+                                                            color: "blue"
+                                                        }}
+                                                        className={hover_shadow}
+                                                        icon={faLinkedin}
+                                                    />
+                                                </a>
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                    <hr></hr>
+                                    <div>
+                                        <p className={small_text}>
+                                            DOMINO developed by <br></br> Hagai Levi at TAU
+                                        </p>
+                                    </div>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    {/* References */}
+                    <Col>
+                        <Card
+                            className={[hover_shadow, card].join(" ")}
+                        >
+                            <Card.Body>
+                                <Card.Title>References</Card.Title>
+                                <Card.Text>
+                                    <a
+                                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                        href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
+                                    >
+                                        Visit the DOMINO paper
+                                    </a>
+                                    <p>Visit Github Pages for ...</p>
+                                    <Row
+                                        style={{paddingLeft: "10px"}}
+                                    >
+                                        <Col xs={4}>
+                                            <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/Shamir-Lab/DOMINO"}
+                                            >
+                                                DOMINO
+                                            </a>
+                                        </Col>
+                                        <Col>
+                                            <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/hag007/domino_web"}
+                                            >
+                                                DOMINO's <br></br> Web Executor
+                                            </a>
+                                        </Col>
+                                    </Row>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    {/* Contact and Issues */}
+                    <Col>
+                        <Card
+                            className={[hover_shadow, card].join(" ")}
+                        >
+                            <Card.Body>
+                                <Card.Title
+                                    style={{textAlign: "center"}}
+                                >Contact Us</Card.Title>
+                                <Card.Text>
+                                    <a
+                                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                        href={"https://github.com/hag007/domino_web/issues"}
+                                    > Report a problem via Git Issues
+                                    </a>
+                                    <p>Reach us at --add email--</p>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
                 </Row>
             </Container>
 
             <hr
-                style={{width:"80%"}}
+                style={{width: "80%"}}
             ></hr>
 
             <div
                 style={{
                     padding: "10px",
-                    margin: "75px 20px 75px 20px"}}
+                    margin: "75px 20px 75px 20px"
+                }}
             >
                 <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
 
-                <div style={{margin:"10px 200px 10px 200px;"}}>
+                <div style={{margin: "10px 200px 10px 200px"}}>
+                    <p
+                        style={{
+                            textAlign: "center",
+                            marginBottom: "0px"
+                        }}
+                    >
+                        Weekly DOMINO Executions
+                    </p>
                     <BarChart
                         width={800}
                         height={300}
                         data={DOMINOExecutions.weekly}
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis name={"Date"} dataKey="date" />
+                        <CartesianGrid strokeDasharray="3 3"/>
+                        <XAxis name={"Date"} dataKey="date"/>
                         <YAxis name={"Frequency"}/>
-                        <Tooltip />
-                        <Bar dataKey="freq" fill="#82ca9d" />
+                        <Tooltip/>
+                        <Bar dataKey="freq" fill="#82ca9d"/>
                     </BarChart>
                 </div>
 
-                <div style={{margin:"10px 200px 10px 200px;"}}>
+                <div style={{margin: "10px 200px 10px 200px"}}>
+                    <p
+                        style={{
+                            textAlign: "center",
+                            marginBottom: "0px"
+                        }}
+                    >
+                        Weekly DOMINO git clone Executions
+                    </p>
                     <BarChart
                         width={800}
                         height={300}
-                        data={DOMINOExecutions.weekly}
+                        data={gitCloneExecutions.weekly}
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis name={"Date"} dataKey="date" />
+                        <CartesianGrid strokeDasharray="3 3"/>
+                        <XAxis name={"Date"} dataKey="date"/>
                         <YAxis name={"Frequency"}/>
-                        <Tooltip />
-                        <Bar dataKey="freq" fill="#82ca9d" />
+                        <Tooltip/>
+                        <Bar dataKey="freq" fill="#82ca9d"/>
                     </BarChart>
                 </div>
 
@@ -127,7 +252,8 @@ const LandingPage = ({history}) => {
                     height: "500px",
                     backgroundColor: "grey",
                     padding: "10px",
-                    margin: "75px 20px 75px 20px"}}
+                    margin: "75px 20px 75px 20px"
+                }}
             >
                 <h1 style={{textAlign: "center"}}>Documentation</h1>
             </div>
@@ -137,7 +263,8 @@ const LandingPage = ({history}) => {
                     height: "500px",
                     backgroundColor: "grey",
                     padding: "10px",
-                    margin: "75px 20px 75px 20px"}}
+                    margin: "75px 20px 75px 20px"
+                }}
             >
                 <h1 style={{textAlign: "center"}}>API Specs</h1>
             </div>
@@ -145,7 +272,7 @@ const LandingPage = ({history}) => {
             <footer className="text-center text-lg-start"
                     style={{
                         backgroundColor: "white",
-                        margin:"100px 0px 50px 0px"
+                        margin: "100px 0px 50px 0px"
                     }}>
                 <p>Developed by Kobe Bryant.</p>
             </footer>
