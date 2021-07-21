@@ -1,0 +1,27 @@
+<svg width="30.000000000000004" height="30.000000000000004" xmlns="http://www.w3.org/2000/svg">
+ <g id="Layer_1">
+  <title>Layer 1</title>
+  <ellipse ry="2.29508" rx="2.21311" id="svg_16" cy="7.54098" cx="8.85246" stroke="#cccccc" fill="#0000ff"/>
+  <ellipse ry="2.29508" rx="2.21311" id="svg_28" cy="17.04918" cx="14.59016" stroke="#cccccc" fill="#0000ff"/>
+  <ellipse ry="2.21311" rx="2.13115" id="svg_29" cy="5.16393" cx="23.85246" stroke="#cccccc" fill="#ff0000"/>
+  <ellipse ry="2.13115" rx="2.21311" id="svg_30" cy="24.09836" cx="23.60656" stroke="#cccccc" fill="#ff0000"/>
+  <ellipse ry="2.21311" rx="2.21311" id="svg_31" cy="22.70492" cx="6.72131" stroke="#cccccc" fill="#ff0000"/>
+  <ellipse ry="2.04918" rx="1.96721" id="svg_34" cy="3.03279" cx="3.19672" stroke="#cccccc" fill="#ff0000"/>
+  <ellipse ry="2.21311" rx="2.04918" id="svg_37" cy="26.47541" cx="15.57377" stroke="#cccccc" fill="#0000ff"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_38" y2="25.90164" x2="12.86885" y1="23.77049" x1="8.77049" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_39" y2="24.91803" x2="21.39344" y1="26.06557" x1="17.78689" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_40" y2="18.52459" x2="12.70492" y1="21.14754" x1="8.27869" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_41" y2="22.45902" x2="21.72131" y1="17.70492" x1="16.63934" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_43" y2="14.91803" x2="13.52459" y1="9.67213" x1="10.08197" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_44" y2="6.06557" x2="7.29508" y1="4.2623" x1="5" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_46" y2="15.2459" x2="16.31148" y1="6.55738" x1="22.37705" stroke="#cccccc" fill="none"/>
+  <ellipse ry="2.04918" rx="2.13115" id="svg_51" cy="16.14754" cx="4.34426" stroke="#cccccc" fill="#0000ff"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_53" y2="13.93443" x2="4.01639" y1="5.08197" x1="3.19672" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_54" y2="20.81967" x2="5.65574" y1="18.19672" x1="4.67213" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_55" y2="21.96721" x2="23.85246" y1="7.37705" x1="24.01639" stroke="#cccccc" fill="none"/>
+  <ellipse ry="2.04918" rx="2.04918" id="svg_56" cy="5" cx="17.04918" stroke="#cccccc" fill="#0000ff"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_57" y2="4.59016" x2="14.34426" y1="2.45902" x1="4.67213" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_58" y2="5.08197" x2="21.88525" y1="4.91803" x1="18.77049" stroke="#cccccc" fill="none"/>
+  <line stroke-linecap="undefined" stroke-linejoin="undefined" id="svg_59" y2="3.11475" x2="61.72131" y1="3.11475" x1="61.55738" stroke="#cccccc" fill="none"/>
+ </g>
+</svg>

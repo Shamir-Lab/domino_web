@@ -11,9 +11,15 @@ import {
   file_error,
   file_block,
 } from "./style.module.css";
+import loading_text from "./loading_text.png";
+import loading_text_dynamic from "./loading_text_dynamic.gif";
+import domino_fall from "./domino_fall.gif";
+
+
 import PopUp from "./PopUp";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
+import Tour from 'reactour'
 
 /**
  JSON Structures
@@ -32,6 +38,24 @@ import Dropdown from "react-bootstrap/Dropdown";
 
 const MAX_FILE_SIZE_MB = 10;
 
+const steps = [
+  {
+    selector: '[data-tour="first-step"]',
+    content: 'Here you choose active gene set(s).\nyou can choose to analyze either a single set or multiple set.\nTo analyze a signle set, plese provide a line-separated set of gene ids. For multiple set, please provide a tab-separated table of two columns: The first column in the gene id and the second column is the set identifier.',
+    position: "bottom"
+  },
+  {
+    selector: '[data-tour="second-step"]',
+    content: 'Here you choose a network file. You can either choose a pre-loaded network or provide a custom network file. custom network files should be in sif format, where each pair genes should appear in a separate line. For examples, see Shamir-Lab/DOMINO Github repository.',
+    position: "bottom"
+  },
+  {
+    selector: '[data-tour="third-step"]',
+    content: 'Finally, hit execute and wait for the results! This process usually takes between 30 second and two minutes, dpending on  the input and the server load.',
+    position: "left"
+  },
+];
+
 const FileUpload = (props) => {
   const DROPDOWN_DEFAULT = "Select from available network files";
   const DROPDOWN_CUSTOM_NETWORK = "Choose from your PC";
@@ -43,7 +67,7 @@ const FileUpload = (props) => {
           userFileName: "",
           inputTagRef: React.createRef(),
           dropdownOption: DROPDOWN_DEFAULT,
-          errorMessage: "",
+          errorMessage: ""
         },
       }),
       {}
@@ -55,6 +79,8 @@ const FileUpload = (props) => {
   const togglePop = () => {
     setSeen(!seen);
   };
+
+  const [isTourOpen, setIsTourOpen] = useState(true);
 
   const uploadFiles = () => {
     /** The onClick attribute for the upload button.
@@ -198,7 +224,7 @@ const FileUpload = (props) => {
       <div className={file_block} key={file.name}>
         {/* File header and error message */}
         <div style={{ textAlign: "left" }}>
-          <p className={file_header}>{file.name}</p>
+          <p className={file_header} data-tour={file.tourStep}>{file.name}</p>
           <p className={file_error}>{fileData[file.name].errorMessage}</p>
         </div>
 
@@ -321,10 +347,11 @@ const FileUpload = (props) => {
         <img
           src="https://acegif.com/wp-content/uploads/loading-48.gif"
           style={{
-            position: "fixed",
+            position: "absolute",
+            left: 0,
+            top: 0,
             height: "100vh",
             width: "100vw",
-            margin: "5px",
             zIndex: "100",
             opacity: "0.85",
           }}
@@ -334,10 +361,11 @@ const FileUpload = (props) => {
         <img
           src="https://acegif.com/wp-content/uploads/loading-1.gif"
           style={{
-            position: "fixed",
+            position: "absolute",
+            left: 0,
+            top: 0,
             height: "100vh",
             width: "100vw",
-            margin: "5px",
             zIndex: "100",
             opacity: "0.9",
           }}
@@ -346,7 +374,7 @@ const FileUpload = (props) => {
       <div>{seen ? <PopUp toggle={togglePop} /> : null}</div>
 
       <div className="jumbotron">
-        <p style={{ fontSize: "45px", textAlign: "center" }}>File Upload</p>
+        <p style={{ fontSize: "45px", textAlign: "center" }}>Run Domino</p>
       </div>
 
       {/* Error with file upload. */}
@@ -360,8 +388,9 @@ const FileUpload = (props) => {
           className="btn btn-primary"
           style={{ width: "200px" }}
           onClick={uploadFiles}
+          data-tour='third-step'
         >
-          Upload
+          Execute
         </button>
       </div>
       <footer
@@ -370,6 +399,12 @@ const FileUpload = (props) => {
       >
         Footer
       </footer>
+      <Tour
+        steps={steps}
+        isOpen={isTourOpen}
+        onRequestClose={() => setIsTourOpen(false)}
+        lastStepNextButton={<button className="btn btn-primary" style={{width:"150px"}}>Done! Let's start playing</button>}
+      />
     </>
   );
 };
