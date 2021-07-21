@@ -49,7 +49,7 @@ const LandingPage = ({history}) => {
     // DOMINO Executions
     const FeatureUsage = (attr, data) => {
         return (
-            <Row style={{marginLeft: "50px"}}>
+            <Row style={{margin: "25px 0px 25px 50px"}}>
                 <Col xs={8}>
                     <p
                         style={{textAlign: "center", fontSize: "18px"}}
@@ -126,7 +126,10 @@ const LandingPage = ({history}) => {
                                             }}
                                         >
                                             <Col>
-                                                <a href={"https://github.com/Nimsi123"}>
+                                                <a
+                                                    href={"https://github.com/Nimsi123"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
@@ -139,7 +142,10 @@ const LandingPage = ({history}) => {
                                                 </a>
                                             </Col>
                                             <Col>
-                                                <a href={"https://www.linkedin.com/in/nima-rahmanian-367b871aa"}>
+                                                <a
+                                                    href={"https://www.linkedin.com/in/nima-rahmanian-367b871aa"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
@@ -172,33 +178,41 @@ const LandingPage = ({history}) => {
                             <Card.Body>
                                 <Card.Title>References</Card.Title>
                                 <Card.Text>
-                                    <a
-                                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                        href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
-                                    >
-                                        Visit the DOMINO paper
-                                    </a>
-                                    <p>Visit Github Pages for ...</p>
-                                    <Row
-                                        style={{paddingLeft: "10px"}}
-                                    >
-                                        <Col xs={4}>
-                                            <a
-                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                                href={"https://github.com/Shamir-Lab/DOMINO"}
-                                            >
-                                                DOMINO
-                                            </a>
-                                        </Col>
-                                        <Col>
-                                            <a
-                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                                href={"https://github.com/hag007/domino_web"}
-                                            >
-                                                DOMINO's <br></br> Web Executor
-                                            </a>
-                                        </Col>
-                                    </Row>
+                                    <div>
+                                        <a
+                                            className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                            href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
+                                            target="_blank" rel="noopener noreferrer"
+                                        >
+                                            Visit the DOMINO paper
+                                        </a>
+                                    </div>
+                                    <hr></hr>
+                                    <div>
+                                        <p>Visit Github Pages for ...</p>
+                                        <Row
+                                            style={{paddingLeft: "10px"}}
+                                        >
+                                            <Col xs={4}>
+                                                <a
+                                                    className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                    href={"https://github.com/Shamir-Lab/DOMINO"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
+                                                    DOMINO
+                                                </a>
+                                            </Col>
+                                            <Col>
+                                                <a
+                                                    className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                    href={"https://github.com/hag007/domino_web"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
+                                                    DOMINO's <br></br> Web Executor
+                                                </a>
+                                            </Col>
+                                        </Row>
+                                    </div>
                                 </Card.Text>
                             </Card.Body>
                         </Card>
@@ -217,6 +231,7 @@ const LandingPage = ({history}) => {
                                     <a
                                         className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
                                         href={"https://github.com/hag007/domino_web/issues"}
+                                        target="_blank" rel="noopener noreferrer"
                                     > Report a problem via Git Issues
                                     </a>
                                     <p>Reach us at --add email--</p>
