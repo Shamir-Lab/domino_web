@@ -272,7 +272,7 @@ const Modules = (props) => {
 								download
 								data-tour="third-step"
 							>
-								Download Visualization
+								Download analysis
 							</a>
 						</SidebarFooter>
 					</ProSidebar>

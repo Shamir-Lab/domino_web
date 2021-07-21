@@ -49,3 +49,17 @@
     height: 350px;
     text-align: center
 }
+
+.circle {
+    font-size: 40px;
+    height: 180px;
+    width: 180px;
+    background-color: #007bff;
+    border-radius: 50%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    color: white;
+
+}
