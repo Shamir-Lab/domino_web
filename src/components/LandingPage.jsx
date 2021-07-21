@@ -7,9 +7,9 @@ import {
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
-import dominoLogo from "./png/DOMINO_logo.png";
-import githubLogo from "./png/GitHubLogo.png";
-import linkedInLogo from "./png/LinkedInLogo.png";
+import dominoLogo from "./resources/DOMINO_logo.png";
+import githubLogo from "./resources/GitHubLogo.png";
+import linkedInLogo from "./resources/LinkedInLogo.png";
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons';

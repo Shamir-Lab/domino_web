@@ -54,7 +54,7 @@ app.use(cookieParser());
 // app.use(cors());
 app.use(fileUpload());
 
-app.get('/', function (req, res) {
+app.get('/*', function (req, res) {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
@@ -247,7 +247,7 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(process.env.PORT || 7000);
+app.listen(process.env.PORT || conf.PORT);
 
 
 

@@ -1,0 +1,27 @@
+<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+ <g id="Layer_1">
+  <title>Layer 1</title>
+  <ellipse ry="1.98113" rx="1.88679" id="svg_11" cy="5.4717" cx="5.66038" stroke="#000" fill="#ff0000"/>
+  <ellipse ry="1.69811" rx="1.79245" id="svg_12" cy="35.75471" cx="30.47169" stroke="#000" fill="#ff0000"/>
+  <ellipse ry="1.79245" rx="1.98113" id="svg_13" cy="17.92453" cx="23.67924" stroke="#000" fill="#ff0000"/>
+  <ellipse stroke="#000" ry="1.79245" rx="1.79245" id="svg_17" cy="35.09433" cx="5.75472" fill="#ff0000"/>
+  <ellipse ry="1.79245" rx="1.98113" id="svg_18" cy="20.56603" cx="7.26415" stroke="#000" fill="#0000ff"/>
+  <ellipse ry="1.69811" rx="1.88679" id="svg_19" cy="6.69811" cx="21.69811" stroke="#000" fill="#0000ff"/>
+  <ellipse ry="1.69811" rx="1.88679" id="svg_20" cy="30.84905" cx="18.30188" stroke="#000" fill="#0000ff"/>
+  <ellipse ry="1.60377" rx="1.79245" id="svg_21" cy="9.24528" cx="36.69811" stroke="#000" fill="#0000ff"/>
+  <line id="svg_22" y2="31.60377" x2="16.22641" y1="34.24528" x1="7.73585" stroke="#000" fill="none"/>
+  <line id="svg_23" y2="15.94339" x2="23.01886" y1="8.77358" x1="21.88679" stroke="#000" fill="none"/>
+  <line id="svg_24" y2="6.50943" x2="19.81132" y1="5.56604" x1="7.73585" stroke="#000" fill="none"/>
+  <line id="svg_26" y2="18.20754" x2="21.69811" y1="19.90566" x1="9.81132" stroke="#000" fill="none"/>
+  <line id="svg_27" y2="18.01887" x2="6.79245" y1="7.64151" x1="5.66038" stroke="#000" fill="none"/>
+  <line id="svg_28" y2="19.5283" x2="23.01886" y1="28.77358" x1="19.43396" stroke="#000" fill="none"/>
+  <line id="svg_29" y2="10.4717" x2="35.28301" y1="16.69811" x1="25.66037" stroke="#000" fill="none"/>
+  <line id="svg_30" y2="10.84906" x2="36.79245" y1="33.67924" x1="31.13207" stroke="#000" fill="none"/>
+  <ellipse ry="1.69811" rx="1.79245" id="svg_31" cy="26.13207" cx="27.26415" stroke="#000" fill="#0000ff"/>
+  <line id="svg_32" y2="23.86792" x2="26.22641" y1="19.33962" x1="24.5283" stroke="#000" fill="none"/>
+  <line id="svg_33" y2="34.0566" x2="29.43396" y1="28.01886" x1="27.54717" stroke="#000" fill="none"/>
+  <ellipse stroke="#000" ry="1.50943" rx="1.69811" id="svg_36" cy="2.54717" cx="33.5849" fill="#ff0000"/>
+  <line id="svg_39" y2="7.26415" x2="35.66037" y1="4.0566" x1="34.15094" stroke="#000" fill="none"/>
+  <line id="svg_40" y2="4.24528" x2="59.0566" y1="4.24528" x1="58.30188" stroke="#000" fill="none"/>
+ </g>
+</svg>

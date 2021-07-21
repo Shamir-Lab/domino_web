@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
-
-import "bootstrap/dist/css/bootstrap.css";
-import "react-combo-select/style.css";
-
 import {
 	ProSidebar,
 	SidebarHeader,
@@ -15,9 +10,37 @@ import {
 	MenuItem,
 	SubMenu,
 } from "react-pro-sidebar";
-import "react-pro-sidebar/dist/css/styles.css";
-
+import Tour from "reactour";
 import { BsLightning, BsList } from "react-icons/bs";
+
+
+import "bootstrap/dist/css/bootstrap.css";
+import "react-pro-sidebar/dist/css/styles.css";
+import "react-combo-select/style.css";
+
+import { ReactComponent as ReactNetworkIcon } from "./resources/network_icon_bright.svg";
+
+
+const steps = [
+	{
+		selector: '[data-tour="first-step"]',
+		content:
+			"Through this navbar you can move between resulting modules. You can find each module under the active gene set from which it was generated.",
+		position: "bottom",
+	},
+	{
+		selector: '[data-tour="second-step"]',
+		content:
+			'This pane show details of the module chosen from the navbar. Here you can see the examine the module as a visulaized graph, see the genes of the module as list (bottom-left table) or overlaid on the network ("show labels on network" button) and GO enrichment analysis (bottom-right table)',
+		position: "center",
+	},
+	{
+		selector: '[data-tour="third-step"]',
+		content:
+			'If you wish to save this analysis, you can download it here. In addition to the modules\' HTML files (located under "module" folder), this functionality also provides GO enrichment analysis and the modules as tsv/txt files (under "go" folder).',
+		position: "right",
+	},
+];
 
 const Modules = (props) => {
 	/* Unpack props. */
@@ -30,6 +53,8 @@ const Modules = (props) => {
 		network: props.location.state["Network file"],
 	};
 	const zipURL = props.location.state["zipURL"];
+
+	const [isTourOpen, setIsTourOpen] = useState(true);
 
 	// for testing purposes
 	/*
@@ -88,7 +113,9 @@ const Modules = (props) => {
 													marginLeft: "20%",
 													marginTop: "12px",
 												}}
-												onClick={() => setCollapse(!collapse)}
+												onClick={() =>
+													setCollapse(!collapse)
+												}
 											/>
 										</Col>
 									</>
@@ -102,10 +129,18 @@ const Modules = (props) => {
 													marginLeft: "60%",
 													marginTop: "12px",
 												}}
-												onClick={() => setCollapse(!collapse)}
+												onClick={() =>
+													setCollapse(!collapse)
+												}
 											/>
 										</Col>
-										<Col xs={8} style={{ marginTop: "12px" }}>
+										<Col
+											xs={8}
+											style={{
+												marginTop: "12px",
+												fontSize: "15px",
+											}}
+										>
 											DOMINO Web Executor
 										</Col>
 									</>
@@ -119,41 +154,32 @@ const Modules = (props) => {
 										{collapse ? (
 											<>
 												<Col>
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														width="16"
-														height="16"
-														fill="currentColor"
-														class="bi bi-bezier"
-														viewBox="0 0 16 16"
-													>
-														<path
-															fill-rule="evenodd"
-															d="M0 10.5A1.5 1.5 0 0 1 1.5 9h1A1.5 1.5 0 0 1 4 10.5v1A1.5 1.5 0 0 1 2.5 13h-1A1.5 1.5 0 0 1 0 11.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm10.5.5A1.5 1.5 0 0 1 13.5 9h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM6 4.5A1.5 1.5 0 0 1 7.5 3h1A1.5 1.5 0 0 1 10 4.5v1A1.5 1.5 0 0 1 8.5 7h-1A1.5 1.5 0 0 1 6 5.5v-1zM7.5 4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"
-														/>
-														<path d="M6 4.5H1.866a1 1 0 1 0 0 1h2.668A6.517 6.517 0 0 0 1.814 9H2.5c.123 0 .244.015.358.043a5.517 5.517 0 0 1 3.185-3.185A1.503 1.503 0 0 1 6 5.5v-1zm3.957 1.358A1.5 1.5 0 0 0 10 5.5v-1h4.134a1 1 0 1 1 0 1h-2.668a6.517 6.517 0 0 1 2.72 3.5H13.5c-.123 0-.243.015-.358.043a5.517 5.517 0 0 0-3.185-3.185z" />
-													</svg>
+													<ReactNetworkIcon
+														width="30"
+														height="30"
+														style={{
+															marginLeft: "-1",
+														}}
+													/>
 												</Col>
 											</>
 										) : (
 											<>
 												<Col xs={2}>
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														width="16"
-														height="16"
-														fill="currentColor"
-														class="bi bi-bezier"
-														viewBox="0 0 16 16"
-													>
-														<path
-															fill-rule="evenodd"
-															d="M0 10.5A1.5 1.5 0 0 1 1.5 9h1A1.5 1.5 0 0 1 4 10.5v1A1.5 1.5 0 0 1 2.5 13h-1A1.5 1.5 0 0 1 0 11.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm10.5.5A1.5 1.5 0 0 1 13.5 9h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM6 4.5A1.5 1.5 0 0 1 7.5 3h1A1.5 1.5 0 0 1 10 4.5v1A1.5 1.5 0 0 1 8.5 7h-1A1.5 1.5 0 0 1 6 5.5v-1zM7.5 4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"
-														/>
-														<path d="M6 4.5H1.866a1 1 0 1 0 0 1h2.668A6.517 6.517 0 0 0 1.814 9H2.5c.123 0 .244.015.358.043a5.517 5.517 0 0 1 3.185-3.185A1.503 1.503 0 0 1 6 5.5v-1zm3.957 1.358A1.5 1.5 0 0 0 10 5.5v-1h4.134a1 1 0 1 1 0 1h-2.668a6.517 6.517 0 0 1 2.72 3.5H13.5c-.123 0-.243.015-.358.043a5.517 5.517 0 0 0-3.185-3.185z" />
-													</svg>
+													<ReactNetworkIcon
+														width="30"
+														height="30"
+														style={{
+															marginLeft: "-1",
+														}}
+													/>
 												</Col>
-												<Col xs={8}>Modules</Col>
+												<Col
+													data-tour="first-step"
+													xs={8}
+												>
+													Modules
+												</Col>
 											</>
 										)}
 									</Row>
@@ -162,22 +188,32 @@ const Modules = (props) => {
 									const numModules = geneSets[setName];
 									return (
 										<SubMenu title={setName}>
-											{collapse ? <div>{setName}</div> : <></>}
+											{collapse ? (
+												<div>{setName}</div>
+											) : (
+												<></>
+											)}
 
-											{[...Array(numModules).keys()].map((index) => (
-												<MenuItem>
-													<a
-														onClick={(_) =>
-															setSelectedModuleFeatures({
-																setName: setName,
-																moduleNum: index,
-															})
-														}
-													>
-														module {index}
-													</a>
-												</MenuItem>
-											))}
+											{[...Array(numModules).keys()].map(
+												(index) => (
+													<MenuItem>
+														<a
+															onClick={(_) =>
+																setSelectedModuleFeatures(
+																	{
+																		setName:
+																			setName,
+																		moduleNum:
+																			index,
+																	}
+																)
+															}
+														>
+															module {index}
+														</a>
+													</MenuItem>
+												)
+											)}
 										</SubMenu>
 									);
 								})}
@@ -186,13 +222,18 @@ const Modules = (props) => {
 						<SidebarFooter
 							style={{
 								height: "160px",
-								...(collapse ? { display: "none" } : { margin: "15px" }),
+								...(collapse
+									? { display: "none" }
+									: { margin: "15px" }),
 							}}
 						>
-							<h4>Parameters</h4>
+							<h4>Analysis Parameters</h4>
 							<Row>
 								<Col>
-									<label className="col-form-label"> Active genes:</label>
+									<label className="col-form-label">
+										{" "}
+										Active genes:
+									</label>
 								</Col>
 								<Col>
 									<input
@@ -205,7 +246,9 @@ const Modules = (props) => {
 							</Row>
 							<Row>
 								<Col>
-									<label className="col-form-label">Networks:</label>
+									<label className="col-form-label">
+										Networks:
+									</label>
 								</Col>
 								<Col>
 									<input
@@ -227,13 +270,15 @@ const Modules = (props) => {
 								}}
 								href={zipURL}
 								download
+								data-tour="third-step"
 							>
 								Download Visualization
 							</a>
 						</SidebarFooter>
 					</ProSidebar>
 					<iframe
-						style={{ width: collapse ? "95%" : "84.5%", height: "100%" }}
+						style={{ flex: "auto" }}
+						data-tour="second-step"
 						src={moduleDirectory(
 							selectedModuleFeatures.setName,
 							selectedModuleFeatures.moduleNum
@@ -241,6 +286,19 @@ const Modules = (props) => {
 					></iframe>
 				</Row>
 			</Container>
+			<Tour
+				steps={steps}
+				isOpen={isTourOpen}
+				onRequestClose={() => setIsTourOpen(false)}
+				lastStepNextButton={
+					<button
+						className="btn btn-primary"
+						style={{ width: "150px" }}
+					>
+						Done! Let's start playing
+					</button>
+				}
+			/>
 		</>
 	);
 };
