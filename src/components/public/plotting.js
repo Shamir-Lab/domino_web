@@ -9,7 +9,7 @@ export const DOMINOExecutions = {
     ]
 };
 
-export const gitCloneExecutions = {
+export const gitClones = {
     total: 10000, // not necessarily the sum of freq's since those are sampled on a weekly basis
     weekly: [
         {

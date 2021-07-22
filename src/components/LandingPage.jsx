@@ -1,13 +1,18 @@
-import React from "react";
+import React, {useState} from "react";
+import Collapsible from 'react-collapsible';
 
 import {
     DOMINOExecutions,
-    gitCloneExecutions
+    gitClones
 } from './public/plotting.js';
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
+import 'font-awesome/css/font-awesome.min.css';
+
 import dominoLogo from "./resources/DOMINO_logo.png";
+import elkonLogo from "./resources/ElkonLogo.png";
+import shamirLogo from "./resources/ShamirLogo.jpg";
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons';
@@ -21,8 +26,10 @@ import {
     btn_margin,
     domino_logo,
     hover_shadow,
-    card
+    card,
+    circle
 } from "./css/landing_page.module.css";
+import "./css/collapsible.scss";
 
 import {
     Jumbotron,
@@ -30,7 +37,9 @@ import {
     Row,
     Col,
     Button,
-    Card
+    Card,
+    Navbar,
+    Nav
 } from "react-bootstrap";
 
 import {
@@ -45,6 +54,12 @@ import {
 } from "recharts";
 
 const LandingPage = ({history}) => {
+
+    const [details, setDetails] = useState("");  
+
+    const showDetails = (newDetails) => {
+        details==newDetails ? setDetails("") : setDetails(newDetails)
+    }
 
     // DOMINO Executions
     const FeatureUsage = (attr, data) => {
@@ -72,14 +87,12 @@ const LandingPage = ({history}) => {
                             label={{value: 'Frequency', angle: -90, position: 'left'}}
                         />
                         <Tooltip/>
-                        <Bar dataKey="freq" fill="#80bdff"/>
+                        <Bar dataKey="freq" fill="#007bff"/> {/*80bdff*/}
                     </BarChart>
                 </Col>
-                <Col xs={2} style={{textAlign: "center"}}>
-                    <p style={{paddingTop: "120px", fontSize: "24px"}}>
-                        {data.total}
-                    </p>
-                    <p style={{fontSize: "14px"}}>total {attr}</p>
+                <Col>
+                    <div className={circle}>{data.total}</div>
+                    <p style={{fontSize: '22px'}}>{attr} this year</p>
                 </Col>
             </Row>
         );
@@ -87,7 +100,20 @@ const LandingPage = ({history}) => {
 
     return (
         <>
-            <Jumbotron style={{backgroundColor: "white", padding: "10px", marginTop: "80px"}}>
+             <Navbar bg="primary" variant="dark">
+                  <Container style={{marginRight: "15px"}}>
+                        <Nav className="me-auto">
+                        <Nav.Link onClick={()=>showDetails("developerCredits")} >Developer Credits</Nav.Link>
+                        <Nav.Link onClick={()=>showDetails("researchGroups")}>Research Groups</Nav.Link>
+                        <Nav.Link onClick={()=>showDetails("citation")}>Citation</Nav.Link>
+                        <Nav.Link onClick={()=>showDetails("repositories")}>Repositories</Nav.Link>
+                        <Nav.Link onClick={()=>showDetails("contact")}>Contacts us!</Nav.Link>
+                        </Nav>
+                   </Container>
+            </Navbar>
+            
+            <Row><Col xs={12}>
+            <Jumbotron style={{backgroundColor: "white", padding: "10px", marginTop: "20px"}}>
                 <div style={{margin: "auto", textAlign: "center"}}>
                     <span style={{fontSize: "45px"}}>Welcome to</span>
                     <img src={dominoLogo} className={domino_logo}></img>
@@ -100,14 +126,17 @@ const LandingPage = ({history}) => {
                     modules with a low rate of false GO term calls.
                 </p>
             </Jumbotron>
-
-            <Button style={{margin: "0px auto 40px auto", display: "block"}}
+  
+            <Button size="lg" style={{margin: "0px auto 40px auto", display: "block", height: '83px', width: '200px'}}
                     onClick={() => history.push({pathname: "/file-upload"})}>Run DOMINO</Button>
 
-            <Container>
+            </Col></Row>
+     
+            <div style={{position: 'absolute', right: '110px', top: '85px'}}>
                 <Row style={{marginBottom: "100px"}}>
-                    {/* Developer Credits */}
-                    <Col>
+                    {details=="developerCredits" ? ( 
+                    // Developer Credits 
+                    <Col xs={3}>
                         <Card
                             className={[hover_shadow, card].join(" ")}
                         >
@@ -116,9 +145,9 @@ const LandingPage = ({history}) => {
                                 <Card.Text>
                                     <div>
                                         <p className={small_text}>
-                                            Website developed by <br></br> Nima Rahmanian
+                                            Nima Rahmanian
                                         </p>
-                                        {/* GitHub and LinkedIn buttons*/}
+                                        
                                         <Row
                                             style={{
                                                 marginLeft: "5px",
@@ -162,71 +191,148 @@ const LandingPage = ({history}) => {
                                     <hr></hr>
                                     <div>
                                         <p className={small_text}>
-                                            DOMINO developed by <br></br> Hagai Levi at TAU
+                                            Hagai Levi
                                         </p>
+                                      
+                                        <Row
+                                            style={{
+                                                marginLeft: "5px",
+                                                marginRight: "5px"
+                                            }}
+                                        >
+                                            <Col>
+                                                <a href={"https://github.com/hag007"}>
+                                                    <FontAwesomeIcon
+                                                        style={{
+                                                            height: "50px",
+                                                            width:"50px",
+                                                            color: "black"
+                                                        }}
+                                                        className={hover_shadow}
+                                                        icon={faGithub}
+                                                    />
+                                                </a>
+                                            </Col>
+                                            <Col>
+                                                <a href={"https://www.linkedin.com/in/hagai-levi-4aba62112/"}>
+                                                    <FontAwesomeIcon
+                                                        style={{
+                                                            height: "50px",
+                                                            width:"50px",
+                                                            color: "blue"
+                                                        }}
+                                                        className={hover_shadow}
+                                                        icon={faLinkedin}
+                                                    />
+                                                </a>
+                                            </Col>
+                                        </Row> 
                                     </div>
                                 </Card.Text>
                             </Card.Body>
                         </Card>
-                    </Col>
-
-                    {/* References */}
-                    <Col>
+                    </Col> )
+                   : ( <></> )
+                   }
+                   {details=="researchGroups" ? (
+                   // Research Groups
+                    <Col xs={3}>
                         <Card
                             className={[hover_shadow, card].join(" ")}
                         >
                             <Card.Body>
-                                <Card.Title>References</Card.Title>
+                                <Card.Title>Research groups</Card.Title>
                                 <Card.Text>
-                                    <div>
-                                        <a
-                                            className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                            href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
-                                            target="_blank" rel="noopener noreferrer"
-                                        >
-                                            Visit the DOMINO paper
-                                        </a>
-                                    </div>
-                                    <hr></hr>
-                                    <div>
-                                        <p>Visit Github Pages for ...</p>
-                                        <Row
-                                            style={{paddingLeft: "10px"}}
-                                        >
-                                            <Col xs={4}>
-                                                <a
-                                                    className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                                    href={"https://github.com/Shamir-Lab/DOMINO"}
-                                                    target="_blank" rel="noopener noreferrer"
-                                                >
-                                                    DOMINO
-                                                </a>
-                                            </Col>
-                                            <Col>
-                                                <a
-                                                    className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                                                    href={"https://github.com/hag007/domino_web"}
-                                                    target="_blank" rel="noopener noreferrer"
-                                                >
-                                                    DOMINO's <br></br> Web Executor
-                                                </a>
-                                            </Col>
-                                        </Row>
-                                    </div>
+                                    <p>Ron Shamir</p>
+                                    <a href="http://acgt.cs.tau.ac.il/"><img 
+                                        src={shamirLogo}
+                                        style={{width: "220px", height: "30px"}}
+                                    /></a>
+                                    <br/><br/><br/>
+                                    <p> Ran Elkon</p>
+                                    <a href="http://www.elkonlab.tau.ac.il/"><img 
+                                        src={elkonLogo}
+                                        style={{width: "220px", height: "45px"}}
+                                    /></a>
                                 </Card.Text>
                             </Card.Body>
                         </Card>
-                    </Col>
-
-                    {/* Contact and Issues */}
-                    <Col>
+                    </Col> )
+                    :( <></>) 
+                    }
+                    {details=="citation" ? (
+                    // Citation 
+                    <Col xs={3}>
+                        <Card
+                            className={[hover_shadow, card].join(" ")}
+                        >
+                            <Card.Body>
+                                <Card.Title>Cite DOMINO</Card.Title>
+                                <Card.Text>
+                                <p>DOMINO: a network-based active module identification algorithm with reduced rate of false calls. <i> Syst Biol.</i>  <b>17</b>:e9593</p>
+                                    <a
+                                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                        href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
+                                    >
+                                        Visit the DOMINO paper
+                                    </a>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col> )
+                    : ( <></> )
+                    }
+                    {details=="repositories" ? (
+                    // Repositories
+                    <Col xs={3}>
+                        <Card
+                            className={[hover_shadow, card].join(" ")}
+                        >
+                            <Card.Body>
+                                <Card.Title>Repositories</Card.Title>
+                                <Card.Text>
+                                    <p>Visit our Github repositories</p>
+                                            <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/Shamir-Lab/DOMINO"}
+                                            >
+                                                DOMINO
+                                            </a>
+                                            <br/>
+                                            <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/hag007/domino_web"}
+                                            >
+                                                DOMINO's Web Executor
+                                            </a><br/>
+                                            <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/Shamir-Lab/EMP"}
+                                            >
+                                                EMP
+                                            </a><br/>
+                                           <a
+                                                className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                                href={"https://github.com/Shamir-Lab/EMP-benchmark"}
+                                            >
+                                                EMP-benchmark
+                                            </a>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col> )
+                    : ( <></> )
+                    }
+                   { details=="contact" ? (
+                    // Contact and Issues 
+                    <Col xs={3}>
                         <Card
                             className={[hover_shadow, card].join(" ")}
                         >
                             <Card.Body>
                                 <Card.Title
                                     style={{textAlign: "center"}}
-                                >Contact Us</Card.Title>
+                                >Contact info</Card.Title>
                                 <Card.Text>
                                     <a
                                         className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
@@ -234,14 +340,19 @@ const LandingPage = ({history}) => {
                                         target="_blank" rel="noopener noreferrer"
                                     > Report a problem via Git Issues
                                     </a>
-                                    <p>Reach us at --add email--</p>
+                                    <a
+                                        className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                                        href={"mailto:hagai.levi.007@gmail.com"}
+                                    > Send us an email
+                                    </a>
                                 </Card.Text>
                             </Card.Body>
                         </Card>
-                    </Col>
+                    </Col> )
+                   : ( <></> )
+                  }
                 </Row>
-            </Container>
-
+            </div>
             <hr
                 style={{width: "80%"}}
             ></hr>
@@ -249,18 +360,39 @@ const LandingPage = ({history}) => {
             <div
                 style={{
                     padding: "10px",
-                    margin: "75px 20px 75px 20px"
+                    margin: "40px 20px 20px 20px"
                 }}
             >
-                <h1 style={{textAlign: "center"}}>DOMINO statistics</h1>
 
+    <Collapsible trigger="More about DOMINO">
+      <p>The incentive to develop <a href="">DOMINO</a> came from an phenomenon obsered on active module identification (AMI) algorithms</p>
+      <p>AMI algorithms receive a gene network and nodes' activity scores as input and report sub-networks (modules) that are putatively biologically active. the biological meaningful of such module usually explored via functional/enrichment analysis, commonly done against well established resource souch as the Gene Ontology (GO)</p>
+      <p> We observed that typically GO terms enriched in modules detected AMI methods are often also enriched after randomly permuting the input data. </p>
+      <p>To tackle this bias, we designed the <a href="https://github.com/Shamir-Lab/EMP"> EMpirical pipeline (EMP)</a>, a method that evaluates the empirical significance of GO terms reported as enriched in modules.</p>
+      <p>We then used EMP to <a href="https://github.com/Shamir-Lab/EMP-benchmark">systematically evaluate popular AMI algorithms on a wide-range of criteria</a>. The activity scores were two types of omics - gene expression and GWAS.</p>
+      <p> Following this benchmark, we turned to develop DOMINO, an AMI algorithm that has high rate of empirically validated calls. It recieves a set of active genes (i.e. binary activity scores) and reports subnetwork that has high signal of active genes in it </p>
+      <p> We then used the same benchmark framework to test  DOMINO, and found that DOMINO outperformed the other AMI algorithms.  </p>
+    </Collapsible>
+
+     <Collapsible trigger="API spec for external calls">
+      <p>
+        This spec defines how to make and automated API call to the website (e.g. via a script).
+      </p>
+      <p>
+        Write it here...
+      </p>
+    </Collapsible>
+
+
+
+                <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO statistics</h1>
+                  
                 {/* DOMINO Web Executions */}
                 {FeatureUsage("DOMINO Executions", DOMINOExecutions)}
-
                 {/* Git clone Executions*/}
                 {FeatureUsage("Git Clone Executions", gitCloneExecutions)}
-            </div>
 
+{/**
             <div
                 style={{
                     height: "500px",
@@ -282,7 +414,7 @@ const LandingPage = ({history}) => {
             >
                 <h1 style={{textAlign: "center"}}>API Specs</h1>
             </div>
-
+*/}
             <footer className="text-center text-lg-start"
                     style={{
                         backgroundColor: "white",
