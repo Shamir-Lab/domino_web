@@ -1,23 +1,23 @@
 export const DOMINOExecutions = {
-    total: 10000, // not necessarily the sum of freq's since those are sampled on a weekly basis
-    weekly: [
-        ...([...Array(30).keys()].map((val) => ({
+    total: 10000,
+    monthly: [
+        ...([...Array(12).keys()].map((val) => ({
 
-            date: `9/${val+1}/21`,
+            date: `${val+1}/31/21`,
             freq: (1000 + 100 * val)
         }))),
     ]
 };
 
 export const gitClones = {
-    total: 10000, // not necessarily the sum of freq's since those are sampled on a weekly basis
-    weekly: [
+    total: 10000, // not necessarily the sum of freq's since those are sampled on a monthly basis
+    monthly: [
         {
-            date: "9/17/21",
+            date: "9/31/21",
             freq: 5000
         },
         {
-            date: "9/24/21", // weekly increments
+            date: "10/31/21", // monthly samples at the end of every month
             freq: 8053
         }
     ]
