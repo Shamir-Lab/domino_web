@@ -12,7 +12,7 @@ import {
 } from "react-pro-sidebar";
 import Tour from "reactour";
 import { BsLightning, BsList } from "react-icons/bs";
-
+import Cookies from 'js-cookie';
 
 import "bootstrap/dist/css/bootstrap.css";
 import "react-pro-sidebar/dist/css/styles.css";
@@ -54,7 +54,9 @@ const Modules = (props) => {
 	};
 	const zipURL = props.location.state["zipURL"];
 
-	const [isTourOpen, setIsTourOpen] = useState(true);
+        const [isTourOpen, setIsTourOpen] = useState(!Cookies.get('returningClientModules'));
+        Cookies.set('returningClientModules',true);
+
 
 	// for testing purposes
 	/*

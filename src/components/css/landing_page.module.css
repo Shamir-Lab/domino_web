@@ -44,10 +44,13 @@
     box-shadow: 0 0 11px rgba(33,33,33,.2);
 }
 
-.card {
+.card_open {
+    position: "absolute";
     width: 275px;
     height: 350px;
-    text-align: center
+    text-align: center;
+    transition: height 0.6s ease-out 0.1s;
+    overflow: hidden;
 }
 
 .circle {
@@ -62,4 +65,14 @@
     flex-direction: column;
     color: white;
 
+}
+
+.card_close {
+  position: "absolute";
+  width: 275px;
+  height: 0px;
+  transition: height 0.1s ease-out, border-color 0s linear 0.1s;
+  border-color: white;
+  overflow: hidden;
+  text-align: center;
 }

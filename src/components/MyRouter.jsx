@@ -13,7 +13,7 @@ class MyRouter extends React.Component {
 
 render() { 
 	return (
-		  <div className='routerContainer'>
+		  <div className='routerContainer' style={{overflow: 'hidden'}}>
               <Router>
                   <Switch>
                       <Route path="/modules" component={Modules} render={props => <Modules {...props} /> } />

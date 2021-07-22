@@ -148,10 +148,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
         console.log(`Starting domino py execution on set ${setName}...`);
         // question -> not sure why gdocker up after cd works but not the other way around?!
-        loadBalancer=`ssh ${conf.USERNAME}@rack-shamir${serverNum}.cs.tau.ac.il cd /specific/netapp5/gaga/guests/nimsi/domino_web; gdocker up --container_name=domino; `
-        let algExecutor = loadBalancer +
-            "bash domino_runner.sh " +
-            [
+        let cmd=[
                 subRunDirectory,
                 "active_gene_file.txt",
                 `${subRunDirectory}/active_gene_file.txt`,
@@ -160,9 +157,17 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
-        console.log("algExecutor...\n", algExecutor);
+        localExecution=`bash domino_runner.sh ${cmd}`
         try {
-            await execAsync(algExecutor);
+            if (conf.REMOTE_EXECUTION){            
+                console.log("About ot start remote execution")
+                execution=`ssh ${conf.USERNAME}@rack-shamir${serverNum}.cs.tau.ac.il "udocker run --volume /specific:/mnt/specific domino_updated bash -c 'cd /specific/netapp5/gaga/hagailevi/domino_web && ${localExecution}'"`
+            }
+            else{
+                console.log("About to start local execution")
+                execution=localExecution
+            }
+            await execAsync(execution);
         } catch (error) {
             console.log(`Error with DOMINO execution on set ${setName}.`);
             return Promise.reject(error);
@@ -247,7 +252,7 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(6500 || process.env.PORT || conf.PORT);
+app.listen(8000 || process.env.PORT || conf.PORT);
 
 
 
