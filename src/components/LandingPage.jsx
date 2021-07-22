@@ -11,13 +11,11 @@ import "react-combo-select/style.css";
 import 'font-awesome/css/font-awesome.min.css';
 
 import dominoLogo from "./resources/DOMINO_logo.png";
-import githubLogo from "./resources/GitHubLogo.png";
-import linkedInLogo from "./resources/LinkedInLogo.png";
 import elkonLogo from "./resources/ElkonLogo.png";
 import shamirLogo from "./resources/ShamirLogo.jpg";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub, faLinkedin } from '@fortawesome/free-brands-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faGithub, faLinkedin} from '@fortawesome/free-brands-svg-icons';
 
 import {
     left_inner_block,
@@ -46,6 +44,7 @@ import {
 
 import {
     BarChart,
+    Label,
     CartesianGrid,
     XAxis,
     YAxis,
@@ -61,6 +60,43 @@ const LandingPage = ({history}) => {
     const showDetails = (newDetails) => {
         details==newDetails ? setDetails("") : setDetails(newDetails)
     }
+
+    // DOMINO Executions
+    const FeatureUsage = (attr, data) => {
+        return (
+            <Row style={{margin: "25px 0px 25px 50px"}}>
+                <Col xs={8}>
+                    <p
+                        style={{textAlign: "center", fontSize: "18px"}}
+                    >
+                        Weekly {attr}
+                    </p>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        margin={{left: 10, bottom: 30}}
+                        data={data.weekly}
+                    >
+                        <Label value="Weekly DOMINO Executions" position="top"/>
+                        <CartesianGrid strokeDasharray="3 3"/>
+                        <XAxis
+                            dataKey="date"
+                            label={{value: 'Date', position: 'bottom'}}
+                        ></XAxis>
+                        <YAxis
+                            label={{value: 'Frequency', angle: -90, position: 'left'}}
+                        />
+                        <Tooltip/>
+                        <Bar dataKey="freq" fill="#007bff"/> {/*80bdff*/}
+                    </BarChart>
+                </Col>
+                <Col>
+                    <div className={circle}>{data.total}</div>
+                    <p style={{fontSize: '22px'}}>{attr} this year</p>
+                </Col>
+            </Row>
+        );
+    };
 
     return (
         <>
@@ -119,11 +155,14 @@ const LandingPage = ({history}) => {
                                             }}
                                         >
                                             <Col>
-                                                <a href={"https://github.com/Nimsi123"}>
+                                                <a
+                                                    href={"https://github.com/Nimsi123"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
-                                                            width:"50px",
+                                                            width: "50px",
                                                             color: "black"
                                                         }}
                                                         className={hover_shadow}
@@ -132,11 +171,14 @@ const LandingPage = ({history}) => {
                                                 </a>
                                             </Col>
                                             <Col>
-                                                <a href={"https://www.linkedin.com/in/nima-rahmanian-367b871aa"}>
+                                                <a
+                                                    href={"https://www.linkedin.com/in/nima-rahmanian-367b871aa"}
+                                                    target="_blank" rel="noopener noreferrer"
+                                                >
                                                     <FontAwesomeIcon
                                                         style={{
                                                             height: "50px",
-                                                            width:"50px",
+                                                            width: "50px",
                                                             color: "blue"
                                                         }}
                                                         className={hover_shadow}
@@ -295,6 +337,7 @@ const LandingPage = ({history}) => {
                                     <a
                                         className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
                                         href={"https://github.com/hag007/domino_web/issues"}
+                                        target="_blank" rel="noopener noreferrer"
                                     > Report a problem via Git Issues
                                     </a>
                                     <a
@@ -321,7 +364,6 @@ const LandingPage = ({history}) => {
                 }}
             >
 
-
     <Collapsible trigger="More about DOMINO">
       <p>The incentive to develop <a href="">DOMINO</a> came from an phenomenon obsered on active module identification (AMI) algorithms</p>
       <p>AMI algorithms receive a gene network and nodes' activity scores as input and report sub-networks (modules) that are putatively biologically active. the biological meaningful of such module usually explored via functional/enrichment analysis, commonly done against well established resource souch as the Gene Ontology (GO)</p>
@@ -344,72 +386,11 @@ const LandingPage = ({history}) => {
 
 
                 <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO statistics</h1>
-
-                <Row><Col>
-                    <Row>
-                    <Col>
-                    <p
-                        style={{
-                            textAlign: "center",
-                            marginBottom: "0px"
-                        }}
-                    >
-                        Weekly DOMINO Executions
-                    </p>
-                    <BarChart
-                        width={600}
-                        height={200}
-                        style={{ marginLeft: 'auto', marginRight: 'auto'}}
-                        data={DOMINOExecutions.weekly}
-                    >
-                        <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis name={"Date"} dataKey="date"/>
-                        <YAxis name={"Frequency"}/>
-                        <Tooltip/>
-                        <Bar dataKey="freq" fill="#007bff"/>
-                    </BarChart>
-                    </Col>
-                    <Col>
-                        <div className={circle}>{DOMINOExecutions.total}</div>
-                        <p style={{fontSize: '22px'}}>executions this year</p>
-                    </Col>
-
-                   </Row>
-                </Col>
-                <Col>
-                    <Row>
-                    <Col>
-                    <p
-                        style={{
-                            textAlign: "center",
-                            marginBottom: "0px"
-                        }}
-                    >
-                        Weekly DOMINO git clone Executions
-                    </p>
-                    <BarChart
-                        width={600}
-                        height={200}
-                        style={{ marginLeft: 'auto', marginRight: 'auto'}}
-                        data={gitClones.weekly}
-                    >
-                        <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis name={"Date"} dataKey="date"/>
-                        <YAxis name={"Frequency"}/>
-                        <Tooltip/>
-                        <Bar dataKey="freq" fill="#007bff"/>
-                    </BarChart>
-                    </Col>
-                    <Col>
-                        <div className={circle}>{gitClones.total}</div>
-                        <p style={{fontSize: '22px'}}>clones this year</p>
-                    </Col>
-
-                    </Row>
-                </Col></Row>
-               
-
-            </div>
+                  
+                {/* DOMINO Web Executions */}
+                {FeatureUsage("DOMINO Executions", DOMINOExecutions)}
+                {/* Git clone Executions*/}
+                {FeatureUsage("Git Clone Executions", gitCloneExecutions)}
 
 {/**
             <div
