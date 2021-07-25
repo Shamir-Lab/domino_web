@@ -148,7 +148,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
         console.log(`Starting domino py execution on set ${setName}...`);
         // question -> not sure why gdocker up after cd works but not the other way around?!
-        let cmd=[
+        let cmdArgs=[
                 subRunDirectory,
                 "active_gene_file.txt",
                 `${subRunDirectory}/active_gene_file.txt`,
@@ -157,10 +157,10 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
-        localExecution=`bash domino_runner.sh ${cmd}`
+        localExecution=`bash domino_runner.sh ${cmdArgs}`
         try {
             if (conf.REMOTE_EXECUTION){            
-                console.log("About ot start remote execution")
+                console.log("About to start remote execution")
                 execution=`ssh ${conf.USERNAME}@rack-shamir${serverNum}.cs.tau.ac.il "udocker run --volume /specific:/mnt/specific domino_updated bash -c 'cd /specific/netapp5/gaga/hagailevi/domino_web && ${localExecution}'"`
             }
             else{
@@ -253,6 +253,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(8000 || process.env.PORT || conf.PORT);
-
 
 

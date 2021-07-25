@@ -112,7 +112,7 @@ const LandingPage = ({history}) => {
 
         switch (cardDetail) {
             case "developerCredits":
-                return (<DeveloperCreditsCard cardStatus={details=="developerCredits"}/>);
+                return (<DeveloperCreditsCard cardStatus={details==="developerCredits"}/>);
             case "researchGroups":
                 return (<ResearchGroupCard cardStatus={details=="researchGroups"}/>);
             case "citation":
