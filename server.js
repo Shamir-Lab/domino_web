@@ -252,6 +252,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(conf.PORT);
+app.listen(conf.PORT || 8000);
 
 
