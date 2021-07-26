@@ -12,6 +12,7 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import Tour from 'reactour'
 import JsxParser from 'react-jsx-parser';
 import axios from "axios";
+import Cookies from 'js-cookie';
 
 import PopUp from "./PopUp";
 
@@ -48,7 +49,7 @@ const MAX_FILE_SIZE_MB = 10;
 const steps = [
     {
         selector: '[data-tour="first-step"]',
-        content: 'Here you choose active gene set(s).\nyou can choose to analyze either a single set or multiple set.\nTo analyze a signle set, please provide a line-separated set of gene ids. For multiple set, please provide a tab-separated table of two columns: The first column in the gene id and the second column is the set identifier.',
+        content: 'Here you choose active gene set(s).\nyou can choose to analyze either a single set or multiple set.\nTo analyze a single set, please provide a line-separated set of gene ids. For multiple set, please provide a tab-separated table of two columns: The first column in the gene id and the second column is the set identifier.',
         position: "bottom"
     },
     {
@@ -87,7 +88,8 @@ const FileUpload = (props) => {
         setSeen(!seen);
     };
 
-    const [isTourOpen, setIsTourOpen] = useState(true);
+    const [isTourOpen, setIsTourOpen] = useState(!Cookies.get('returningClientFileUpload'));
+    Cookies.set('returningClientFileUpload',true);
 
     const uploadFiles = () => {
         /** The onClick attribute for the upload button.
@@ -233,7 +235,7 @@ const FileUpload = (props) => {
                 </div>
 
                 {/* Form */}
-                <Row>
+                <Row style={{height: '180px'}}>
                     {/* Dropdown menu for available files. */}
                     {file.availableFiles ? (
                         <Col>

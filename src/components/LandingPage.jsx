@@ -13,11 +13,12 @@ import 'font-awesome/css/font-awesome.min.css';
 
 import dominoLogo from "./resources/DOMINO_logo.png";
 import {
-    DeveloperCredits,
+    DeveloperCreditsCard,
     ResearchGroupCard,
     CitationCard,
     RepositoriesCard,
-    ContactAndIssuesCard
+    SpecialCreditsCard,
+    ContactAndIssuesCard 
 } from "./InfoCards.jsx";
 
 import {
@@ -30,7 +31,9 @@ import {
     domino_logo,
     hover_shadow,
     card,
-    circle
+    circle,
+    card_open,
+    card_close
 } from "./css/landing_page.module.css";
 import "./css/collapsible.scss";
 
@@ -71,7 +74,7 @@ const LandingPage = ({history}) => {
             <Row style={{margin: "25px 0px 25px 50px"}}>
                 <Col xs={8}>
                     <p
-                        style={{textAlign: "center", fontSize: "18px"}}
+                        style={{textAlign: "center", fontSize: "18px", color: "white"}}
                     >
                         Monthly {attr}
                     </p>
@@ -80,15 +83,17 @@ const LandingPage = ({history}) => {
                         height={300}
                         margin={{left: 10, bottom: 30}}
                         data={data.monthly}
+                        style={{marginLeft: 'auto', marginRight: 'auto'}}
                     >
-                        <Label value="Monthly DOMINO Executions" position="top"/>
-                        <CartesianGrid strokeDasharray="3 3"/>
+                        <CartesianGrid strokeDasharray="3 3" stroke='white'/>
                         <XAxis
                             dataKey="date"
-                            label={{value: 'Date', position: 'bottom'}}
+                            label={{value: 'Date', position: 'bottom', fill: 'white'}}
+                            tick={{ fill: 'white' }} 
                         ></XAxis>
                         <YAxis
-                            label={{value: 'Frequency', angle: -90, position: 'left'}}
+                            label={{value: 'Frequency', angle: -90, position: 'left', fill: 'white'}}
+                            tick={{ fill: 'white' }}
                         />
                         <Tooltip/>
                         <Bar dataKey="freq" fill="#007bff"/> {/*80bdff*/}
@@ -96,36 +101,39 @@ const LandingPage = ({history}) => {
                 </Col>
                 <Col>
                     <div className={circle}>{data.total}</div>
-                    <p style={{fontSize: '22px'}}>{attr} this year</p>
+                    <p style={{fontSize: '22px', width: '180px', textAlign: 'center', color: 'white'}}>{attr} this year</p>
                 </Col>
             </Row>
         );
     };
 
     const getCard = (cardDetail) => {
+
+
         switch (cardDetail) {
             case "developerCredits":
-                return DeveloperCredits;
+                return (<DeveloperCreditsCard cardStatus={details==="developerCredits"}/>);
             case "researchGroups":
-                return ResearchGroupCard;
+                return (<ResearchGroupCard cardStatus={details=="researchGroups"}/>);
             case "citation":
-                return CitationCard;
+                return (<CitationCard cardStatus={details=="citation"}/>);
             case "repositories":
-                return RepositoriesCard;
+                return (<RepositoriesCard cardStatus={details=="repositories"}/>);
             case "contact":
-                return ContactAndIssuesCard;
+                return (<ContactAndIssuesCard cardStatus={details=="contact"}/>);
         }
     };
 
     return (
         <>
             <Navbar bg="dark" variant="dark">
-                <Container style={{marginRight: "15px"}}>
-                    <Nav className="me-auto">
+                <Container style={{marginRight: "0px"}}>
+                    <Nav className="ml-auto">
                         <Nav.Link onClick={() => showDetails("developerCredits")}>Developer Credits</Nav.Link>
                         <Nav.Link onClick={() => showDetails("researchGroups")}>Research Groups</Nav.Link>
                         <Nav.Link onClick={() => showDetails("citation")}>Citation</Nav.Link>
                         <Nav.Link onClick={() => showDetails("repositories")}>Repositories</Nav.Link>
+                        <Nav.Link onClick={() => showDetails("specialCredits")}>Special Credits</Nav.Link>
                         <Nav.Link onClick={() => showDetails("contact")}>Contacts us!</Nav.Link>
                     </Nav>
                 </Container>
@@ -153,8 +161,13 @@ const LandingPage = ({history}) => {
                 </Col>
             </Row>
 
-            <div style={{position: 'absolute', right: '110px', top: '85px', marginBottom: "100px"}}>
-                {getCard(details)}
+            <div style={{position: 'absolute', right: '110px', top: '85px', marginBottom: "100px"}} >
+                <DeveloperCreditsCard cardStatus={details=="developerCredits"}/>
+                <ResearchGroupCard cardStatus={details=="researchGroups"}/>
+                <CitationCard cardStatus={details=="citation"}/>
+                <RepositoriesCard cardStatus={details=="repositories"}/>
+                <SpecialCreditsCard cardStatus={details=="specialCredits"}/>
+                <ContactAndIssuesCard cardStatus={details=="contact"}/>
             </div>
 
             <hr
@@ -163,8 +176,7 @@ const LandingPage = ({history}) => {
 
             <div
                 style={{
-                    padding: "10px",
-                    margin: "40px 20px 20px 20px"
+                    flex: "auto"
                 }}
             >
 
@@ -207,7 +219,7 @@ const LandingPage = ({history}) => {
 
                 <>
                     <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO statistics</h1>
-                    <Carousel variant="dark">
+                    <Carousel className="bg-dark">
                         <Carousel.Item>
                             {FeatureUsage("DOMINO Executions", DOMINOExecutions)}
                         </Carousel.Item>

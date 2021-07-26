@@ -1,5 +1,13 @@
 import React, { Component } from "react";
 import { modal, modal_content } from "./css/popup.modules.css";
+import {
+    Container,
+    Row,
+    Col,
+    Button,
+} from "react-bootstrap";
+
+import "bootstrap/dist/css/bootstrap.css";
 
 const PopUp = (props) => {
 
@@ -11,8 +19,9 @@ const PopUp = (props) => {
         <>
             <div className="modal_popup">
                 <div className="modal_content_popup">
-                    <span className="close" onClick={handleClick}>&times;    </span>
-                    <p className="text_popup">DOMINO's execution did not identify any modules for these input files.</p>
+                    <p className="text_popup">DOMINO's execution did not identify any modules for this input files.</p>
+
+                    <Row><Col className={'text-center'}><Button onClick={handleClick}>Close</Button></Col></Row>
                 </div>
             </div>
         </>

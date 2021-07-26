@@ -17,12 +17,13 @@ import {
     small_text,
     btn_margin,
     hover_shadow,
-    card
+    card_open,
+    card_close 
 } from "./css/landing_page.module.css";
 
-export const DeveloperCredits = (
+export const DeveloperCreditsCard = ({cardStatus}) => { return (
     <Card
-        className={[hover_shadow, card].join(" ")}
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}
     >
         <Card.Body>
             <Card.Title>Developer Credits</Card.Title>
@@ -122,10 +123,12 @@ export const DeveloperCredits = (
         </Card.Body>
     </Card>
 );
+}
 
-export const ResearchGroupCard = (
-    <Card>
-        <Card.Body>
+export const ResearchGroupCard = ({cardStatus}) => { return (
+    <Card
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
+<Card.Body>
             <Card.Title>Research groups</Card.Title>
             <Card.Text>
                 <p>Ron Shamir</p>
@@ -149,11 +152,11 @@ export const ResearchGroupCard = (
         </Card.Body>
     </Card>
 );
+}
 
-export const CitationCard = (
+export const CitationCard  = ({cardStatus}) => { return (
     <Card
-        className={[hover_shadow, card].join(" ")}
-    >
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
         <Card.Body>
             <Card.Title>Cite DOMINO</Card.Title>
             <Card.Text>
@@ -170,11 +173,11 @@ export const CitationCard = (
         </Card.Body>
     </Card>
 );
+}
 
-export const RepositoriesCard = (
+export const RepositoriesCard = ({cardStatus}) => { return (
     <Card
-        className={[hover_shadow, card].join(" ")}
-    >
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
         <Card.Body>
             <Card.Title>Repositories</Card.Title>
             <Card.Text>
@@ -212,11 +215,28 @@ export const RepositoriesCard = (
         </Card.Body>
     </Card>
 );
+}
 
-export const ContactAndIssuesCard = (
+export const SpecialCreditsCard = ({cardStatus}) => { return (
     <Card
-        className={[hover_shadow, card].join(" ")}
-    >
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
+        <Card.Body>
+            <Card.Title>Special credits</Card.Title>
+            <Card.Text>
+                <p>Modules are visualized with <a href="https://js.cytoscape.org/">Cytoscape.js</a></p>
+                <br/>
+                <p>GO enrichment is calculated with <a href="https://github.com/tanghaibao/goatools">goatools</a></p>               <br/>
+                <p>The core of DOMINO uses an implementation of PCST called <a href="https://github.com/fraenkel-lab/pcst_fast">fast-pcst</a></p>
+
+            </Card.Text>
+        </Card.Body>
+    </Card>
+);
+}
+
+export const ContactAndIssuesCard = ({cardStatus}) => { return (
+    <Card
+        className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
         <Card.Body>
             <Card.Title
                 style={{textAlign: "center"}}
@@ -238,3 +258,4 @@ export const ContactAndIssuesCard = (
         </Card.Body>
     </Card>
 );
+}
