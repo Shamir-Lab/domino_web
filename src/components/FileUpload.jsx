@@ -42,8 +42,6 @@ import {
 import loading1 from "./resources/loading1.gif";
 import loading2 from "./resources/loading2.gif";
 
-
-const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";
 const MAX_FILE_SIZE_MB = 10;
 
 const steps = [
@@ -176,7 +174,7 @@ const FileUpload = (props) => {
         console.log("Sending POST request ...");
         spinnerService.show("mySpinner");
         axios
-            .post(`${baseURL}/upload`, data)
+            .post(`/upload`, data)
             .then((res) => {
                 spinnerService.hide("mySpinner");
                 console.log(
