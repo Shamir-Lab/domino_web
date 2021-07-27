@@ -133,7 +133,7 @@ const LandingPage = ({history}) => {
                         <Nav.Link onClick={() => showDetails("researchGroups")}>Research Groups</Nav.Link>
                         <Nav.Link onClick={() => showDetails("citation")}>Citation</Nav.Link>
                         <Nav.Link onClick={() => showDetails("repositories")}>Repositories</Nav.Link>
-                        <Nav.Link onClick={() => showDetails("specialCredits")}>Special Credits</Nav.Link>
+                        <Nav.Link onClick={() => showDetails("specialCredits")}>External Resources</Nav.Link>
                         <Nav.Link onClick={() => showDetails("contact")}>Contacts us!</Nav.Link>
                     </Nav>
                 </Container>
@@ -184,25 +184,19 @@ const LandingPage = ({history}) => {
                     trigger="More about DOMINO"
                     triggerStyle={{backgroundColor: "#343a40"}}
                 >
-                    <p>The incentive to develop <a href="">DOMINO</a> came from an phenomenon obsered on active module
-                        identification (AMI) algorithms</p>
-                    <p>AMI algorithms receive a gene network and nodes' activity scores as input and report sub-networks
-                        (modules) that are putatively biologically active. the biological meaningful of such module
-                        usually explored via functional/enrichment analysis, commonly done against well established
-                        resource souch as the Gene Ontology (GO)</p>
-                    <p> We observed that typically GO terms enriched in modules detected AMI methods are often also
-                        enriched after randomly permuting the input data. </p>
-                    <p>To tackle this bias, we designed the <a href="https://github.com/Shamir-Lab/EMP"> EMpirical
+                    <p>Our motivation to develop <a href="https://github.com/Shamir-Lab/DOMINO" target="_blank">DOMINO</a> came from a phenomenon we observed on multiple active module identification (AMI) algorithms.</p>
+                    <p>AMI algorithms receive as input a gene network and nodes' activity scores, and report sub-networks (modules) that are putatively biologically active. The biological meaning of such modules is usually explored via functional/enrichment analysis, commonly done against well-established resources such as the Gene Ontology (GO). </p>
+                    <p>We observed that very often GO terms enriched in modules detected by AMI methods are also enriched when the AMI algorithms are ran on randomly permuted  data.</p>
+                    <p>To tackle this bias, we designed the <a href="https://github.com/Shamir-Lab/EMP" target="_blank"> EMpirical
                         pipeline (EMP)</a>, a method that evaluates the empirical significance of GO terms reported as
                         enriched in modules.</p>
-                    <p>We then used EMP to <a href="https://github.com/Shamir-Lab/EMP-benchmark">systematically evaluate
-                        popular AMI algorithms on a wide-range of criteria</a>. The activity scores were two types of
-                        omics - gene expression and GWAS.</p>
-                    <p> Following this benchmark, we turned to develop DOMINO, an AMI algorithm that has high rate of
-                        empirically validated calls. It recieves a set of active genes (i.e. binary activity scores) and
-                        reports subnetwork that has high signal of active genes in it </p>
-                    <p> We then used the same benchmark framework to test DOMINO, and found that DOMINO outperformed the
-                        other AMI algorithms. </p>
+                    <p>We then used EMP to <a href="https://github.com/Shamir-Lab/EMP-benchmark" target="_blank">systematically evaluate
+                        popular AMI algorithms on a wide-range of criteria</a>. We analyzed two types of omics gene scores: gene expression levels and GWAS gene scores.</p>
+                    <p>Following this benchmark, we turned to develop DOMINO, an AMI algorithm that has a marked high rate of empirically validated calls of GO terms. DOMINO receives a set of active genes (i.e. binary activity scores) and reports subnetworks that are enriched for active genes.</p>
+                    <p>Using the same benchmark framework to test DOMINO, we found that DOMINO outperformed the other AMI algorithms.</p>
+                    <p>For more details, see our publication:<br/>
+                    <a href="https://www.embopress.org/doi/full/10.15252/msb.20209593" target="_blank">DOMINO: a network-based active module identification algorithm with reduced rate of false calls. Hagai Levi, Ran Elkon and Ron Shamir. Mol Syst Biol. 2021 Jan;17(1):e9593.</a> 
+</p>
                 </Collapsible>
 
                 <Collapsible
@@ -210,10 +204,10 @@ const LandingPage = ({history}) => {
                     triggerStyle={{backgroundColor: "#343a40"}}
                 >
                     <p>
-                        This spec defines how to make and automated API call to the website (e.g. via a script).
+                        Here you will be able to find a spec that defines how to make and automated API call to the website (e.g. via a script).
                     </p>
                     <p>
-                        Write it here...
+                        Coming soon...
                     </p>
                 </Collapsible>
 

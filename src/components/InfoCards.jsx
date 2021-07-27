@@ -160,8 +160,8 @@ export const CitationCard  = ({cardStatus}) => { return (
         <Card.Body>
             <Card.Title>Cite DOMINO</Card.Title>
             <Card.Text>
-                <p>DOMINO: a network-based active module identification algorithm with reduced
-                    rate of false calls. <i> Syst Biol.</i> <b>17</b>:e9593</p>
+                <p> DOMINO: a network-based active module identification algorithm with reduced rate of false calls. Hagai Levi, Ran Elkon and Ron Shamir. Mol Syst Biol. 2021 Jan;17(1):e9593 </p>
+                    
                 <a
                     className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
                     href={"https://www.embopress.org/doi/full/10.15252/msb.20209593"}
@@ -221,13 +221,14 @@ export const SpecialCreditsCard = ({cardStatus}) => { return (
     <Card
         className={[hover_shadow].join(" ")+ " " + (cardStatus ? card_open : card_close)}>
         <Card.Body>
-            <Card.Title>Special credits</Card.Title>
+            <Card.Title>External resources</Card.Title>
             <Card.Text>
-                <p>Modules are visualized with <a href="https://js.cytoscape.org/">Cytoscape.js</a></p>
-                <br/>
-                <p>GO enrichment is calculated with <a href="https://github.com/tanghaibao/goatools">goatools</a></p>               <br/>
-                <p>The core of DOMINO uses an implementation of PCST called <a href="https://github.com/fraenkel-lab/pcst_fast">fast-pcst</a></p>
+                <p>Modules are visualized with <a href="https://js.cytoscape.org/" target="_blank">Cytoscape.js</a></p>
+                
+                <p>GO enrichment is calculated with <a href="https://github.com/tanghaibao/goatools" target="_blank">goatools</a></p>            
+                <p>The core of DOMINO uses an implementation of PCST called <a href="https://github.com/fraenkel-lab/pcst_fast" target="_blank">fast-pcst</a></p>
 
+                <p>The networks in this website (and in DOMINO's paper) are  <a href="https://dip.doe-mbi.ucla.edu/dip/Main.cgi" target="_blank">DIP</a>, <a href="http://www.interactome-atlas.org/" target="_blank">HuRI</a> and <a href="https://string-db.org/" target="_blank">STRING</a> (edges with confidence > 900)</p>
             </Card.Text>
         </Card.Body>
     </Card>

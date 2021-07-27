@@ -36,3 +36,5 @@ config.js
 
 /.idea
 /.prettier*
+
+.nfs*

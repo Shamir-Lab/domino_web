@@ -72,7 +72,7 @@ const FileUpload = (props) => {
                 [file.name]: {
                     userFileName: "",
                     inputTagRef: React.createRef(),
-                    dropdownOption: DROPDOWN_DEFAULT,
+                    dropdownOption: {name: DROPDOWN_DEFAULT, label: DROPDOWN_DEFAULT},
                     errorMessage: ""
                 },
             }),
@@ -107,15 +107,15 @@ const FileUpload = (props) => {
             const ref = fileData[file.name].inputTagRef;
 
             const noFileChosen =
-                (fileData[file.name].dropdownOption === DROPDOWN_DEFAULT ||
-                    fileData[file.name].dropdownOption === DROPDOWN_CUSTOM_NETWORK) &&
+                (fileData[file.name].dropdownOption.name === DROPDOWN_DEFAULT ||
+                    fileData[file.name].dropdownOption.name === DROPDOWN_CUSTOM_NETWORK) &&
                 (!ref.current.files || ref.current.files.length === 0);
             if (noFileChosen) {
                 goodFiles = false;
                 continue;
             }
 
-            if (fileData[file.name].dropdownOption !== DROPDOWN_DEFAULT) {
+            if (fileData[file.name].dropdownOption.name !== DROPDOWN_DEFAULT) {
                 continue;
             }
 
@@ -143,6 +143,9 @@ const FileUpload = (props) => {
         }
 
         if (!goodFiles) {
+            setServerErrorResponse(
+                    "Seems like at least one of the input files are missing. Please provide an active gene file and choose/provide a network file"
+                );
             console.log(
                 "Delayed \\upload POST request. Files exceed max file size and/or no files inputted."
             );
@@ -156,11 +159,11 @@ const FileUpload = (props) => {
             const ref = fileData[file.name].inputTagRef;
             const dropdownOption = fileData[file.name].dropdownOption;
 
-            if ((dropdownOption !== DROPDOWN_CUSTOM_NETWORK) && (dropdownOption !== DROPDOWN_DEFAULT)) {
-                data.append(`${file.name} name`, dropdownOption);
+            if ((dropdownOption.name !== DROPDOWN_CUSTOM_NETWORK) && (dropdownOption.name !== DROPDOWN_DEFAULT)) {
+                data.append(`${file.name} name`, dropdownOption.name);
                 data.append(
                     `${file.name} path`,
-                    file.availableFiles.directory + dropdownOption
+                    file.availableFiles.directory + dropdownOption.name
                 );
             } else {
                 data.append(`${file.name} name`, fileData[file.name].userFileName);
@@ -189,9 +192,9 @@ const FileUpload = (props) => {
                     return {
                         ...obj,
                         [file.name]:
-                            f.dropdownOption === DROPDOWN_DEFAULT
+                            f.dropdownOption.name === DROPDOWN_DEFAULT
                                 ? fileData[file.name].userFileName
-                                : f.dropdownOption,
+                                : f.dropdownOption.name,
                     };
                 }, {});
                 const numModules = Object.values(res.data.webDetails.geneSets).reduce(
@@ -217,9 +220,7 @@ const FileUpload = (props) => {
                 spinnerService.hide("mySpinner");
                 spinnerService.hide("mySpinner2");
                 console.log(error);
-                setServerErrorResponse(
-                    "Oops! There's an error with the DOMINO execution. Please check your inputted files for correctness."
-                );
+                setServerErrorResponse(error.response.data);
             });
     };
 
@@ -238,16 +239,22 @@ const FileUpload = (props) => {
                     {file.availableFiles ? (
                         <Col>
                             <Dropdown
-                                title={fileData[[file.name]].dropdownOption}
-                                onSelect={(fileName) =>
+                                title={fileData[[file.name]].dropdownOption.label}
+                                onSelect={(fileMd) => {
+                                   if(fileData[[file.name]].dropdownOption.label === DROPDOWN_CUSTOM_NETWORK){
+                                        fileData[file.name].userFileName=""
+                                        // fileData[file.name] = undefined  
+                                   }
                                     setFileData((prev) => ({
                                         ...prev,
                                         [file.name]: {
                                             ...prev[file.name],
-                                            dropdownOption: fileName,
+                                            dropdownOption: JSON.parse(fileMd),
+                                            
                                         },
                                     }))
-                                }
+                                } 
+                               }
                             >
                                 <Dropdown.Toggle
                                     style={{width: "300px"}}
@@ -255,16 +262,16 @@ const FileUpload = (props) => {
                                     value={fileData[[file.name]].dropdownOption}
                                 >
                                     {" "}
-                                    {fileData[[file.name]].dropdownOption}
+                                    {fileData[[file.name]].dropdownOption.label}
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu style={{width: "300px"}}>
-                                    {file.availableFiles.fileNames.map((fileName) => (
-                                        <Dropdown.Item eventKey={fileName}>
-                                            {fileName}
+                                    {file.availableFiles.fileMetadatas.map((curFile) => (
+                                        <Dropdown.Item eventKey={JSON.stringify(curFile)}>
+                                            {curFile.label}
                                         </Dropdown.Item>
                                     ))}
-                                    <Dropdown.Item eventKey={DROPDOWN_CUSTOM_NETWORK}>
-                                        Choose from your PC
+                                    <Dropdown.Item eventKey={JSON.stringify({name: DROPDOWN_CUSTOM_NETWORK, label: DROPDOWN_CUSTOM_NETWORK})}>
+                                        {DROPDOWN_CUSTOM_NETWORK}
                                     </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
@@ -273,7 +280,7 @@ const FileUpload = (props) => {
                         <></>
                     )}
                     {(file.name === "Active gene file"
-                        || fileData[file.name].dropdownOption === DROPDOWN_CUSTOM_NETWORK)
+                        || fileData[file.name].dropdownOption.name === DROPDOWN_CUSTOM_NETWORK)
                         ? (
                             <Col
                                 xs={(file.availableFiles ? 8 : 12)}
@@ -310,7 +317,7 @@ const FileUpload = (props) => {
                                         className="form-control"
                                         type="text"
                                         value={
-                                            fileData[file.name] === undefined
+                                            (fileData[file.name] === undefined || fileData[file.name].userFileName === "")
                                                 ? ""
                                                 : fileData[file.name].userFileName
                                         }
