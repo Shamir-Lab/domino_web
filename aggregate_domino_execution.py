@@ -1,6 +1,7 @@
 import sys, json, pandas as pd
+from datetime import datetime
 
-# csv_path, dest_path = sys.argv[1: 3]
+#csv_path, dest_path = sys.argv[1: 3]
 csv_path = "test.csv"
 dest_path = "src/components/public/freq.js"
 
@@ -49,7 +50,9 @@ for ind, d in frequency.iterrows():
     domino_frequency["total"] += d["freq"]
 
 with open(dest_path, "w") as f:
-    f.write(f"export const networkFrequency = {network_frequency};\n"
-        + f"export const dominoFrequency = {domino_frequency};")
+    f.write(
+          f"module.exports.networkFrequency = {network_frequency};\n"
+        + f"module.exports.dominoFrequency = {domino_frequency};\n"
+        + f"module.exports.lastAggregation = \"{datetime.now()}\";")
 
 

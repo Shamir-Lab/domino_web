@@ -21,6 +21,8 @@
     "connect-timeout": "^1.9.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "csv-write-stream": "^2.0.0",
+    "csv-writer": "^1.6.0",
     "danfojs-node": "^0.2.7",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",

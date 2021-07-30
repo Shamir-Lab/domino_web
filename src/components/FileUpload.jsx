@@ -13,8 +13,16 @@ import Tour from 'reactour'
 import JsxParser from 'react-jsx-parser';
 import axios from "axios";
 import Cookies from 'js-cookie';
-
 import PopUp from "./PopUp";
+import {
+    file_header,
+    file_desc,
+    file_error,
+    file_block,
+} from "./css/file_upload.module.css";
+import fileStructure from "./public/files";
+import loading1 from "./resources/loading1.gif";
+import loading2 from "./resources/loading2.gif";
 
 /**
  JSON Structures
@@ -31,16 +39,7 @@ import PopUp from "./PopUp";
 
 // TODO: file_error class is used for general error messages. change class name
 
-import fileStructure from "./public/files";
-import {
-    file_header,
-    file_desc,
-    file_error,
-    file_block,
-} from "./css/file_upload.module.css";
 
-import loading1 from "./resources/loading1.gif";
-import loading2 from "./resources/loading2.gif";
 
 
 const baseURL = "http://rack-shamir3.cs.tau.ac.il:8000";

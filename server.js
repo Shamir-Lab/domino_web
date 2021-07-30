@@ -11,16 +11,18 @@ const timeout = require("connect-timeout");
 var fx = require("mkdir-recursive");
 const ncp = require("ncp").ncp;
 const cors = require("cors");
+const csvWriter = require('csv-write-stream');
 
 const util = require('util');
 const {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails,
-    aggregateDOMINOExecution
+    formatDate
 } = require("./utils.js");
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
+const freqData = require("./src/components/public/freq.js");
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -88,10 +90,6 @@ const execAsync = (cmd) => {
     });
 }
 
-app.post("/test", (req, res, next) => {
-    aggregateDOMINOExecution("./test.csv", "./src/components/public/freq.js");
-});
-
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
@@ -107,8 +105,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
     // move network file to session directory
     // initialize values for the following variables
-    const cachedNetworkFile = networkFilePath;
     let networkFilePath = req.body[`Network file path`];
+    const cachedNetworkFile = networkFilePath;
     let mvNetworkFile, networkFileContents;
     if (cachedNetworkFile) {
         mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
@@ -190,9 +188,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
     Promise.all([mvNetworkFile, networkFileContents, sliceNetworkFile])
         .then(_ => {
-            let serverBase = 3;
-            let serverOffset = 0;
-            let serverOffsetLimit = 3;
+            let serverBase = 3, serverOffset = 0, serverOffsetLimit = 3;
             return Promise.all(
                 setNames.map(setName => {
                     let serverNum = serverBase + serverOffset;
@@ -202,6 +198,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             );
         })
         .then(listOfOutputs => {
+            // update response with domino output
+
             const algOutputs = listOfOutputs.reduce((obj, output) =>
                     Object.assign(obj, output)
                 , {});
@@ -224,6 +222,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             });
         })
         .then(_ => {
+            // finalize folder structure and create zip file
+
             const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
 
             console.log("Zipping solution ...");
@@ -236,19 +236,28 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         })
         .then(_ => {
             // log execution details
+
             if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
                 writer = csvWriter({ headers: ["time", "network_file"] });
             else
                 writer = csvWriter({sendHeaders: false});
 
             writer.pipe(fs.createWriteStream(conf.EXECUTION_CSV_DUMP, {flags: 'a'}));
+
             writer.write({
-                time: (new Date()),
+                time: formatDate(new Date()),
                 newtork_file: (cachedNetworkFile) ?
-                    req.body[`Network file name`]
+                    userFileNames["Network file"]
                     : "",
             });
             writer.end();
+
+            const lastAggregation = new Date(freqData.lastAggregation);
+            const ONE_HOUR = 60 * 60 * 1000; // in milliseconds
+            if (((new Date()) - lastAggregation) > ONE_HOUR) {
+                console.log("aggregating");
+                execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
+            }
         })
         .catch(error => {
             res.status(400);
@@ -274,6 +283,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(7000 || process.env.PORT || conf.PORT);
+app.listen(8000 || process.env.PORT || conf.PORT);
 
 
