@@ -16,7 +16,8 @@ const util = require('util');
 const {
     dominoPostProcess,
     separateActiveGenes,
-    draftSessionDirectoryDetails
+    draftSessionDirectoryDetails,
+    aggregateDOMINOExecution
 } = require("./utils.js");
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
@@ -87,6 +88,10 @@ const execAsync = (cmd) => {
     });
 }
 
+app.post("/test", (req, res, next) => {
+    aggregateDOMINOExecution("./test.csv", "./src/components/public/freq.js");
+});
+
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
@@ -102,9 +107,10 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
     // move network file to session directory
     // initialize values for the following variables
+    const cachedNetworkFile = networkFilePath;
     let networkFilePath = req.body[`Network file path`];
     let mvNetworkFile, networkFileContents;
-    if (networkFilePath) {
+    if (cachedNetworkFile) {
         mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
         networkFileContents = readFile(networkFilePath);
     } else {
@@ -228,6 +234,22 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
             return Promise.all([rmCachedFiles, zipFiles]);
         })
+        .then(_ => {
+            // log execution details
+            if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
+                writer = csvWriter({ headers: ["time", "network_file"] });
+            else
+                writer = csvWriter({sendHeaders: false});
+
+            writer.pipe(fs.createWriteStream(conf.EXECUTION_CSV_DUMP, {flags: 'a'}));
+            writer.write({
+                time: (new Date()),
+                newtork_file: (cachedNetworkFile) ?
+                    req.body[`Network file name`]
+                    : "",
+            });
+            writer.end();
+        })
         .catch(error => {
             res.status(400);
         })
@@ -252,6 +274,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(8000 || process.env.PORT || conf.PORT);
+app.listen(7000 || process.env.PORT || conf.PORT);
 
 

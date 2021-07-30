@@ -6,6 +6,11 @@ import {
     gitClones
 } from './public/plotting.js';
 
+import {
+    networkFrequency,
+    dominoFrequency
+} from "./public/freq.js"
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap/dist/css/bootstrap.css";
 import "react-combo-select/style.css";
@@ -51,6 +56,10 @@ import {
 
 import {
     BarChart,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
     Label,
     CartesianGrid,
     XAxis,
@@ -69,7 +78,7 @@ const LandingPage = ({history}) => {
     }
 
     // DOMINO Executions
-    const FeatureUsage = (attr, data) => {
+    const BarTotalFeatureUsage = (attr, data) => {
         return (
             <Row style={{margin: "25px 0px 25px 50px"}}>
                 <Col xs={8}>
@@ -122,6 +131,21 @@ const LandingPage = ({history}) => {
             case "contact":
                 return (<ContactAndIssuesCard cardStatus={details=="contact"}/>);
         }
+    };
+
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+    const RADIAN = Math.PI / 180;
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        return (
+            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                {`${(percent * 100).toFixed(0)}%`}
+            </text>
+        );
     };
 
     return (
@@ -221,10 +245,38 @@ const LandingPage = ({history}) => {
                     <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO statistics</h1>
                     <Carousel className="bg-dark">
                         <Carousel.Item>
-                            {FeatureUsage("DOMINO Executions", DOMINOExecutions)}
+                            {BarTotalFeatureUsage("DOMINO Execution Frequency", DOMINOExecutions)}
                         </Carousel.Item>
                         <Carousel.Item>
-                            {FeatureUsage("Git Clone Executions", gitClones)}
+                            {BarTotalFeatureUsage("Git Clone Execution Frequency", gitClones)}
+                        </Carousel.Item>
+                        <Carousel.Item>
+                            <p
+                                style={{textAlign: "center", fontSize: "18px", color: "white"}}
+                            >
+                                Relative Frequency of Available Network File Usage
+                            </p>
+
+                                <PieChart width={400} height={400}>
+                                    <Pie
+
+                                        isAnimationActive={false}
+                                        data={networkFrequency}
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={80}
+                                        fill="#007bff"
+                                        nameKey="network"
+                                        dataKey="freq"
+                                        labelLine={false}
+                                        label={renderCustomizedLabel}
+                                    >
+                                        {networkFrequency.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+
                         </Carousel.Item>
                     </Carousel>
                 </>

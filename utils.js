@@ -1,3 +1,5 @@
+const dfd = require("danfojs-node");
+
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
 
@@ -139,8 +141,41 @@ const draftSessionDirectoryDetails = (userFileNames) => {
 
     return [`${__dirname}/public/${customFile}`, customFile];
 };
+
+const aggregateDOMINOExecution = async (csv_path, dest_path) => {
+    const df = await dfd.read_csv(csv_path);
+    df["time"] = dfd.to_datetime(df["time"]);
+    df = df.set_index({key: "time"});
+
+    const network_file_usage = (
+        df
+            .query("network_file != ''")
+            .groupby("network_file")
+            .reset_index()
+            .size()
+            .to_frame()
+            .reset_index()
+            .rename(columns = {0: "freq"})
+    );
+    network_file_usage.head().print();
+
+    const frequency = (
+        df
+            .groupby(pd.Grouper(freq='M'))
+            .size()
+            .to_frame()
+            .reset_index()
+            .rename(columns = {0: "freq"})
+    );
+
+    frequency.head().print();
+
+
+};
+
 module.exports = {
     dominoPostProcess,
     separateActiveGenes,
-    draftSessionDirectoryDetails
+    draftSessionDirectoryDetails,
+    aggregateDOMINOExecution
 };
