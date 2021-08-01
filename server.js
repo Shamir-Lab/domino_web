@@ -256,7 +256,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             const ONE_HOUR = 60 * 60 * 1000; // in milliseconds
             if (((new Date()) - lastAggregation) > ONE_HOUR) {
                 console.log("aggregating");
-                execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
+                return execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
             }
         })
         .catch(error => {

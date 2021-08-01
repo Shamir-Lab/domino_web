@@ -148,6 +148,24 @@ const LandingPage = ({history}) => {
         );
     };
 
+    const data01 = [
+        { name: 'Group A', value: 400 },
+        { name: 'Group B', value: 300 },
+        { name: 'Group C', value: 300 },
+        { name: 'Group D', value: 200 },
+        { name: 'Group E', value: 278 },
+        { name: 'Group F', value: 189 },
+    ];
+
+    const data02 = [
+        { name: 'Group A', value: 2400 },
+        { name: 'Group B', value: 4567 },
+        { name: 'Group C', value: 1398 },
+        { name: 'Group D', value: 9800 },
+        { name: 'Group E', value: 3908 },
+        { name: 'Group F', value: 4800 },
+    ];
+
     return (
         <>
             <Navbar bg="dark" variant="dark">
@@ -256,27 +274,24 @@ const LandingPage = ({history}) => {
                             >
                                 Relative Frequency of Available Network File Usage
                             </p>
-
+                            <div
+                                style={{marginLeft: "450px"}}
+                            >
                                 <PieChart width={400} height={400}>
                                     <Pie
-
+                                        dataKey="freq"
+                                        nameKey="network"
                                         isAnimationActive={false}
                                         data={networkFrequency}
                                         cx="50%"
                                         cy="50%"
                                         outerRadius={80}
                                         fill="#007bff"
-                                        nameKey="network"
-                                        dataKey="freq"
-                                        labelLine={false}
-                                        label={renderCustomizedLabel}
-                                    >
-                                        {networkFrequency.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
+                                        label
+                                    />
+                                    <Tooltip />
                                 </PieChart>
-
+                            </div>
                         </Carousel.Item>
                     </Carousel>
                 </>

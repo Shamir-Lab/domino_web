@@ -51,8 +51,8 @@ for ind, d in frequency.iterrows():
 
 with open(dest_path, "w") as f:
     f.write(
-          f"module.exports.networkFrequency = {network_frequency};\n"
-        + f"module.exports.dominoFrequency = {domino_frequency};\n"
+          f"module.exports.networkFrequency = {json.dumps(network_frequency)};\n"
+        + f"module.exports.dominoFrequency = {json.dumps(domino_frequency)};\n"
         + f"module.exports.lastAggregation = \"{datetime.now()}\";")
 
 
