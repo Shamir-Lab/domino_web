@@ -140,6 +140,14 @@ const draftSessionDirectoryDetails = (userFileNames) => {
     return [`${__dirname}/public/${customFile}`, customFile];
 };
 
+const hasNonAlphaNumericChars = (str) => {
+    return ! /^[a-z0-9\s-_]+$/i.test(str);
+};
+
+const hasExpectedFileExtension = (fileName, extension) => {
+    return fileName.split('.').pop()===extension;
+};
+
 const formatDate = (t) => {
     /** Returns a date formatted in the form %m/%d/%y. */
     let a = [{month: 'numeric'}, {day: 'numeric'}, {year: 'numeric'}];
@@ -153,5 +161,7 @@ module.exports = {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails,
+    hasNonAlphaNumericChars,
+    hasExpectedFileExtension
     formatDate
 };

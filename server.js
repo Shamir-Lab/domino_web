@@ -8,7 +8,6 @@ const { exec } = require("child_process");
 const fs = require("fs");
 
 const timeout = require("connect-timeout");
-var fx = require("mkdir-recursive");
 const ncp = require("ncp").ncp;
 const cors = require("cors");
 const csvWriter = require('csv-write-stream');
@@ -18,8 +17,13 @@ const {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails,
+    hasNonAlphaNumericChars,
+    hasExpectedFileExtension,
     formatDate
 } = require("./utils.js");
+
+const errorMsgs=require("./errors.js")
+
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
 const freqData = require("./src/components/public/freq.js");
@@ -94,13 +98,27 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
     // create session directory (within the public folder)
+
     let fileNames = fileStructure.files.map(file => file.name);
+
     const userFileNames = fileNames.reduce(
         (obj, file) => ({
             ...obj,
             [file]: req.body[`${file} name`]
         }),{}); // input files to DOMINO selected by the user
-    const [sessionDirectory, customFile] = draftSessionDirectoryDetails(userFileNames);
+
+    if (! hasExpectedFileExtension(userFileNames["Active gene file"], "txt") || ! hasExpectedFileExtension(userFileNames["Network file"], "sif")){
+       res.status(400).send(errorMsgs.invalidFileExtension);
+       return;
+       
+    }
+    const isInvalidFileNames=Object.values(userFileNames).map((cur) => cur.split('.').slice(0,-1).join('.')).reduce((agg,cur)=>{return agg || hasNonAlphaNumericChars(cur)}, false);
+    if (isInvalidFileNames){
+       res.status(400).send(errorMsgs.invalidAlphaNumericFileName);
+       return; 
+    }
+
+   const [sessionDirectory, customFile] = draftSessionDirectoryDetails(userFileNames);
     fs.mkdirSync(sessionDirectory);
 
     // move network file to session directory
@@ -109,7 +127,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     const cachedNetworkFile = networkFilePath;
     let mvNetworkFile, networkFileContents;
     if (cachedNetworkFile) {
-        mvNetworkFile = execAsync(`cp ${networkFilePath} ${sessionDirectory}`);
         networkFileContents = readFile(networkFilePath);
     } else {
         let networkFile = req.files[`Network file contents`];
@@ -119,11 +136,17 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     }
 
     const sliceNetworkFile = execAsync(
-        `bash slicer_runner.sh ` + [networkFilePath, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
+        `bash slicer_runner.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
     );
 
     const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
     const setNames = Object.keys(activeGenesSet);
+    const isInvalidActiveGeneSetNames=Object.values(setNames).reduce((agg,cur)=>{return agg || hasNonAlphaNumericChars(cur)}, false);
+       if (isInvalidActiveGeneSetNames){
+           res.status(400).send(errorMsgs.invalidAlphaNumericSetName);
+       return;
+   }
+
     console.log("set names identified --> ", setNames.join(", "));
 
     const singleDOMINORun = async (serverNum, sessionDirectory, setName) => {
@@ -140,6 +163,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         const subRunDirectory = `${sessionDirectory}/${setName}`;
         const outputFile = `${subRunDirectory}/modules`;
 
+        
         await makeDir(subRunDirectory);
         await makeDir(outputFile);
 
@@ -153,11 +177,11 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         console.log(`Starting domino py execution on set ${setName}...`);
         // question -> not sure why gdocker up after cd works but not the other way around?!
         let cmdArgs=[
-                subRunDirectory,
+                `"${subRunDirectory}"`,
                 "active_gene_file.txt",
-                `${subRunDirectory}/active_gene_file.txt`,
-                networkFilePath,
-                outputFile,
+                `"${subRunDirectory}/active_gene_file.txt"`,
+                `"${networkFilePath}"`,
+                `"${outputFile}"`,
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
@@ -228,8 +252,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
             console.log("Zipping solution ...");
             const zipFiles = execAsync(
-                `cd ${sessionDirectory}/..
-                zip -r ${customFile}.zip ${customFile}`
+                `cd "${sessionDirectory}/.."
+                zip -r "${customFile}.zip" "${customFile}"`
             );
 
             return Promise.all([rmCachedFiles, zipFiles]);
@@ -260,7 +284,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             }
         })
         .catch(error => {
-            res.status(400);
+            console.log(error)
+            res.status(400).send(errorMsgs.nonSpecific);
         })
         .then(_ => res.end());
 });
@@ -283,6 +308,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.listen(8000 || process.env.PORT || conf.PORT);
+app.listen(conf.PORT || 8000);
 
 
