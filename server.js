@@ -10,6 +10,7 @@ const fs = require("fs");
 const timeout = require("connect-timeout");
 const ncp = require("ncp").ncp;
 const cors = require("cors");
+const csvWriter = require('csv-write-stream');
 
 const util = require('util');
 const {
@@ -17,13 +18,15 @@ const {
     separateActiveGenes,
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
-    hasExpectedFileExtension
+    hasExpectedFileExtension,
+    formatDate
 } = require("./utils.js");
 
 const errorMsgs=require("./errors.js")
 
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
+const freqData = require("./src/components/public/freq.js");
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -121,9 +124,9 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     // move network file to session directory
     // initialize values for the following variables
     let networkFilePath = req.body[`Network file path`];
+    const cachedNetworkFile = networkFilePath;
     let mvNetworkFile, networkFileContents;
-    if (networkFilePath) {
-        mvNetworkFile = execAsync(`cp '${networkFilePath}' '${sessionDirectory}'`);
+    if (cachedNetworkFile) {
         networkFileContents = readFile(networkFilePath);
     } else {
         let networkFile = req.files[`Network file contents`];
@@ -209,9 +212,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
 
     Promise.all([mvNetworkFile, networkFileContents, sliceNetworkFile])
         .then(_ => {
-            let serverBase = 3;
-            let serverOffset = 0;
-            let serverOffsetLimit = 3;
+            let serverBase = 3, serverOffset = 0, serverOffsetLimit = 3;
             return Promise.all(
                 setNames.map(setName => {
                     let serverNum = serverBase + serverOffset;
@@ -221,6 +222,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             );
         })
         .then(listOfOutputs => {
+            // update response with domino output
+
             const algOutputs = listOfOutputs.reduce((obj, output) =>
                     Object.assign(obj, output)
                 , {});
@@ -243,6 +246,8 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             });
         })
         .then(_ => {
+            // finalize folder structure and create zip file
+
             const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
 
             console.log("Zipping solution ...");
@@ -252,6 +257,31 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             );
 
             return Promise.all([rmCachedFiles, zipFiles]);
+        })
+        .then(_ => {
+            // log execution details
+
+            if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
+                writer = csvWriter({ headers: ["time", "network_file"] });
+            else
+                writer = csvWriter({sendHeaders: false});
+
+            writer.pipe(fs.createWriteStream(conf.EXECUTION_CSV_DUMP, {flags: 'a'}));
+
+            writer.write({
+                time: formatDate(new Date()),
+                newtork_file: (cachedNetworkFile) ?
+                    userFileNames["Network file"]
+                    : "",
+            });
+            writer.end();
+
+            const lastAggregation = new Date(freqData.lastAggregation);
+            const ONE_HOUR = 60 * 60 * 1000; // in milliseconds
+            if (((new Date()) - lastAggregation) > ONE_HOUR) {
+                console.log("aggregating");
+                return execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
+            }
         })
         .catch(error => {
             console.log(error)

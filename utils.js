@@ -148,10 +148,20 @@ const hasExpectedFileExtension = (fileName, extension) => {
     return fileName.split('.').pop()===extension;
 };
 
+const formatDate = (t) => {
+    /** Returns a date formatted in the form %m/%d/%y. */
+    let a = [{month: 'numeric'}, {day: 'numeric'}, {year: 'numeric'}];
+    return a.map((m) => {
+        let f = new Intl.DateTimeFormat('en', m);
+        return f.format(t);
+    }).join("/");
+}
+
 module.exports = {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
     hasExpectedFileExtension
+    formatDate
 };
