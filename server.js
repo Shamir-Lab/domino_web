@@ -203,6 +203,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         
         console.log(`DOMINO post process on set ${setName} ...`);
+        console.log("modules --> ", algOutput.modules);
         console.log("numModules --> ", Object.keys(algOutput.modules).length);
         return {[setName]: algOutput};
     };

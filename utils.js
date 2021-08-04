@@ -6,11 +6,13 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
         return ...;
     }*/
 
-    const modules_str = py_output.trim() === '' ? [] : py_output.split("\n").slice(0, -1);
+    const modules_str = py_output.trim() === '' ? [] : py_output.split("\n");
     const module_to_genes={};
     let nodes=[];
+    console.log(modules_str)
     for (i=0;i<modules_str.length;i++){
         cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
+        console.log(cur_module)
         module_to_genes[i] = cur_module;
         nodes=nodes.concat(cur_module);
     }
