@@ -19,7 +19,8 @@ const {
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
     hasExpectedFileExtension,
-    formatDate
+    formatDate,
+    convert2Ensg
 } = require("./utils.js");
 
 const errorMsgs=require("./errors.js")
@@ -139,10 +140,15 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         `bash slicer_runner.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
     );
 
-    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
+    let activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
     const setNames = Object.keys(activeGenesSet);
     const isInvalidActiveGeneSetNames=Object.values(setNames).reduce((agg,cur)=>{return agg || hasNonAlphaNumericChars(cur)}, false);
-       if (isInvalidActiveGeneSetNames){
+    if (cachedNetworkFile){
+        activeGenesSet = convert2Ensg(activeGenesSet);
+        console.log(activeGenesSet)
+    }
+
+    if (isInvalidActiveGeneSetNames){
            res.status(400).send(errorMsgs.invalidAlphaNumericSetName);
        return;
    }

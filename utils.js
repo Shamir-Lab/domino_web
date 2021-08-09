@@ -1,18 +1,20 @@
+const promisifyAll = require('util-promisifyall');
+const util = require('util');
+const fs = require("fs");
+
+const conf = require("./config.js").conf;
+const dictionaries = require("./dictionaries.js");
+const readFile = util.promisify(fs.readFile);
+
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
 
-    /*
-    if (py_output.trim() === '') {
-        return ...;
-    }*/
 
     const modules_str = py_output.trim() === '' ? [] : py_output.split("\n");
     const module_to_genes={};
     let nodes=[];
-    console.log(modules_str)
     for (i=0;i<modules_str.length;i++){
         cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
-        console.log(cur_module)
         module_to_genes[i] = cur_module;
         nodes=nodes.concat(cur_module);
     }
@@ -22,8 +24,6 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
         module_to_genes_arr.push({ [module]: module_to_genes[module] });
         nodes_ids.concat(module_to_genes[module])
     }
-    // nodes_ids = module_to_genes_arr.reduce((x, y) => {
-    //   x.concat(y);}, []);
 
     let nw = new String(networkFileData);
     let nw_edges = nw
@@ -103,7 +103,8 @@ const separateActiveGenes = (fileString) => {
      * In the case that the file has one column, as opposed to two,
      * return an object with a single key:value pair.
      */
-    const lines = fileString.split("\r\n");
+    fileString = fileString.replace("/\r\n/g","\n")
+    const lines = fileString.split("\n");
     const activeGenesSet = {};
 
     if (lines[0].split("\t").length === 1) {
@@ -114,6 +115,7 @@ const separateActiveGenes = (fileString) => {
             if (line.trim()==='') {
                 return;
             }
+            line=line.trim();
             const fields = line.split("\t");
             const [gene, setID] = fields;
             if (activeGenesSet[[setID]] === undefined) {
@@ -125,6 +127,52 @@ const separateActiveGenes = (fileString) => {
     return activeGenesSet;
 };
 
+const convert2Ensg = (activeGenesSet) => {
+
+    Object.keys(activeGenesSet).forEach(item => {
+        activeGenesSet[item] = [...new Set(activeGenesSet[item].map(element => convertEnsemblIdentifier2Ensg(element)).filter(element => !!element))];
+    }); 
+  
+   return activeGenesSet
+};
+
+const convertEnsemblIdentifier2Ensg = (ensemblIdentifier) => {
+   
+    if (ensemblIdentifier.startsWith("ENSG")){
+        return ensemblIdentifier;
+    }
+    for (let i=0; i<dicts.length; i++){
+        convertedValue=dicts[i][ensemblIdentifier]
+        if(convertedValue){
+            return convertedValue;
+        }
+    }
+};
+
+const loadEnsemblDictionaries = async () => {
+     
+    dictPromises= dictionaries.map(async element => {
+        const elem=await readFile(element);
+        const dictContent = new String(elem).replace("/\r\n","\n").split("\n"); 
+        dict={}
+        for (let i=0; i<dictContent.length;i++){
+            dictEntry=dictContent[i].split("\t");
+            if (dictEntry.length !=2){
+                continue           
+            }
+ 
+            dict[dictEntry[0]]=dictEntry[1];
+        }
+        return dict; 
+    });
+
+    Promise.all(dictPromises).then((results) =>{ 
+        dicts=results; 
+    }).catch((err)=>{
+        console.log(err); 
+    });
+    
+};
 const draftSessionDirectoryDetails = (userFileNames) => {
     /** Returns the directory path and directory name for this one user's domino web execution session. */
 
@@ -150,10 +198,26 @@ const hasExpectedFileExtension = (fileName, extension) => {
     return fileName.split('.').pop()===extension;
 };
 
+
+let dicts;
+
+loadEnsemblDictionaries();
+
+const formatDate = (t) => {
+    /** Returns a date formatted in the form %m/%d/%y. */
+    let a = [{month: 'numeric'}, {day: 'numeric'}, {year: 'numeric'}];
+    return a.map((m) => {
+        let f = new Intl.DateTimeFormat('en', m);
+        return f.format(t);
+    }).join("/");
+}
+
 module.exports = {
     dominoPostProcess,
     separateActiveGenes,
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
-    hasExpectedFileExtension
+    hasExpectedFileExtension,
+    convert2Ensg,
+    formatDate
 };

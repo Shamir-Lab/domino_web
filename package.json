@@ -51,6 +51,7 @@
     "recharts": "^2.0.10",
     "sass": "^1.35.2",
     "styled-components": "^4.0.0",
+    "util-promisifyall": "^1.0.6",
     "web-vitals": "^1.1.0"
   },
   "scripts": {
