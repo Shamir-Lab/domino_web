@@ -14,6 +14,9 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
     const module_to_genes={};
     let nodes=[];
     for (i=0;i<modules_str.length;i++){
+        if (modules_str[i]===''){
+            continue;
+        }
         cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
         module_to_genes[i] = cur_module;
         nodes=nodes.concat(cur_module);

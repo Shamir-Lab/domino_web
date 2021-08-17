@@ -35,8 +35,8 @@ fi
 
 go_enrichment --tested_genes "${output_folder}/modules.out" --background_genes "${network_file_path}" --qval_th 0.05 --output_folder "${dominoRunDirectory}/go"
 
-n_modules=$(wc -l "${output_folder}/modules.out" | cut -d ' '  -f 1)
-n_modules=$(($n_modules))
+n_modules=$(cat "${output_folder}/modules.out" | grep -c '')
+n_modules=$(($n_modules-1))
 echo "num modules $n_modules"
 
 echo visualize modules 
