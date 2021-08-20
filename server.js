@@ -77,9 +77,6 @@ app.use(cookieParser());
 app.use(fileUpload());
 
 /* Promise wrappers. */
-const makeDir = util.promisify(fs.mkdir);
-const writeFile = util.promisify(fs.writeFile);
-const readFile = util.promisify(fs.readFile);
 const execAsync = (cmd) => {
     /**
      * Executes a shell command and return it as a Promise.
@@ -117,7 +114,7 @@ app.get("/aggregated-usage", async (req, res, next) => {
     // [...Array(10).keys()].map(_ => Execution.create({ date: `10/${_}/21`, network: "huri.sif"}));
     // [...Array(15).keys()].map(_ => Execution.create({ date: `11/${_}/21`, network: "string.sif"}));
 
-    const aggResult = await Execution.aggregate([
+    let totalExecutions = Execution.aggregate([
         {
             $group: {
                 _id: { year: { $year: "$date" }, month: { $month: "$date" } },
@@ -125,10 +122,36 @@ app.get("/aggregated-usage", async (req, res, next) => {
             }
         }
     ]);
+
+    let networkUsage = Execution.aggregate([
+        {
+            $group: {
+                _id: "$network",
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    let monthlyUsageWithNetworks = Execution.aggregate([
+        {
+            $group: {
+                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+                networks: {
+                    _id: "$network",
+                    count: { $sum: 1 }
+                }
+            }
+        }
+    ]);
+
+    [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await Promise.all([totalExecutions, networkUsage, monthlyUsageWithNetworks]);
+
     console.log("Done aggregating");
-    const all = await Execution.find({});
-    res.json(all);
-    //res.json(aggResult);
+    res.json({
+        totalExecutions: totalExecutions,
+        networkUsage: networkUsage,
+        monthlyUsageWithNetworks: monthlyUsageWithNetworks
+    });
 
     res.end();
 });
@@ -165,7 +188,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     const cachedNetworkFile = networkFilePath;
     let mvNetworkFile, networkFileContents;
     if (cachedNetworkFile) {
-        networkFileContents = readFile(networkFilePath);
+        networkFileContents = fs.promises.readFile(networkFilePath);
     } else {
         let networkFile = req.files[`Network file contents`];
         networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
@@ -202,12 +225,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         const outputFile = `${subRunDirectory}/modules`;
 
         
-        await makeDir(subRunDirectory);
-        await makeDir(outputFile);
+        await fs.promises.mkdir(subRunDirectory);
+        await fs.promises.mkdir(outputFile);
 
         // load the active gene file into the sub run directory
         const activeGenesFilePath = `${subRunDirectory}/active_gene_file.txt`;
-        await writeFile(
+        await fs.promises.writeFile(
             activeGenesFilePath,
             activeGenesSet[setName].join("\n")
         );
@@ -240,7 +263,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         }
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
-        const dominoOutput = await readFile(`${outputFile}/modules.out`);
+        const dominoOutput = await fs.promises.readFile(`${outputFile}/modules.out`);
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         
         console.log(`DOMINO post process on set ${setName} ...`);
