@@ -29,19 +29,19 @@ const conf = require("./config.js").conf;
 const freqData = require("./src/components/public/freq.js");
 
 /** Database setup */
-const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/webUsage?retryWrites=true&w=majority";
-mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
+mongoose.set('bufferCommands', false); // temporary
+// const uri = 'mongodb://127.0.0.1/executions';
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+    .then(() => console.log("Successful MongoDB connection."));
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-/*
 const executionSchema = new mongoose.Schema({
     date: Date,
     network: String
 });
-
-const execution = mongoose.model("execution", executionSchema);
-*/
+const Execution = mongoose.model("Execution", executionSchema);
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -76,16 +76,6 @@ app.use(cookieParser());
 // app.use(cors());
 app.use(fileUpload());
 
-app.get('/*', function (req, res) {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-/*
-app.get('/file_upload', ...);
-
-app.get('/modules', ...);
-* */
-
 /* Promise wrappers. */
 const makeDir = util.promisify(fs.mkdir);
 const writeFile = util.promisify(fs.writeFile);
@@ -109,11 +99,44 @@ const execAsync = (cmd) => {
     });
 }
 
+app.get('/', function (req, res) { // why "/*"?
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+
+});
+
+/*
+app.get('/file_upload', ...);
+
+app.get('/modules', ...);
+* */
+
+app.get("/aggregated-usage", async (req, res, next) => {
+    // aggregate
+    console.log("Aggregating");
+    // [...Array(5).keys()].map(_ => Execution.create({ date: new Date(), network: "dip.sif"}));
+    // [...Array(10).keys()].map(_ => Execution.create({ date: `10/${_}/21`, network: "huri.sif"}));
+    // [...Array(15).keys()].map(_ => Execution.create({ date: `11/${_}/21`, network: "string.sif"}));
+
+    const aggResult = await Execution.aggregate([
+        {
+            $group: {
+                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+                count: { $sum: 1 },
+            }
+        }
+    ]);
+    console.log("Done aggregating");
+    const all = await Execution.find({});
+    res.json(all);
+    //res.json(aggResult);
+
+    res.end();
+});
+
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
     // create session directory (within the public folder)
-
     let fileNames = fileStructure.files.map(file => file.name);
 
     const userFileNames = fileNames.reduce(
@@ -261,7 +284,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             });
         })
         .then(_ => {
-            // finalize folder structure and create zip file
+            // finalize folder structure, create zip file, and log execution details
 
             const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
 
@@ -271,59 +294,17 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 zip -r "${customFile}.zip" "${customFile}"`
             );
 
-            return Promise.all([rmCachedFiles, zipFiles]);
-        })
-        .then(_ => {
-            // log execution details
-
-            /*
-
-            await execution.collection.insertOne({
-                date: (new Date()),
+            const logExec = Execution.create({
+                date: new Date(),
                 network: (cachedNetworkFile) ?
                     userFileNames["Network file"]
                     : ""
             });
 
-            // aggregate
-            const aggResult = await db.executions.aggregate([
-                {
-                    $group: {
-                        _id: { year: { $year: "$date" }, month: { $month: "$date" } },
-                        count: { $count: {} },
-                        date: "$date"
-                    }
-                }
-            ]);
-            // write the aggregate result to a file ** not the best idea
-            // figure out a way to aggregate in intervals
-
-            */
-
-            if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
-                writer = csvWriter({ headers: ["time", "network_file"] });
-            else
-                writer = csvWriter({sendHeaders: false});
-
-            writer.pipe(fs.createWriteStream(conf.EXECUTION_CSV_DUMP, {flags: 'a'}));
-
-            writer.write({
-                time: formatDate(new Date()),
-                newtork_file: (cachedNetworkFile) ?
-                    userFileNames["Network file"]
-                    : "",
-            });
-            writer.end();
-
-            const lastAggregation = new Date(freqData.lastAggregation);
-            const ONE_HOUR = 60 * 60 * 1000; // in milliseconds
-            if (((new Date()) - lastAggregation) > ONE_HOUR) {
-                console.log("aggregating");
-                return execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
-            }
+            return Promise.all([rmCachedFiles, zipFiles, logExec]);
         })
         .catch(error => {
-            console.log(error)
+            console.log(error);
             res.status(400).send(errorMsgs.nonSpecific);
         })
         .then(_ => res.end());
