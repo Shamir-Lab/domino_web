@@ -23,7 +23,7 @@ import {
 import fileStructure from "./public/files";
 import loading1 from "./resources/loading1.gif";
 import loading2 from "./resources/loading2.gif";
-import steps from "./resources/file_upload_tour.js";
+import { file_upload_steps } from "./resources/tour_instructions.js";
 
 /**
  JSON Structures
@@ -216,7 +216,7 @@ const FileUpload = (props) => {
                 </div>
 
                 {/* Form */}
-                <Row style={{height: '180px'}}>
+                <Row>
                     {/* Dropdown menu for available files. */}
                     {file.availableFiles ? (
                         <Col>
@@ -266,8 +266,6 @@ const FileUpload = (props) => {
                         ? (
                             <Col
                                 xs={(file.availableFiles ? 8 : 12)}
-                                className={"custom-file"}
-                                style={{height: "180px"}}
                             >
                                 <input
                                     className="form-control input-sm custom-file-input"
@@ -291,7 +289,7 @@ const FileUpload = (props) => {
                                     className="custom-file-label"
                                     style={{marginLeft: "15px", marginRight: "15px"}}
                                 >
-                                    Choose file...
+                                    Choose a file...
                                 </label>
 
                                 <div className="form-group">
@@ -365,9 +363,9 @@ const FileUpload = (props) => {
             </Spinner>
             <div>{seen ? <PopUp toggle={togglePop}/> : null}</div>
 
-            <Jumbotron style={{backgroundColor: "white", padding: "10px", marginTop: "20px"}}>
+            <Jumbotron style={{backgroundColor: "white", padding: "10px", marginBottom: "0px"}}>
                 <div style={{margin: "auto", textAlign: "center"}}>
-                    <span style={{fontSize: "45px"}}>Run Domino</span>
+                    <span style={{fontSize: "35px"}}>Run Domino</span>
                 </div>
             </Jumbotron>
 
@@ -388,7 +386,7 @@ const FileUpload = (props) => {
                 </button>
             </div>
             <Tour
-                steps={steps}
+                steps={file_upload_steps}
                 isOpen={isTourOpen}
                 onRequestClose={() => setIsTourOpen(false)}
                 lastStepNextButton={<button className="btn btn-primary" style={{width: "150px"}}>Done! Let's start

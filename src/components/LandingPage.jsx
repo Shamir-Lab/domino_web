@@ -225,6 +225,7 @@ const LandingPage = ({history}) => {
                 <Collapsible
                     trigger="More about DOMINO"
                     triggerStyle={{backgroundColor: "#343a40"}}
+                    style={{cursor: "pointer"}}
                 >
                     <p>Our motivation to develop <a href="https://github.com/Shamir-Lab/DOMINO" target="_blank">DOMINO</a> came from a phenomenon we observed on multiple active module identification (AMI) algorithms.</p>
                     <p>AMI algorithms receive as input a gene network and nodes' activity scores, and report sub-networks (modules) that are putatively biologically active. The biological meaning of such modules is usually explored via functional/enrichment analysis, commonly done against well-established resources such as the Gene Ontology (GO). </p>
@@ -244,6 +245,7 @@ const LandingPage = ({history}) => {
                 <Collapsible
                     trigger="API spec for external calls"
                     triggerStyle={{backgroundColor: "#343a40"}}
+                    style={{cursor: "pointer"}}
                 >
                     <p>
                         Here you will be able to find a spec that defines how to make and automated API call to the website (e.g. via a script).

@@ -162,6 +162,6 @@ module.exports = {
     separateActiveGenes,
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
-    hasExpectedFileExtension
+    hasExpectedFileExtension,
     formatDate
 };

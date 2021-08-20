@@ -11,6 +11,7 @@ const timeout = require("connect-timeout");
 const ncp = require("ncp").ncp;
 const cors = require("cors");
 const csvWriter = require('csv-write-stream');
+const mongoose = require('mongoose');
 
 const util = require('util');
 const {
@@ -23,10 +24,24 @@ const {
 } = require("./utils.js");
 
 const errorMsgs=require("./errors.js")
-
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
 const freqData = require("./src/components/public/freq.js");
+
+/** Database setup */
+const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/webUsage?retryWrites=true&w=majority";
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+/*
+const executionSchema = new mongoose.Schema({
+    date: Date,
+    network: String
+});
+
+const execution = mongoose.model("execution", executionSchema);
+*/
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -260,6 +275,30 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         })
         .then(_ => {
             // log execution details
+
+            /*
+
+            await execution.collection.insertOne({
+                date: (new Date()),
+                network: (cachedNetworkFile) ?
+                    userFileNames["Network file"]
+                    : ""
+            });
+
+            // aggregate
+            const aggResult = await db.executions.aggregate([
+                {
+                    $group: {
+                        _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+                        count: { $count: {} },
+                        date: "$date"
+                    }
+                }
+            ]);
+            // write the aggregate result to a file ** not the best idea
+            // figure out a way to aggregate in intervals
+
+            */
 
             if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
                 writer = csvWriter({ headers: ["time", "network_file"] });

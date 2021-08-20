@@ -19,7 +19,7 @@ import "react-pro-sidebar/dist/css/styles.css";
 import "react-combo-select/style.css";
 
 import { ReactComponent as ReactNetworkIcon } from "./resources/network_icon_bright.svg";
-import steps from "./resources/modules_tour.js";
+import { module_steps } from "./resources/tour_instructions.js";
 
 const Modules = (props) => {
 	/* Unpack props. */
@@ -268,7 +268,7 @@ const Modules = (props) => {
 				</Row>
 			</Container>
 			<Tour
-				steps={steps}
+				steps={module_steps}
 				isOpen={isTourOpen}
 				onRequestClose={() => setIsTourOpen(false)}
 				lastStepNextButton={
