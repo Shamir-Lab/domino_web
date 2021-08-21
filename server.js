@@ -8,10 +8,8 @@ const { exec } = require("child_process");
 const fs = require("fs");
 
 const timeout = require("connect-timeout");
-const ncp = require("ncp").ncp;
-const cors = require("cors");
-const csvWriter = require('csv-write-stream');
-const mongoose = require('mongoose');
+// const ncp = require("ncp").ncp;
+// const cors = require("cors");
 
 const util = require('util');
 const {
@@ -22,26 +20,15 @@ const {
     hasExpectedFileExtension,
     formatDate
 } = require("./utils.js");
+const {
+    addExecution,
+    aggregateExecutions
+} = require("./db_helper.js");
 
 const errorMsgs=require("./errors.js")
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
 const freqData = require("./src/components/public/freq.js");
-
-/** Database setup */
-const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
-mongoose.set('bufferCommands', false); // temporary
-// const uri = 'mongodb://127.0.0.1/executions';
-mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-    .then(() => console.log("Successful MongoDB connection."));
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-const executionSchema = new mongoose.Schema({
-    date: Date,
-    network: String
-});
-const Execution = mongoose.model("Execution", executionSchema);
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -98,54 +85,12 @@ const execAsync = (cmd) => {
 
 app.get('/', function (req, res) { // why "/*"?
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
-
 });
-
-/*
-app.get('/file_upload', ...);
-
-app.get('/modules', ...);
-* */
 
 app.get("/aggregated-usage", async (req, res, next) => {
     // aggregate
     console.log("Aggregating");
-    // [...Array(5).keys()].map(_ => Execution.create({ date: new Date(), network: "dip.sif"}));
-    // [...Array(10).keys()].map(_ => Execution.create({ date: `10/${_}/21`, network: "huri.sif"}));
-    // [...Array(15).keys()].map(_ => Execution.create({ date: `11/${_}/21`, network: "string.sif"}));
-
-    let totalExecutions = Execution.aggregate([
-        {
-            $group: {
-                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
-                count: { $sum: 1 },
-            }
-        }
-    ]);
-
-    let networkUsage = Execution.aggregate([
-        {
-            $group: {
-                _id: "$network",
-                count: { $sum: 1 }
-            }
-        }
-    ]);
-
-    let monthlyUsageWithNetworks = Execution.aggregate([
-        {
-            $group: {
-                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
-                networks: {
-                    _id: "$network",
-                    count: { $sum: 1 }
-                }
-            }
-        }
-    ]);
-
-    [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await Promise.all([totalExecutions, networkUsage, monthlyUsageWithNetworks]);
-
+    const [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();
     console.log("Done aggregating");
     res.json({
         totalExecutions: totalExecutions,
@@ -317,12 +262,9 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 zip -r "${customFile}.zip" "${customFile}"`
             );
 
-            const logExec = Execution.create({
-                date: new Date(),
-                network: (cachedNetworkFile) ?
-                    userFileNames["Network file"]
-                    : ""
-            });
+            const logExec = addExecution((cachedNetworkFile) ?
+                userFileNames["Network file"]
+                : "");
 
             return Promise.all([rmCachedFiles, zipFiles, logExec]);
         })
