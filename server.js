@@ -22,7 +22,8 @@ const {
 } = require("./utils.js");
 const {
     addExecution,
-    aggregateExecutions
+    aggregateExecutions,
+    createDummyValues
 } = require("./db_helper.js");
 
 const errorMsgs=require("./errors.js")
@@ -88,10 +89,21 @@ app.get('/', function (req, res) { // why "/*"?
 });
 
 app.get("/aggregated-usage", async (req, res, next) => {
+    // await createDummyValues();
+
     // aggregate
     console.log("Aggregating");
-    const [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();
+    let [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();
     console.log("Done aggregating");
+
+    // post processing
+    networkUsage = networkUsage.map((usage) => {
+        return {
+            network: usage._id,
+            freq: usage.freq
+        };
+    });
+
     res.json({
         totalExecutions: totalExecutions,
         networkUsage: networkUsage,

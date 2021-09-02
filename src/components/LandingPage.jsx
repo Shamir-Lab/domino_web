@@ -1,5 +1,31 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
+import {
+    Jumbotron,
+    Carousel,
+    Container,
+    Row,
+    Col,
+    Button,
+    Card,
+    Navbar,
+    Nav
+} from "react-bootstrap";
+import {
+    BarChart,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Label,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    Bar
+} from "recharts";
 import Collapsible from 'react-collapsible';
+import axios from "axios";
 
 import {
     DOMINOExecutions,
@@ -10,21 +36,6 @@ import {
     networkFrequency,
     dominoFrequency
 } from "./public/freq.js"
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import "bootstrap/dist/css/bootstrap.css";
-import "react-combo-select/style.css";
-import 'font-awesome/css/font-awesome.min.css';
-
-import dominoLogo from "./resources/DOMINO_logo.png";
-import {
-    DeveloperCreditsCard,
-    ResearchGroupCard,
-    CitationCard,
-    RepositoriesCard,
-    SpecialCreditsCard,
-    ContactAndIssuesCard 
-} from "./InfoCards.jsx";
 
 import {
     left_inner_block,
@@ -41,43 +52,39 @@ import {
     card_close
 } from "./css/landing_page.module.css";
 import "./css/collapsible.scss";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.css";
+import "react-combo-select/style.css";
+import 'font-awesome/css/font-awesome.min.css';
+
+import dominoLogo from "./resources/DOMINO_logo.png";
 
 import {
-    Jumbotron,
-    Carousel,
-    Container,
-    Row,
-    Col,
-    Button,
-    Card,
-    Navbar,
-    Nav
-} from "react-bootstrap";
-
-import {
-    BarChart,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    Label,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    Tooltip,
-    Legend,
-    Bar
-} from "recharts";
+    DeveloperCreditsCard,
+    ResearchGroupCard,
+    CitationCard,
+    RepositoriesCard,
+    SpecialCreditsCard,
+    ContactAndIssuesCard 
+} from "./InfoCards.jsx";
 
 const LandingPage = ({history}) => {
 
     const [details, setDetails] = useState("");
+    const [networkUsage, setNetworkUsage] = useState([]);
 
     const showDetails = (newDetails) => {
         details == newDetails ? setDetails("") : setDetails(newDetails)
     }
 
-    // DOMINO Executions
+    useEffect(() => {
+        axios
+            .get("/aggregated-usage")
+            .then((res) => {
+                setNetworkUsage(res.data.networkUsage);
+            });
+    }, []);
+
     const BarTotalFeatureUsage = (attr, data) => {
         return (
             <Row style={{margin: "25px 0px 25px 50px"}}>
@@ -117,8 +124,6 @@ const LandingPage = ({history}) => {
     };
 
     const getCard = (cardDetail) => {
-
-
         switch (cardDetail) {
             case "developerCredits":
                 return (<DeveloperCreditsCard cardStatus={details==="developerCredits"}/>);
@@ -132,39 +137,6 @@ const LandingPage = ({history}) => {
                 return (<ContactAndIssuesCard cardStatus={details=="contact"}/>);
         }
     };
-
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-    const RADIAN = Math.PI / 180;
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-        return (
-            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                {`${(percent * 100).toFixed(0)}%`}
-            </text>
-        );
-    };
-
-    const data01 = [
-        { name: 'Group A', value: 400 },
-        { name: 'Group B', value: 300 },
-        { name: 'Group C', value: 300 },
-        { name: 'Group D', value: 200 },
-        { name: 'Group E', value: 278 },
-        { name: 'Group F', value: 189 },
-    ];
-
-    const data02 = [
-        { name: 'Group A', value: 2400 },
-        { name: 'Group B', value: 4567 },
-        { name: 'Group C', value: 1398 },
-        { name: 'Group D', value: 9800 },
-        { name: 'Group E', value: 3908 },
-        { name: 'Group F', value: 4800 },
-    ];
 
     return (
         <>
@@ -278,7 +250,7 @@ const LandingPage = ({history}) => {
                                         dataKey="freq"
                                         nameKey="network"
                                         isAnimationActive={false}
-                                        data={networkFrequency}
+                                        data={networkUsage}
                                         cx="50%"
                                         cy="50%"
                                         outerRadius={80}

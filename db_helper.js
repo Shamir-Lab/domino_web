@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 /** Database setup */
-const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
-mongoose.set('bufferCommands', false); // temporary
-// const uri = 'mongodb://127.0.0.1/executions';
+// const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
+// mongoose.set('bufferCommands', false); // temporary
+const uri = 'mongodb://127.0.0.1/executions';
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => console.log("Successful MongoDB connection."));
 const db = mongoose.connection;
@@ -36,7 +36,7 @@ const aggregateExecutions = async () => {
         {
             $group: {
                 _id: "$network",
-                count: { $sum: 1 }
+                freq: { $sum: 1 }
             }
         }
     ]);
@@ -63,12 +63,13 @@ const aggregateExecutions = async () => {
 
 const createDummyValues = async () => {
     return Promise.all([...Array(5).keys()].map(_ => Execution.create({ date: new Date(), network: "dip.sif"})).concat(
-        [...Array(10).keys()].map(_ => Execution.create({ date: `10/${_}/21`, network: "huri.sif"})),
-        [...Array(15).keys()].map(_ => Execution.create({ date: `11/${_}/21`, network: "string.sif"}))
+        [...Array(10).keys()].map(_ => Execution.create({ date: `10/${_ + 1}/21`, network: "huri.sif"})),
+        [...Array(15).keys()].map(_ => Execution.create({ date: `11/${_ + 1}/21`, network: "string.sif"}))
     ));
 };
 
 module.exports = {
     addExecution,
-    aggregateExecutions
+    aggregateExecutions,
+    createDummyValues
 };

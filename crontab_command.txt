@@ -1,1 +1,0 @@
-00 * * * * cd /specific/netapp5/gaga/guests/nimsi/domino_web/ && bash file_delete.sh
