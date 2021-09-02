@@ -6,12 +6,10 @@ const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const { exec } = require("child_process");
 const fs = require("fs");
-
 const timeout = require("connect-timeout");
 // const ncp = require("ncp").ncp;
 // const cors = require("cors");
 
-const util = require('util');
 const {
     dominoPostProcess,
     separateActiveGenes,
@@ -25,11 +23,9 @@ const {
     aggregateExecutions,
     createDummyValues
 } = require("./db_helper.js");
-
 const errorMsgs=require("./errors.js")
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
-const freqData = require("./src/components/public/freq.js");
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -89,8 +85,6 @@ app.get('/', function (req, res) { // why "/*"?
 });
 
 app.get("/aggregated-usage", async (req, res, next) => {
-    // await createDummyValues();
-
     // aggregate
     console.log("Aggregating");
     let [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();

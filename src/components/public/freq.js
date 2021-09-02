@@ -1,3 +1,0 @@
-module.exports.networkFrequency = [{"network": "dip.sif", "freq": 127}, {"network": "huri.sif", "freq": 111}, {"network": "string.sif", "freq": 106}];
-module.exports.dominoFrequency = {"monthly": [{"time": "2021-01-31", "freq": 28}, {"time": "2021-02-28", "freq": 28}, {"time": "2021-03-31", "freq": 28}, {"time": "2021-04-30", "freq": 28}, {"time": "2021-05-31", "freq": 28}, {"time": "2021-06-30", "freq": 28}, {"time": "2021-07-31", "freq": 32}, {"time": "2021-08-31", "freq": 33}, {"time": "2021-09-30", "freq": 28}, {"time": "2021-10-31", "freq": 28}, {"time": "2021-11-30", "freq": 28}, {"time": "2021-12-31", "freq": 28}], "total": 345};
-module.exports.lastAggregation = "2021-08-20 03:20:29.839915";

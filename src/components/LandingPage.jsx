@@ -30,12 +30,7 @@ import axios from "axios";
 import {
     DOMINOExecutions,
     gitClones
-} from './public/plotting.js';
-
-import {
-    networkFrequency,
-    dominoFrequency
-} from "./public/freq.js"
+} from './public/plotting.js'; // TODO: need to replace this. afterwards, delete this file.
 
 import {
     left_inner_block,
@@ -72,6 +67,9 @@ const LandingPage = ({history}) => {
 
     const [details, setDetails] = useState("");
     const [networkUsage, setNetworkUsage] = useState([]);
+    // TODO: use this variable to plot domino executions.
+    // TODO: this will replace the current DOMINOExecutions variable which comes from plotting.js
+    const [DOMINOExecutions__, setDOMINOExecutions] = useState([]);
 
     const showDetails = (newDetails) => {
         details == newDetails ? setDetails("") : setDetails(newDetails)
@@ -82,6 +80,7 @@ const LandingPage = ({history}) => {
             .get("/aggregated-usage")
             .then((res) => {
                 setNetworkUsage(res.data.networkUsage);
+                setDOMINOExecutions(res.data.monthlyUsageWithNetworks);
             });
     }, []);
 
