@@ -1,20 +1,20 @@
 const mongoose = require('mongoose');
 
 /** Database setup */
-// const uri = "mongodb+srv://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
-// mongoose.set('bufferCommands', false); // temporary
 const uri = 'mongodb://127.0.0.1/executions';
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => console.log("Successful MongoDB connection."));
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+/** Define database structure. */
 const executionSchema = new mongoose.Schema({
     date: Date,
     network: String
 });
 const Execution = mongoose.model("Execution", executionSchema);
 
+/** Define public functions */
 const addExecution = async (network) => {
     return Execution.create({
         date: new Date(),

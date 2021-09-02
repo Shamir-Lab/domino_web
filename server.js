@@ -154,7 +154,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     }
 
     const sliceNetworkFile = execAsync(
-        `bash slicer_runner.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
+        `bash runners/slicer.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
     );
 
     const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
@@ -203,7 +203,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
-        localExecution=`bash domino_runner.sh ${cmdArgs}`
+        localExecution=`bash runners/domino.sh ${cmdArgs}`
         try {
             if (conf.REMOTE_EXECUTION){            
                 console.log("About to start remote execution")
