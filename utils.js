@@ -30,6 +30,7 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
 
     let nw = new String(networkFileData);
     let nw_edges = nw
+    //console.log(`nw: ${nw}`)
         .trim()
         .split("\n")
         .map(cur => {
@@ -37,6 +38,8 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
             x.splice(1, 1);
             return x;
         });
+
+    //console.log(`nw_edges: ${nw_edges}`)
 
     let edges = [];
     for (var i = 0; i < nw_edges.length; i++) {

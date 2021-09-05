@@ -29,6 +29,18 @@ const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
 const freqData = require("./src/components/public/freq.js");
 
+const mongoose = require('mongoose');
+
+/** Database setup */
+//const uri = "mongodb://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
+//mongoose.set('bufferCommands', false); // temporary
+//const uri = 'mongodb://127.0.0.1/executions';
+//mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+//    .then(() => console.log("Successful MongoDB connection."));
+//const db = mongoose.connection;
+//db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -239,6 +251,20 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 ...obj,
                 [setName]: Object.keys(algOutputs[setName].modules).length
             }), {});
+
+
+            console.log(JSON.stringify({
+                algOutput: algOutputs,
+                ...((req.body["fromWebExecutor"] === "true") ?
+                        {webDetails: {
+                            geneSets: geneSets,
+                            customFile: customFile,
+                            zipURL: `${customFile}.zip`,
+                        }}
+                        : {}
+                )
+            }));
+
 
             res.json({
                 algOutput: algOutputs,
