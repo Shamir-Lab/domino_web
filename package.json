@@ -32,7 +32,7 @@
     "js-cookie": "^2.2.1",
     "mkdir-recursive": "^0.4.0",
     "mongodb": "^4.0.1",
-    "mongoose": "^5.13.5",
+    "mongoose": "^5.13.7",
     "morgan": "^1.10.0",
     "ncp": "^2.0.0",
     "node-pre-gyp": "^0.17.0",
@@ -52,6 +52,7 @@
     "recharts": "^2.0.10",
     "sass": "^1.35.2",
     "styled-components": "^4.0.0",
+    "util-promisifyall": "^1.0.6",
     "web-vitals": "^1.1.0"
   },
   "scripts": {

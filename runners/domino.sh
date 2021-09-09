@@ -27,9 +27,15 @@ source "${ami_plugins_python_env}/bin/activate"
 echo GO enrichment
 mkdir "${dominoRunDirectory}/go"
 
+n_chars=$(wc -m "${output_folder}/modules.out" | cut -d ' '  -f 1)
+
+if [[ $n_chars -eq 0 ]]; then
+    exit
+fi
+
 go_enrichment --tested_genes "${output_folder}/modules.out" --background_genes "${network_file_path}" --qval_th 0.05 --output_folder "${dominoRunDirectory}/go"
 
-n_modules=$(wc -l "${output_folder}/modules.out" | cut -d ' '  -f 1)
+n_modules=$(cat "${output_folder}/modules.out" | grep -c '')
 n_modules=$(($n_modules-1))
 echo "num modules $n_modules"
 

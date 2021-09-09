@@ -16,7 +16,8 @@ const {
     draftSessionDirectoryDetails,
     hasNonAlphaNumericChars,
     hasExpectedFileExtension,
-    formatDate
+    formatDate,
+    convert2Ensg
 } = require("./utils.js");
 const {
     addExecution,
@@ -26,6 +27,18 @@ const {
 const errorMsgs=require("./errors.js")
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
+
+const mongoose = require('mongoose');
+
+/** Database setup */
+//const uri = "mongodb://nimsi:H9mEnJNgwLYeRqm6@cluster0.fj8em.mongodb.net/executions?retryWrites=true&w=majority";
+//mongoose.set('bufferCommands', false); // temporary
+//const uri = 'mongodb://127.0.0.1/executions';
+//mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+//    .then(() => console.log("Successful MongoDB connection."));
+//const db = mongoose.connection;
+//db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
@@ -151,10 +164,15 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         `bash runners/slicer.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
     );
 
-    const activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
+    let activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
     const setNames = Object.keys(activeGenesSet);
     const isInvalidActiveGeneSetNames=Object.values(setNames).reduce((agg,cur)=>{return agg || hasNonAlphaNumericChars(cur)}, false);
-       if (isInvalidActiveGeneSetNames){
+    if (cachedNetworkFile){
+        activeGenesSet = convert2Ensg(activeGenesSet);
+        console.log(activeGenesSet)
+    }
+
+    if (isInvalidActiveGeneSetNames){
            res.status(400).send(errorMsgs.invalidAlphaNumericSetName);
        return;
    }
@@ -218,6 +236,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         
         console.log(`DOMINO post process on set ${setName} ...`);
+        console.log("modules --> ", algOutput.modules);
         console.log("numModules --> ", Object.keys(algOutput.modules).length);
         return {[setName]: algOutput};
     };
@@ -244,6 +263,20 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 ...obj,
                 [setName]: Object.keys(algOutputs[setName].modules).length
             }), {});
+
+
+            console.log(JSON.stringify({
+                algOutput: algOutputs,
+                ...((req.body["fromWebExecutor"] === "true") ?
+                        {webDetails: {
+                            geneSets: geneSets,
+                            customFile: customFile,
+                            zipURL: `${customFile}.zip`,
+                        }}
+                        : {}
+                )
+            }));
+
 
             res.json({
                 algOutput: algOutputs,
