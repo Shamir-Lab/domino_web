@@ -1,10 +1,6 @@
-const promisifyAll = require('util-promisifyall');
-const util = require('util');
 const fs = require("fs");
-
 const conf = require("./config.js").conf;
 const dictionaries = require("./dictionaries.js");
-const readFile = util.promisify(fs.readFile);
 
 const dominoPostProcess = (file_output_data, networkFileData) => {
     const py_output = new String(file_output_data);
@@ -158,7 +154,7 @@ const convertEnsemblIdentifier2Ensg = (ensemblIdentifier) => {
 const loadEnsemblDictionaries = async () => {
      
     dictPromises= dictionaries.map(async element => {
-        const elem=await readFile(element);
+        const elem=await fs.promises.readFile(element);
         const dictContent = new String(elem).replace("/\r\n","\n").split("\n"); 
         dict={}
         for (let i=0; i<dictContent.length;i++){
