@@ -26,12 +26,6 @@ import {
 } from "recharts";
 import Collapsible from 'react-collapsible';
 import axios from "axios";
-
-import {
-    DOMINOExecutions,
-    gitClones
-} from './public/plotting.js'; // TODO: need to replace this. afterwards, delete this file.
-
 import {
     left_inner_block,
     right_inner_block,
@@ -43,6 +37,7 @@ import {
     hover_shadow,
     card,
     circle,
+    network_sum,
     card_open,
     card_close
 } from "./css/landing_page.module.css";
@@ -69,7 +64,11 @@ const LandingPage = ({history}) => {
     const [networkUsage, setNetworkUsage] = useState([]);
     // TODO: use this variable to plot domino executions.
     // TODO: this will replace the current DOMINOExecutions variable which comes from plotting.js
-    const [DOMINOExecutions__, setDOMINOExecutions] = useState([]);
+    const [DOMINOExecutions, setDOMINOExecutions] = useState([]);
+    const [gitStatistics, setGitStatistics] = useState([]);
+//    const [biocondaStatistics, setBiocondaStatistics] = useState([]);
+//    const [pypiStatistics, setPypiStatistics] = useState([]);
+    const [packageManagersStatistics, setPackageManagersStatistics] = useState([]);
 
     const showDetails = (newDetails) => {
         details == newDetails ? setDetails("") : setDetails(newDetails)
@@ -79,17 +78,95 @@ const LandingPage = ({history}) => {
         axios
             .get("/aggregated-usage")
             .then((res) => {
-                setNetworkUsage(res.data.networkUsage);
-                setDOMINOExecutions(res.data.monthlyUsageWithNetworks);
+                setNetworkUsage(res.data.networkExecutions);
+                setDOMINOExecutions({total: res.data.totalExecutions.total, monthly: res.data.monthlyExecutionsByNetworks.sort((a,b) => {let yearDiff=a._id.year - b._id.year; if (yearDiff !== 0) {return yearDiff}; return a._id.month-b._id.month}).map(a =>{ a["date"]=a._id.month+ "\\"+a._id.year; a["date"]=a._id.month+ "\\"+a._id.year; return a;})});
+
+                setGitStatistics({yearly: [{type: "clones",  freq : res.data.yearlyGit.clones}, {type: "traffic" , freq : res.data.yearlyGit.traffic}], monthly: res.data.monthlyGit.sort((a,b) => {let yearDiff=a._id.year - b._id.year; if (yearDiff !== 0) {return yearDiff}; return a._id.month-b._id.month}).map(a =>{ a["date"]=a._id.month+ "\\"+a._id.year; a["date"]=a._id.month+ "\\"+a._id.year; return a;})});
+
+                let biocondaStatistics={yearly: [{type: "downloads",  freq : res.data.yearlyBioconda.downloads}], monthly: res.data.monthlyBioconda.sort((a,b) => {let yearDiff=a._id.year - b._id.year; if (yearDiff !== 0) {return yearDiff}; return a._id.month-b._id.month}).map(a =>{ a["date"]=a._id.month+ "\\"+a._id.year; a["type"]="bioconda"; return a;})};
+                let pypiStatistics={yearly: [{type: "downloads",  freq : res.data.yearlyPypi.downloads}], monthly: res.data.monthlyPypi.sort((a,b) => {let yearDiff=a._id.year - b._id.year; if (yearDiff !== 0) {return yearDiff}; return a._id.month-b._id.month}).map(a =>{ a["date"]=a._id.month+ "\\"+a._id.year; a["type"]="pypi"; return a;})};
+
+                
+                
+                let mergedMonthlyPM=biocondaStatistics.monthly.concat(pypiStatistics.monthly).reduce((a,b) => {if (b["date"] in a){a[b["date"]][b["type"]]=b["downloads"]} else {a[b["date"]]={date: b["date"], [b["type"]] : b["downloads"]}}; return a;}, {} )
+                let monthlyPMDownloads=[]
+                for (var key in mergedMonthlyPM) {
+                    monthlyPMDownloads.push(mergedMonthlyPM[key])
+                } 
+
+                setPackageManagersStatistics({yearly: [{type: "bioconda", freq: biocondaStatistics.yearly[0].freq}, {type: "pypi", freq: pypiStatistics.yearly[0].freq}], monthly: monthlyPMDownloads })
             });
     }, []);
 
-    const BarTotalFeatureUsage = (attr, data) => {
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+    const DOMINOExecutionsViewer = (attr, data, network_dist=[]) => {
         return (
             <Row style={{margin: "25px 0px 25px 50px"}}>
                 <Col xs={8}>
                     <p
-                        style={{textAlign: "center", fontSize: "18px", color: "white"}}
+                        style={{textAlign: "center", fontSize: "22px", color: "white"}}
+                    >
+                        Monthly {attr}
+                    </p>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        margin={{left: 10, bottom: 30}}
+                        data={data.monthly}
+                        style={{marginLeft: 'auto', marginRight: 'auto'}}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke='white'/>
+                        <XAxis
+                            dataKey="date"
+                            label={{value: 'Date', position: 'bottom', fill: 'white'}}
+                            tick={{ fill: 'white' }} 
+                        ></XAxis>
+                        <YAxis
+                            label={{value: 'Frequency', angle: -90, position: 'left', fill: 'white'}}
+                            tick={{ fill: 'white' }}
+                        />
+                        <Legend wrapperStyle={{ position: 'relative' }}/>
+                        <Tooltip/>
+                        {network_dist.map((entry, index) => (
+                                    <Bar dataKey={entry.network} stackId="a" fill={COLORS[index % COLORS.length]} /> ))}
+                    </BarChart>
+                </Col>
+                { network_dist.length ?  
+                <Col>
+                    <p style={{fontSize: '22px', width: '250px', textAlign: 'center', color: 'white'}}>{attr} this year</p> 
+                    <PieChart width={250} height={250}>
+                                    <Pie
+                                        dataKey="freq"
+                                        nameKey="network"
+                                        isAnimationActive={true}
+                                        data={network_dist}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        fill="#007bff"
+                                        label
+                                    >
+                                    {network_dist.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
+                                    <Label className={network_sum} value={data.total} position="center" />
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                </Col>
+                : <></> }
+            </Row>
+        );
+    };
+
+    const gitStatisticsViewer = (attr, data) => {
+        return (
+            <Row style={{margin: "25px 0px 25px 50px"}}>
+                <Col xs={8}>
+                    <p
+                        style={{textAlign: "center", fontSize: "22px", color: "white"}}
                     >
                         Monthly {attr}
                     </p>
@@ -111,18 +188,93 @@ const LandingPage = ({history}) => {
                             tick={{ fill: 'white' }}
                         />
                         <Tooltip/>
-                        <Bar dataKey="freq" fill="#007bff"/> {/*80bdff*/}
-                    </BarChart>
-                </Col>
+                        <Legend wrapperStyle={{ position: 'relative' }} />
+                        <Bar dataKey="clones" fill={COLORS[0]} />
+                        <Bar dataKey="traffic" fill={COLORS[1]} />
+                   </BarChart>
+                </Col>  
                 <Col>
-                    <div className={circle}>{data.total}</div>
-                    <p style={{fontSize: '22px', width: '180px', textAlign: 'center', color: 'white'}}>{attr} this year</p>
+                    <p style={{fontSize: '22px', width: '250px', textAlign: 'center', color: 'white'}}>{attr} this year</p> 
+                    <PieChart width={250} height={250}>
+                                    <Pie
+                                        dataKey="freq"
+                                        nameKey="type"
+                                        isAnimationActive={true}
+                                        data={data.yearly}
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={80}
+                                        fill="#007bff"
+                                        label
+                                    >
+                                    <Cell key={`cell-0`} fill={COLORS[0]} /> ))}
+                                    <Cell key={`cell-1`} fill={COLORS[1]} /> ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
                 </Col>
             </Row>
         );
     };
 
-    const getCard = (cardDetail) => {
+    const packageManagersStatisticsViewer = (attr, data) => {
+        return (
+            <Row style={{margin: "25px 0px 25px 50px"}}>
+                <Col xs={8}>
+                    <p
+                        style={{textAlign: "center", fontSize: "22px", color: "white"}}
+                    >
+                        Monthly {attr}
+                    </p>
+                    <BarChart
+                        width={800}
+                        height={300}
+                        margin={{left: 10, bottom: 30}}
+                        data={data.monthly}
+                        style={{marginLeft: 'auto', marginRight: 'auto'}}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke='white'/>
+                        <XAxis
+                            dataKey="date"
+                            label={{value: 'Date', position: 'bottom', fill: 'white'}}
+                            tick={{ fill: 'white' }} 
+                        ></XAxis>
+                        <YAxis
+                            label={{value: 'Frequency', angle: -90, position: 'left', fill: 'white'}}
+                            tick={{ fill: 'white' }}
+                        />
+                        <Tooltip/>
+                        <Legend wrapperStyle={{ position: 'relative' }} />
+                        <Bar dataKey="bioconda" fill={COLORS[0]} />
+                        <Bar dataKey="pypi" fill={COLORS[1]} />
+                   </BarChart>
+                </Col>  
+                <Col>
+                    <p style={{fontSize: '22px', width: '250px', textAlign: 'center', color: 'white'}}>{attr} this year</p> 
+                    <PieChart width={250} height={250}>
+                                    <Pie
+                                        dataKey="freq"
+                                        nameKey="type"
+                                        isAnimationActive={true}
+                                        data={data.yearly}
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={80}
+                                        fill="#007bff"
+                                        label
+                                    >
+                                    <Cell key={`cell-0`} fill={COLORS[0]} /> ))}
+                                    <Cell key={`cell-1`} fill={COLORS[1]} /> ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                </Col>
+            </Row>
+        );
+    };
+   const getCard = (cardDetail) => {
         switch (cardDetail) {
             case "developerCredits":
                 return (<DeveloperCreditsCard cardStatus={details==="developerCredits"}/>);
@@ -163,8 +315,7 @@ const LandingPage = ({history}) => {
 
                         <p className="small_text"
                            style={{color: "#707070", textAlign: "center"}}>
-                            DOMINO is an algorithm for detecting active network <br></br>
-                            modules with a low rate of false GO term calls.
+                            DOMINO receives sets of active genes and reports connected subnetworks that are enriched for active genes. <br/><br/>
                         </p>
                     </Jumbotron>
 
@@ -200,7 +351,7 @@ const LandingPage = ({history}) => {
                 >
                     <p>Our motivation to develop <a href="https://github.com/Shamir-Lab/DOMINO" target="_blank">DOMINO</a> came from a phenomenon we observed on multiple active module identification (AMI) algorithms.</p>
                     <p>AMI algorithms receive as input a gene network and nodes' activity scores, and report sub-networks (modules) that are putatively biologically active. The biological meaning of such modules is usually explored via functional/enrichment analysis, commonly done against well-established resources such as the Gene Ontology (GO). </p>
-                    <p>We observed that very often GO terms enriched in modules detected by AMI methods are also enriched when the AMI algorithms are ran on randomly permuted  data.</p>
+                    <p>We observed that very often GO terms enriched in modules detected by AMI methods are also enriched when the AMI algorithms are run on randomly permuted  data.</p>
                     <p>To tackle this bias, we designed the <a href="https://github.com/Shamir-Lab/EMP" target="_blank"> EMpirical
                         pipeline (EMP)</a>, a method that evaluates the empirical significance of GO terms reported as
                         enriched in modules.</p>
@@ -227,38 +378,16 @@ const LandingPage = ({history}) => {
                 </Collapsible>
 
                 <>
-                    <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO statistics</h1>
+                    <h1 style={{textAlign: "center", margin: '40px 0px 40px 0px'}}>DOMINO in numbers</h1>
                     <Carousel className="bg-dark">
                         <Carousel.Item>
-                            {BarTotalFeatureUsage("DOMINO Execution Frequency", DOMINOExecutions)}
+                            {DOMINOExecutionsViewer("DOMINO Execution Frequency", DOMINOExecutions, networkUsage)}
                         </Carousel.Item>
                         <Carousel.Item>
-                            {BarTotalFeatureUsage("Git Clone Execution Frequency", gitClones)}
+                            {gitStatisticsViewer("Git activity", gitStatistics)}
                         </Carousel.Item>
                         <Carousel.Item>
-                            <p
-                                style={{textAlign: "center", fontSize: "18px", color: "white"}}
-                            >
-                                Relative Frequency of Available Network File Usage
-                            </p>
-                            <div
-                                style={{marginLeft: "450px"}}
-                            >
-                                <PieChart width={400} height={400}>
-                                    <Pie
-                                        dataKey="freq"
-                                        nameKey="network"
-                                        isAnimationActive={false}
-                                        data={networkUsage}
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={80}
-                                        fill="#007bff"
-                                        label
-                                    />
-                                    <Tooltip />
-                                </PieChart>
-                            </div>
+                            {packageManagersStatisticsViewer("Downloads from package managers", packageManagersStatistics)}
                         </Carousel.Item>
                     </Carousel>
                 </>

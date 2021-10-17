@@ -56,14 +56,14 @@ const Modules = (props) => {
 	// Being on the visualization page, we guarantee that we have modules to display
 	let firstSetName;
 	for (const setName of Object.keys(geneSets)) {
-		if (geneSets[setName] != 0) {
+		if (geneSets[setName] != 1) {
 			firstSetName = setName;
 			break;
 		}
 	}
 	const [selectedModuleFeatures, setSelectedModuleFeatures] = useState({
 		setName: firstSetName,
-		moduleNum: 0,
+		moduleNum: 1,
 	});
 	const [collapse, setCollapse] = useState(false);
 
@@ -185,12 +185,12 @@ const Modules = (props) => {
 																		setName:
 																			setName,
 																		moduleNum:
-																			index,
+																			index+1,
 																	}
 																)
 															}
 														>
-															module {index}
+															module {index+1}
 														</a>
 													</MenuItem>
 												)

@@ -14,7 +14,7 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
             continue;
         }
         cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
-        module_to_genes[i] = cur_module;
+        module_to_genes[i+1] = cur_module;
         nodes=nodes.concat(cur_module);
     }
     let module_to_genes_arr = [];

@@ -22,6 +22,9 @@ const {
 const {
     addExecution,
     aggregateExecutions,
+    aggregateGit,
+    aggregateBioconda,
+    aggregatePypi,
     createDummyValues
 } = require("./db_helper.js");
 const errorMsgs=require("./errors.js")
@@ -100,11 +103,17 @@ app.get('/', function (req, res) { // why "/*"?
 app.get("/aggregated-usage", async (req, res, next) => {
     // aggregate
     console.log("Aggregating");
-    let [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();
+    let [totalExecutions, networkExecutions, monthlyExecutionsByNetworks] = await aggregateExecutions();
+    let [yearlyGit, monthlyGit] = await aggregateGit();
+    let [yearlyBioconda, monthlyBioconda] = await aggregateBioconda();
+    let [yearlyPypi, monthlyPypi] = await aggregatePypi();
+
+    console.log(yearlyPypi)
+    console.log(monthlyPypi)
     console.log("Done aggregating");
 
     // post processing
-    networkUsage = networkUsage.map((usage) => {
+    networkExecutions = networkExecutions.map((usage) => {
         return {
             network: usage._id,
             freq: usage.freq
@@ -112,9 +121,15 @@ app.get("/aggregated-usage", async (req, res, next) => {
     });
 
     res.json({
-        totalExecutions: totalExecutions,
-        networkUsage: networkUsage,
-        monthlyUsageWithNetworks: monthlyUsageWithNetworks
+        totalExecutions: totalExecutions[0],
+        networkExecutions: networkExecutions,
+        monthlyExecutionsByNetworks: monthlyExecutionsByNetworks,
+        yearlyGit: yearlyGit[0],
+        monthlyGit: monthlyGit,
+        yearlyBioconda: yearlyBioconda[0],
+        monthlyBioconda: monthlyBioconda,
+        yearlyPypi: yearlyPypi[0],
+        monthlyPypi: monthlyPypi
     });
 
     res.end();
@@ -312,15 +327,6 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             res.status(400).send(errorMsgs.nonSpecific);
         })
         .then(_ => res.end());
-});
-
-app.post("/getHTML", timeout("10m"), (req, res, next) => {
-  console.log(req.body["filename"]);
-  fs.readFile("public/"+req.body["filename"], function(err, data) {
-    inner_html=new String(data);
-    res.json({ inner_html: inner_html});
-    res.end();
-  });
 });
 
 app.use((err, req, res, next) => {

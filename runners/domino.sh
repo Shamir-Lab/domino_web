@@ -36,13 +36,13 @@ fi
 go_enrichment --tested_genes "${output_folder}/modules.out" --background_genes "${network_file_path}" --qval_th 0.05 --output_folder "${dominoRunDirectory}/go"
 
 n_modules=$(cat "${output_folder}/modules.out" | grep -c '')
-n_modules=$(($n_modules-1))
+n_modules=$(($n_modules))
 echo "num modules $n_modules"
 
 echo visualize modules 
 
 declare -a pids=();
-for i in $(seq 0 $n_modules); 
+for i in $(seq 1 $n_modules); 
 do
     echo $i
     visualize_module --module_file_name "${dominoRunDirectory}/go/module_genes_${i}.txt" --active_genes_file_name "${active_genes_file_path}" --network_file_name "${network_file_path}" --go_file_name "${dominoRunDirectory}/go/module_go_${i}.tsv" --output_folder "${output_folder}" & pids+=($!)
