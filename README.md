@@ -1,6 +1,6 @@
 # DOMINO webinized - Finding active modules has never been easier!
 
-DOMINO as a web-based service is avaliable [here](http://rack-shamir3.cs.tau.ac.il:8000/) (only via TAU VPN).
+DOMINO as a web-based service is avaliable [here](http://domino.cs.tau.ac.il/).
 
 The original standalone version of DOMINO is available [here](https://github.com/Shamir-Lab/DOMINO)
 
@@ -30,10 +30,4 @@ const conf_server = {
 
 ## Run an analysis from a running website: 
 
-### To find active modules you need:
-* Active gene file: tab-delimited A line-separated list of genes. 
-* Network file: A tab-delimited sif formatted file. The file should have only two genes per row, where the first row is the header of the file.
-
-In both files the gene identifiers are Ensembl ids. 
-
-Njoy! :)
+### See instruction on [DOMINO website](http://domino.cs.tau.ac.il/)
