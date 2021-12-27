@@ -31,4 +31,3 @@ const conf_server = {
 ## Run an analysis from a running website: 
 
 ### See instruction on [DOMINO website](http://domino.cs.tau.ac.il/)
-
