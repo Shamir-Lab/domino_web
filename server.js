@@ -96,10 +96,6 @@ const execAsync = (cmd) => {
     });
 }
 
-app.get('/', function (req, res) { // why "/*"?
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
 app.get("/aggregated-usage", async (req, res, next) => {
     // aggregate
     console.log("Aggregating");
@@ -135,7 +131,7 @@ app.get("/aggregated-usage", async (req, res, next) => {
     res.end();
 });
 
-app.post("/upload", timeout("10m"), (req, res, next) => {
+app.post("/upload", timeout("20m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
     // create session directory (within the public folder)
@@ -316,9 +312,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 zip -r "${customFile}.zip" "${customFile}"`
             );
 
-            const logExec = addExecution((cachedNetworkFile) ?
-                userFileNames["Network file"]
-                : "");
+            const logExec = addExecution(userFileNames["Network file"], !cachedNetworkFile);
 
             return Promise.all([rmCachedFiles, zipFiles, logExec]);
         })
@@ -328,6 +322,11 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         })
         .then(_ => res.end());
 });
+
+app.get('/*', function (req, res) { // why "/*"?
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 
 app.use((err, req, res, next) => {
   // delegate to the default Express error handler, when the headers have already been sent to the client

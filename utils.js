@@ -13,7 +13,8 @@ const dominoPostProcess = (file_output_data, networkFileData) => {
         if (modules_str[i]===''){
             continue;
         }
-        cur_module=modules_str[i].substring(1,modules_str[i].length-2).split(", ");
+       
+        cur_module=modules_str[i].substring(1,modules_str[i].length-1).split(", "); ///fix 230622: originally had "-2" in the substring indices
         module_to_genes[i+1] = cur_module;
         nodes=nodes.concat(cur_module);
     }
@@ -132,19 +133,19 @@ const separateActiveGenes = (fileString) => {
 const convert2Ensg = (activeGenesSet) => {
 
     Object.keys(activeGenesSet).forEach(item => {
-        activeGenesSet[item] = [...new Set(activeGenesSet[item].map(element => convertEnsemblIdentifier2Ensg(element)).filter(element => !!element))];
+        activeGenesSet[item] = [...new Set(activeGenesSet[item].map(element => convertGeneIdentifier2Ensg(element)).filter(element => !!element))];
     }); 
   
    return activeGenesSet
 };
 
-const convertEnsemblIdentifier2Ensg = (ensemblIdentifier) => {
+const convertGeneIdentifier2Ensg = (geneIdentifier) => {
    
-    if (ensemblIdentifier.startsWith("ENSG")){
-        return ensemblIdentifier;
+    if (geneIdentifier.startsWith("ENSG")){
+        return geneIdentifier;
     }
     for (let i=0; i<dicts.length; i++){
-        convertedValue=dicts[i][ensemblIdentifier]
+        convertedValue=dicts[i][geneIdentifier.toUpperCase().trim()]
         if(convertedValue){
             return convertedValue;
         }
@@ -162,7 +163,6 @@ const loadEnsemblDictionaries = async () => {
             if (dictEntry.length !=2){
                 continue           
             }
- 
             dict[dictEntry[0]]=dictEntry[1];
         }
         return dict; 
