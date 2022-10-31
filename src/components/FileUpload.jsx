@@ -23,7 +23,7 @@ import {
 import fileStructure from "./public/files";
 import loading1 from "./resources/loading1.gif";
 import loading2 from "./resources/loading2.gif";
-import { file_upload_steps } from "./resources/tour_instructions.js";
+import { file_upload_steps } from "./public/tour_instructions.js";
 
 /**
  JSON Structures
@@ -94,10 +94,24 @@ const FileUpload = (props) => {
                 (!ref.current.files || ref.current.files.length === 0);
             if (noFileChosen) {
                 goodFiles = false;
-                continue;
+                setFileData((prev) => ({
+                    ...prev,
+                    [file.name]: {
+                        ...prev[file.name],
+                        errorMessage: `No file was chosen for this field`,
+                    },
+                }));
+            } else {
+                setFileData((prev) => ({
+                    ...prev,
+                    [file.name]: {
+                        ...prev[file.name],
+                        errorMessage: ``,
+                    },
+                }));
             }
 
-            if (fileData[file.name].dropdownOption.name !== DROPDOWN_DEFAULT) {
+            if (fileData[file.name].dropdownOption.name !== DROPDOWN_DEFAULT && fileData[file.name].dropdownOption.name !== DROPDOWN_CUSTOM_NETWORK) {
                 continue;
             }
 
@@ -125,9 +139,9 @@ const FileUpload = (props) => {
         }
 
         if (!goodFiles) {
-            setServerErrorResponse(
-                    "Seems like at least one of the input files are missing. Please provide an active gene file and choose/provide a network file"
-                );
+//            setServerErrorResponse(
+//                    "Seems like at least one of the input files are missing. Please provide an active gene file and choose/provide a network file"
+//                );
             console.log(
                 "Delayed \\upload POST request. Files exceed max file size and/or no files inputted."
             );

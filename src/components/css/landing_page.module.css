@@ -54,7 +54,7 @@
 }
 
 .circle {
-    font-size: 40px;
+    font-size: 1em;
     height: 180px;
     width: 180px;
     background-color: #007bff;
@@ -69,7 +69,7 @@
 
 
 .network_sum {
-    font-size: 40px;
+    font-size: 1em;
     height: 180px;
     width: 180px;
     text-align: center;
@@ -87,4 +87,8 @@
   border-color: white;
   overflow: hidden;
   text-align: center;
+}
+
+.recharts-legend-item-text { 
+  font-size: 0.25em; 
 }

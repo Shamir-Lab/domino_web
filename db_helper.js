@@ -11,7 +11,8 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 /** Define database structure. */
 const executionSchema = new mongoose.Schema({
     date: Date,
-    network: String,
+    network_name: String,
+    network_group: String,
 }, {collection : 'executions'});
 const Execution = mongoose.model("Execution", executionSchema);
 
@@ -38,10 +39,12 @@ const Pypi = mongoose.model("Pypi", pypiSchema);
 
 
 /** Define public functions */
-const addExecution = async (network) => {
+const addExecution = async (network, is_custom) => {
+    console.log(is_custom)
     return Execution.create({
         date: new Date(),
-        network: network,
+        network_group: is_custom ? "Loaded by user" :network,
+        network_name: network
     });
 };
 
@@ -172,12 +175,12 @@ const aggregateExecutions = async () => {
     ]);
 
     let networkExecutions = Execution.aggregate([
-        {
+       {
             $group: {
-                _id: "$network",
+                _id: "$network_group",
                 freq: { $sum: 1 },
             },
-        },
+       }
     ]);
 
     let monthlyExecutionsByNetworks = Execution.aggregate([
@@ -186,7 +189,7 @@ const aggregateExecutions = async () => {
                 _id: {
                     year: { $year: "$date" },
                     month: { $month: "$date" },
-                    network: "$network",
+                    network: "$network_group",
                 },
                 count: { $sum: 1 },
             },

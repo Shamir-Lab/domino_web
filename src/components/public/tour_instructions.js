@@ -20,13 +20,13 @@ export const module_steps = [
     {
         selector: '[data-tour="first-step"]',
         content:
-            "Through this navbar you can move between resulting modules. You can find each module under the active gene set from which it was generated.",
+            "Through this navbar you can move between resulting modules. Modules are ranked according their relevance (#1 is the most relevant). You can find each module under the active gene set from which it was generated.",
         position: "bottom",
     },
     {
         selector: '[data-tour="second-step"]',
         content:
-            'This pane show details of the module chosen from the navbar. Here you can see the examine the module as a visulaized graph, see the genes of the module as list (bottom-left table) or overlaid on the network ("show labels on network" button) and GO enrichment analysis (bottom-right table)',
+            'This pane shows details of the module chosen from the navbar. Here you can examine the module as a visualized graph, zoom in and out using shift+scrolling, see the genes of the module as list (bottom-left table) or overlaid on the network ("show labels on network" button) and GO enrichment analysis (bottom-right table)',
         position: "center",
     },
     {

@@ -19,7 +19,7 @@ import "react-pro-sidebar/dist/css/styles.css";
 import "react-combo-select/style.css";
 
 import { ReactComponent as ReactNetworkIcon } from "./resources/network_icon_bright.svg";
-import { module_steps } from "./resources/tour_instructions.js";
+import { module_steps } from "./public/tour_instructions.js";
 
 const Modules = (props) => {
 	/* Unpack props. */
@@ -202,13 +202,13 @@ const Modules = (props) => {
 						</SidebarContent>
 						<SidebarFooter
 							style={{
-								height: "160px",
+								height: "220px",
 								...(collapse
 									? { display: "none" }
 									: { margin: "15px" }),
 							}}
 						>
-							<h4>Analysis Parameters</h4>
+							<div style={{fontSize:"15px"}}>Analysis Parameters</div>
 							<Row>
 								<Col>
 									<label className="col-form-label">
@@ -219,7 +219,6 @@ const Modules = (props) => {
 								<Col>
 									<input
 										type="text"
-										className="form-control"
 										value={fileNames.active_genes}
 										disabled
 									/>
@@ -234,7 +233,6 @@ const Modules = (props) => {
 								<Col>
 									<input
 										type="text"
-										className="form-control"
 										value={fileNames.network}
 										disabled
 									/>
