@@ -16,8 +16,10 @@ To run a domino server perform the following steps:
 ```
 const conf_server = {
   IP_ADDRESS: "your DNS/server IP",
-  PYTHON_ENV: "/path/to/domino-env",
+  DOMINO_PYTHON_ENV: "/path/to/domino-env",
+  AMI_PLUGINS_PYTHON_ENV: "/path/to/AMI-PLUGINS/"
   DOMINO_PATH: "/path/to/DOMINO/"
+  PORT: 1234
 
 };
 ```
