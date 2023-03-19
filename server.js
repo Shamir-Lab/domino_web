@@ -6,13 +6,10 @@ const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const { exec } = require("child_process");
 const fs = require("fs");
-
 const timeout = require("connect-timeout");
-const ncp = require("ncp").ncp;
-const cors = require("cors");
-const csvWriter = require('csv-write-stream');
+// const ncp = require("ncp").ncp;
+// const cors = require("cors");
 
-const util = require('util');
 const {
     dominoPostProcess,
     separateActiveGenes,
@@ -22,12 +19,14 @@ const {
     formatDate,
     convert2Ensg
 } = require("./utils.js");
-
+const {
+    addExecution,
+    aggregateExecutions,
+    createDummyValues
+} = require("./db_helper.js");
 const errorMsgs=require("./errors.js")
-
 const fileStructure = require("./src/components/public/files_node");
 const conf = require("./config.js").conf;
-const freqData = require("./src/components/public/freq.js");
 
 const mongoose = require('mongoose');
 
@@ -74,20 +73,7 @@ app.use(cookieParser());
 // app.use(cors());
 app.use(fileUpload());
 
-app.get('/*', function (req, res) {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-/*
-app.get('/file_upload', ...);
-
-app.get('/modules', ...);
-* */
-
 /* Promise wrappers. */
-const makeDir = util.promisify(fs.mkdir);
-const writeFile = util.promisify(fs.writeFile);
-const readFile = util.promisify(fs.readFile);
 const execAsync = (cmd) => {
     /**
      * Executes a shell command and return it as a Promise.
@@ -107,11 +93,37 @@ const execAsync = (cmd) => {
     });
 }
 
+app.get('/', function (req, res) { // why "/*"?
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+app.get("/aggregated-usage", async (req, res, next) => {
+    // aggregate
+    console.log("Aggregating");
+    let [totalExecutions, networkUsage, monthlyUsageWithNetworks] = await aggregateExecutions();
+    console.log("Done aggregating");
+
+    // post processing
+    networkUsage = networkUsage.map((usage) => {
+        return {
+            network: usage._id,
+            freq: usage.freq
+        };
+    });
+
+    res.json({
+        totalExecutions: totalExecutions,
+        networkUsage: networkUsage,
+        monthlyUsageWithNetworks: monthlyUsageWithNetworks
+    });
+
+    res.end();
+});
+
 app.post("/upload", timeout("10m"), (req, res, next) => {
     console.log("Starting upload POST request ...");
 
     // create session directory (within the public folder)
-
     let fileNames = fileStructure.files.map(file => file.name);
 
     const userFileNames = fileNames.reduce(
@@ -140,7 +152,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     const cachedNetworkFile = networkFilePath;
     let mvNetworkFile, networkFileContents;
     if (cachedNetworkFile) {
-        networkFileContents = readFile(networkFilePath);
+        networkFileContents = fs.promises.readFile(networkFilePath);
     } else {
         let networkFile = req.files[`Network file contents`];
         networkFilePath = `${sessionDirectory}/${userFileNames["Network file"]}`;
@@ -149,7 +161,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
     }
 
     const sliceNetworkFile = execAsync(
-        `bash slicer_runner.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
+        `bash runners/slicer.sh ` + [`"${networkFilePath}"`, `${networkFilePath}.slicer`, conf.DOMINO_PYTHON_ENV].join(' ')
     );
 
     let activeGenesSet = separateActiveGenes(new String(req.files["Active gene file contents"].data));
@@ -182,12 +194,12 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         const outputFile = `${subRunDirectory}/modules`;
 
         
-        await makeDir(subRunDirectory);
-        await makeDir(outputFile);
+        await fs.promises.mkdir(subRunDirectory);
+        await fs.promises.mkdir(outputFile);
 
         // load the active gene file into the sub run directory
         const activeGenesFilePath = `${subRunDirectory}/active_gene_file.txt`;
-        await writeFile(
+        await fs.promises.writeFile(
             activeGenesFilePath,
             activeGenesSet[setName].join("\n")
         );
@@ -203,7 +215,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 conf.DOMINO_PYTHON_ENV,
                 conf.AMI_PLUGINS_PYTHON_ENV
             ].join(" ");
-        localExecution=`bash domino_runner.sh ${cmdArgs}`
+        localExecution=`bash runners/domino.sh ${cmdArgs}`
         try {
             if (conf.REMOTE_EXECUTION){            
                 console.log("About to start remote execution")
@@ -220,7 +232,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
         }
 
         console.log(`Reading the output of domino py on set ${setName} ...`);
-        const dominoOutput = await readFile(`${outputFile}/modules.out`);
+        const dominoOutput = await fs.promises.readFile(`${outputFile}/modules.out`);
         const algOutput = dominoPostProcess(dominoOutput, networkFileContents);
         
         console.log(`DOMINO post process on set ${setName} ...`);
@@ -279,7 +291,7 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
             });
         })
         .then(_ => {
-            // finalize folder structure and create zip file
+            // finalize folder structure, create zip file, and log execution details
 
             const rmCachedFiles = exec(`rm ${sessionDirectory}/*.plk ${sessionDirectory}/*slicer`);
 
@@ -289,35 +301,14 @@ app.post("/upload", timeout("10m"), (req, res, next) => {
                 zip -r "${customFile}.zip" "${customFile}"`
             );
 
-            return Promise.all([rmCachedFiles, zipFiles]);
-        })
-        .then(_ => {
-            // log execution details
+            const logExec = addExecution((cachedNetworkFile) ?
+                userFileNames["Network file"]
+                : "");
 
-            if (!fs.existsSync(conf.EXECUTION_CSV_DUMP))
-                writer = csvWriter({ headers: ["time", "network_file"] });
-            else
-                writer = csvWriter({sendHeaders: false});
-
-            writer.pipe(fs.createWriteStream(conf.EXECUTION_CSV_DUMP, {flags: 'a'}));
-
-            writer.write({
-                time: formatDate(new Date()),
-                newtork_file: (cachedNetworkFile) ?
-                    userFileNames["Network file"]
-                    : "",
-            });
-            writer.end();
-
-            const lastAggregation = new Date(freqData.lastAggregation);
-            const ONE_HOUR = 60 * 60 * 1000; // in milliseconds
-            if (((new Date()) - lastAggregation) > ONE_HOUR) {
-                console.log("aggregating");
-                return execAsync(`python3 aggregate_domino_execution.py test.csv src/components/public/freq.js`);
-            }
+            return Promise.all([rmCachedFiles, zipFiles, logExec]);
         })
         .catch(error => {
-            console.log(error)
+            console.log(error);
             res.status(400).send(errorMsgs.nonSpecific);
         })
         .then(_ => res.end());
