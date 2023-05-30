@@ -7,7 +7,7 @@ The original standalone version of DOMINO is available [here](https://github.com
 ## Prerequisites:
 1. node.js
 2. mongoDB server
-3. Dependency proejcts: ami_plugins(https://github.com/Shamir-Lab/ami_plugins) and DOMINO(https://github.com/Shamir-Lab/domino)
+3. Dependency proejcts: [ami_plugins](https://github.com/Shamir-Lab/ami_plugins) and [DOMINO](https://github.com/Shamir-Lab/domino)
 
 ## Installation instructions:
 To run a domino server perform the following steps:
