@@ -4,6 +4,11 @@ DOMINO as a web-based service is avaliable [here](http://domino.cs.tau.ac.il/).
 
 The original standalone version of DOMINO is available [here](https://github.com/Shamir-Lab/DOMINO)
 
+## Prerequisites:
+1. node.js
+2. mongoDB server
+3. Dependency proejcts: ami_plugins, DOMINO (both under Shamir-Lab namesapce on Github)
+
 ## Installation instructions:
 To run a domino server perform the following steps:
 1. Download and install Domino standalone tool from [here](https://github.com/Shamir-Lab/DOMINO)
@@ -27,7 +32,7 @@ const conf_server = {
 ```
     npm install     # Install dependencies
     npm run build   # Build the client side: Needs to be done each time client side files are modified
-    node server     # run the server
+    node server.js     # run the server
 ```
 
 ## Run an analysis from a running website: 
