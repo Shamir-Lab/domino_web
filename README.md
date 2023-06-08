@@ -17,7 +17,7 @@ To run a domino server perform the following steps:
     git clone https://github.com/hag007/domino_web.git
     cd domino_web
 ```
-3. In the file `config.js`, Change the `conf_server` as follows:
+3. Create a file named `config.js` and insert he following lines:
 ```
 const conf_server = {
   IP_ADDRESS: "your DNS/server IP",
@@ -27,6 +27,8 @@ const conf_server = {
   PORT: 1234
 
 };
+
+module.exports = { conf: conf_server };
 ```
 4. Complete the setup process
 ```
