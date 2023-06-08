@@ -6,7 +6,7 @@ config.js
 /node_modules
 /.pnp
 .pnp.js
-
+node-v*.tar.xz
 
 
 # testing

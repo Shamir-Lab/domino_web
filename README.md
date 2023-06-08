@@ -17,7 +17,7 @@ To run a domino server perform the following steps:
     git clone https://github.com/hag007/domino_web.git
     cd domino_web
 ```
-3. Create a file named `config.js` and insert he following lines:
+3. Create a file named `config.js` and insert the following lines:
 ```
 const conf_server = {
   IP_ADDRESS: "your DNS/server IP",
