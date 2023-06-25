@@ -119,6 +119,52 @@ export const DeveloperCreditsCard = ({cardStatus}) => { return (
                         </Col>
                     </Row>
                 </div>
+                <hr></hr>
+                <div>
+                    <p className={small_text}>
+                        Gideon Shaked
+                    </p>
+
+                    <Row
+                        style={{
+                            marginLeft: "5px",
+                            marginRight: "5px"
+                        }}
+                    >
+                        <Col>
+                            <a
+                                href={"https://github.com/gideonshaked"}
+                                target="_blank" rel="noopener noreferrer"
+                            >
+                                <FontAwesomeIcon
+                                    style={{
+                                        height: "50px",
+                                        width: "50px",
+                                        color: "black"
+                                    }}
+                                    className={hover_shadow}
+                                    icon={faGithub}
+                                />
+                            </a>
+                        </Col>
+                        <Col>
+                            <a
+                                href={"https://www.linkedin.com/in/gideonshaked"}
+                                target="_blank" rel="noopener noreferrer"
+                            >
+                                <FontAwesomeIcon
+                                    style={{
+                                        height: "50px",
+                                        width: "50px",
+                                        color: "blue"
+                                    }}
+                                    className={hover_shadow}
+                                    icon={faLinkedin}
+                                />
+                            </a>
+                        </Col>
+                    </Row>
+                </div>
             </Card.Text>
         </Card.Body>
     </Card>
@@ -192,7 +238,7 @@ export const RepositoriesCard = ({cardStatus}) => { return (
                 <br/>
                 <a
                     className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
-                    href={"https://github.com/hag007/domino_web"}
+                    href={"https://github.com/Shamir-Lab/domino_web"}
                     target="_blank" rel="noopener noreferrer"
                 >
                     DOMINO's Web Executor
@@ -229,6 +275,7 @@ export const SpecialCreditsCard = ({cardStatus}) => { return (
                 <p>The core of DOMINO uses an implementation of PCST called <a href="https://github.com/fraenkel-lab/pcst_fast" target="_blank">fast-pcst</a></p>
 
                 <p>The networks in this website (and in DOMINO's paper) are  <a href="https://dip.doe-mbi.ucla.edu/dip/Main.cgi" target="_blank">DIP</a>, <a href="http://www.interactome-atlas.org/" target="_blank">HuRI</a> and <a href="https://string-db.org/" target="_blank">STRING</a> (edges with confidence > 900)</p>
+                <p>This website implements the <a href="https://drugst.one/" target="_blank">Drugst.One</a> API for network visualization</p>
             </Card.Text>
         </Card.Body>
     </Card>
