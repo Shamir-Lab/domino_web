@@ -257,6 +257,14 @@ export const RepositoriesCard = ({cardStatus}) => { return (
                 >
                     EMP-benchmark
                 </a>
+                <br/>
+                <a
+                    className={["btn", btn_margin, "btn-primary", small_text].join(" ")}
+                    href={"https://github.com/Shamir-Lab/ami_plugins"}
+                    target="_blank" rel="noopener noreferrer"
+                >
+                    AMI Plugins
+                </a>
             </Card.Text>
         </Card.Body>
     </Card>
