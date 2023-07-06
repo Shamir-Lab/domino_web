@@ -13,25 +13,24 @@ The original standalone version of DOMINO is available [here](https://github.com
 To run a domino server perform the following steps:
 1. Download and install Domino standalone tool from [here](https://github.com/Shamir-Lab/DOMINO)
 2. Clone domino_web:
-```
+```bash
     git clone https://github.com/hag007/domino_web.git
     cd domino_web
 ```
 3. Create a file named `config.js` and insert the following lines:
-```
+```javascript
 const conf_server = {
   IP_ADDRESS: "your DNS/server IP",
   DOMINO_PYTHON_ENV: "/path/to/domino-env",
-  AMI_PLUGINS_PYTHON_ENV: "/path/to/AMI-PLUGINS/"
-  DOMINO_PATH: "/path/to/DOMINO/"
+  AMI_PLUGINS_PYTHON_ENV: "/path/to/AMI-PLUGINS/",
+  DOMINO_PATH: "/path/to/DOMINO/",
   PORT: 1234
-
 };
 
 module.exports = { conf: conf_server };
 ```
 4. Complete the setup process
-```
+```bash
     npm install     # Install dependencies
     npm run build   # Build the client side: Needs to be done each time client side files are modified
     node server.js     # run the server
