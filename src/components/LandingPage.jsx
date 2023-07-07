@@ -367,7 +367,7 @@ const LandingPage = ({history}) => {
                     <p>AMI algorithms receive as input a gene network and nodes' activity scores, and report sub-networks (modules) that are putatively biologically active. The biological meaning of such modules is usually explored via functional/enrichment analysis, commonly done against well-established resources such as the Gene Ontology (GO). </p>
                     <p>We observed that very often GO terms enriched in modules detected by AMI methods are also enriched when the AMI algorithms are run on randomly permuted  data.</p>
                     <p>To tackle this bias, we designed the <a href="https://github.com/Shamir-Lab/EMP" target="_blank"> EMpirical
-                        pipeline (EMP)</a>, a method that evaluates the empirical significance of GO terms reported as
+                        Pipeline (EMP)</a>, a method that evaluates the empirical significance of GO terms reported as
                         enriched in modules.</p>
                     <p>We then used EMP to <a href="https://github.com/Shamir-Lab/EMP-benchmark" target="_blank">systematically evaluate
                         popular AMI algorithms on a wide-range of criteria</a>. We analyzed two types of omics gene scores: gene expression levels and GWAS gene scores.</p>
@@ -401,10 +401,10 @@ const LandingPage = ({history}) => {
                     style={{cursor: "pointer"}}
                 >
                     <p>
-                        <b>Q:</b> Can I focus only ona subset of module's module?
+                        <b>Q:</b> Can I focus only on a subset of a module's module?
                     </p>
                     <p>
-                        <b>A:</b> Yes. by selecting particular nodes you can leave only their details shown. multiple node selection can be done using drag-select with the mouse or by holding the ctrl key while clicking on the nodes. To hide the details of all nodes, click on an empty part of the visulation area. To select all the nodes, click on the button "show details for all genes/nodes"    
+                        <b>A:</b> Yes. By selecting particular nodes you can leave only their details shown. Multiple node selection can be done using drag-select with the mouse or by holding the ctrl key while clicking on the nodes. To hide the details of all nodes, click on an empty part of the visulation area. To select all the nodes, click on the button "show details for all genes/nodes".    
                     </p>
                 </Collapsible>
                <>
